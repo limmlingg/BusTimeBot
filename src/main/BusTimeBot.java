@@ -42,6 +42,7 @@ import com.vdurmont.emoji.EmojiManager;
 import common.BusStop;
 import common.BusStop.Type;
 import common.BusStopMapping;
+import common.LocationComparator;
 import nusbus.NUSBusArrival;
 import nusbus.NUSBusArrivalContainer;
 import nusbus.NUSBusStop;
@@ -136,8 +137,8 @@ public class BusTimeBot extends TelegramLongPollingBot{
 			        sendMessage.setChatId(chatId);
 			        sendMessage.enableMarkdown(true);
 			        sendMessage.setReplyMarkup(createSendLocationKeyboard());
-			        sendMessage.setText("Send me your location and get your bus timings!\n"
-			        		+ "Alternatively, you can type /search <<Address or postal code>> to find by terms");
+			        sendMessage.setText("\nSend me your location (Using the GPS) and get your bus timings!\n"
+			        		+ "Alternatively, you can type /search <<Address or postal code>> (e.g. /search 118426)\n");
 			        try {
 			        	if (chatId > 0) {
 			        		sendMessage(sendMessage);
@@ -281,7 +282,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * @return a list of bus stops near that location sorted by distance
 	 */
 	public PriorityQueue<BusStop> getNearbyBusStops(double latitude, double longitude) {
-		PriorityQueue<BusStop> nearbyBusStops = new PriorityQueue<BusStop>(30);
+		PriorityQueue<BusStop> nearbyBusStops = new PriorityQueue<BusStop>(30, new LocationComparator(latitude, longitude));
 		for (BusStop stop : busStops.values()) {	
 			if (stop.getDistance(latitude, longitude) <= distance) {
 				nearbyBusStops.add(stop);

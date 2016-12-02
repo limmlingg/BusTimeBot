@@ -51,6 +51,6 @@ public class BusStop implements Comparable<BusStop> {
 
 	@Override
 	public int compareTo(BusStop o) {
-		return (int) Math.round(getDistance(o));
+		return (int)(getDistance(o)*100000.0);
 	}
 }
