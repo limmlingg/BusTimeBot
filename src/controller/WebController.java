@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import com.google.gson.Gson;
 
 import main.BusTimeBot;
@@ -19,6 +21,20 @@ public class WebController {
 	 */
 	public static <T> T retrieveData(String url, Class<T> objectClass) {
 		return jsonToObject(sendHTTPRequest(url), objectClass);
+	}
+	
+	/**
+	 * Retrieve data from the URL and cast it to the class provided
+	 * @param url of the server to retrieve data from
+	 * @param objectClass class to cast the data into
+	 * @return An object of the class provided
+	 */
+	public static <T> T retrieveData(String url, Class<T> objectClass, boolean https) {
+		if (https) {
+			return jsonToObject(sendHTTPsRequest(url), objectClass);
+		} else {
+			return jsonToObject(sendHTTPRequest(url), objectClass);
+		}
 	}
 	
 	/**
@@ -57,6 +73,31 @@ public class WebController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		//System.out.println(result);
+		return result.toString();
+	}
+	
+	/**
+	 * Send a GET HTTPS request to the url indicated and returns the response
+	 * @param url of the server to retrieve data from
+	 * @return response returned from the Webserver
+	 */
+	public static String sendHTTPsRequest(String url) {
+		StringBuilder result = new StringBuilder();
+		try {
+			URL urlSite = new URL(url);
+			HttpsURLConnection connection = (HttpsURLConnection) urlSite.openConnection();
+			connection.setRequestMethod("GET");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				result.append(line);
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println(result);
 		return result.toString();
 	}
 }

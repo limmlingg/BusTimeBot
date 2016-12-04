@@ -47,7 +47,7 @@ Temporary Items
 .apdisk
 bin/lta_key
 bin/telegram_key
-keys/lta_key
-keys/telegram_key
 bin/*
 *.log
+src/keys/lta_key
+src/keys/telegram_key

@@ -25,6 +25,7 @@ Functions to check
 ### Commands:
 
 start - see what you can do with this bot
+
 search - search by postal code or address (/search 118426)
 
 ## Deployment
