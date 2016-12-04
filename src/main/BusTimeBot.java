@@ -1,11 +1,13 @@
 package main;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,15 +72,19 @@ public class BusTimeBot extends TelegramLongPollingBot{
     public HashMap<String, BusStop> busStops;
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
     public double distance = 0.3;
+    public File log = new File("BusTimeBot.log");
     public boolean dev = true; //Use a different bot if we use dev (rmb to change back)
-	
+    
 	public BusTimeBot() {
 		super();
 		try {
 			lastQueried = new HashMap<Long, Date>();
-			busStops = new HashMap<String, BusStop>(10000);
+			busStops = new HashMap<String, BusStop>(10000); 
 			TELEGRAM_TOKEN = Files.readAllLines(Paths.get("keys/telegram_key").toAbsolutePath()).get(dev? 1 : 0);
 			LTA_TOKEN = Files.readAllLines(Paths.get("keys/lta_key").toAbsolutePath()).get(0);
+			if (!log.exists()) {
+				log.createNewFile();
+			}
 			//Get Busstop Locations
 			getBusStopData();
 		} catch (IOException e) {
@@ -90,6 +96,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	public void onUpdateReceived(Update update) {
 		if (update.hasCallbackQuery()) { //If the user presses update
 			CallbackQuery callbackQuery = update.getCallbackQuery();
+			log(("Got an update call by " + callbackQuery.getFrom()));
 			
 			//Update the timings if the query has been longer than 1 second
 			Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
@@ -109,6 +116,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 				String lastUpdated = "_Last updated at " + timeFormat.format(new Date()) + "_";
 				editMessageText.setText(getNearbyBusStopsAndTimings(latitude, longitude) + lastUpdated);
+				log("\nReturned:\n" + editMessageText.getText());
 				
 				//Re-add the inline keyboard
 	            editMessageText.setReplyMarkup(createUpdateInlineKeyboard(latitude, longitude));
@@ -117,6 +125,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				} catch (TelegramApiException e) {}	//Ignore if MessageNotEdited error
 	            lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
 			}
+			log("\n\n======================================================\n");
 			
 			//Send answer indicating a reply
 			AnswerCallbackQuery answer = new AnswerCallbackQuery();
@@ -147,6 +156,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						e.printStackTrace();
 					}
 				} else if (text.startsWith("/search ")) { //Search by postal code
+					log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
 					GeoCodeContainer results = retrieveData("http://maps.googleapis.com/maps/api/geocode/json?address="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
 					if (results.status.equals("OK")) {
 						double lat = results.results.get(0).geometry.location.lat;
@@ -157,30 +167,45 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						sendMessage.setText(getNearbyBusStopsAndTimings(lat, lon));
 						sendMessage.setParseMode(ParseMode.MARKDOWN);
 			            sendMessage.setReplyMarkup(createUpdateInlineKeyboard(lat, lon));
+			            log("Returned:\n" + sendMessage.getText());
 			            try {
 							sendMessage(sendMessage);
 						} catch (TelegramApiException e) {
 							e.printStackTrace();
 						}
 					} else {
+						log("Returned:\nUnable to find location");
 						sendMessage("Unable to find location", chatId);
 					}
-				} else if (text.startsWith("/add")) {
-					
+					log("======================================================\n");
 				}
 			} else if (location != null) {//By Location
+				log("Got a location request by " + message.getFrom() + " for " + location +"\n");
 				//Send the message to user
 				SendMessage sendMessage = new SendMessage();
 				sendMessage.setChatId(chatId);
 				sendMessage.setText(getNearbyBusStopsAndTimings(location));
 				sendMessage.setParseMode(ParseMode.MARKDOWN);
 	            sendMessage.setReplyMarkup(createUpdateInlineKeyboard(location));
+	            log("Returned:\n"+sendMessage.getText()+"\n======================================================\n");
 	            try {
 					sendMessage(sendMessage);
 				} catch (TelegramApiException e) {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Append information to the log file
+	 * @param text to append to log file
+	 */
+	public void log(String text) {
+		try {
+			Files.write(log.toPath(), text.getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 	
