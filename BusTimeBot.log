@@ -431,3 +431,5 @@ Returned:
 ======================================================
 Got a search request by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'} for /search
 ======================================================
+Got a search request by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'} for /search
+======================================================

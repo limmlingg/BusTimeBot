@@ -27,9 +27,8 @@ Functions to check
 
 ### Commands:
 
-start - see what you can do with this bot
-
-search - search by popular locations, postal codes, address, bus stop number
+- start - see what you can do with this bot
+- search - search by popular locations, postal codes, address, bus stop number
 
 ## Deployment
 

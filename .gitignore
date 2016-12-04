@@ -45,9 +45,6 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-bin/lta_key
-bin/telegram_key
 bin/*
 *.log
-src/keys/lta_key
-src/keys/telegram_key
+src/keys/*

@@ -68,6 +68,9 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	    }
 	}
 	
+	/**
+	 * Hackish way to be able to retrieve searching using gothere.sg, will need to change next time
+	 */
 	public static void trustAll() {
 		TrustManager trm = new X509TrustManager() {
 		    public X509Certificate[] getAcceptedIssuers() {
@@ -168,7 +171,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 			        		+ "/search amk hub\n"
 			        		+ "/search 118426\n"
 			        		+ "/search Blk 1 Hougang Ave 1\n"
-			        		+ "/search 63151 (Should be the first bus stop)";
+			        		+ "/search 63151";
 					if (chatId > 0) {
 		        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
 		        	} else {
@@ -289,7 +292,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 		}
 		
 		if (stops.toString().equals("")) {
-			stops.append("No stops nearby\n");
+			stops.append("No stops nearby\n\n");
 		}
 		
 		return stops.toString();
