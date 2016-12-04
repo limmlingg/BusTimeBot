@@ -12,15 +12,6 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.TimeZone;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
@@ -55,7 +46,7 @@ import entity.geocoding.GeoCodeContainer;
 public class BusTimeBot extends TelegramLongPollingBot{
 
 	public static void main(String[] args) {
-		trustAll();
+		WebController.trustAll();
 		ApiContextInitializer.init();
 		TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 	    try {
@@ -66,33 +57,6 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	    } catch (TelegramApiException e) {
 	        e.printStackTrace();
 	    }
-	}
-	
-	/**
-	 * Hackish way to be able to retrieve searching using gothere.sg, will need to change next time
-	 */
-	public static void trustAll() {
-		TrustManager trm = new X509TrustManager() {
-		    public X509Certificate[] getAcceptedIssuers() {
-		        return null;
-		    }
-
-		    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-		    }
-
-		    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-		    }
-		};
-
-		try {
-			SSLContext sc = SSLContext.getInstance("SSL");
-			sc.init(null, new TrustManager[] { trm }, null);
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	public static BusTimeBot bot;
