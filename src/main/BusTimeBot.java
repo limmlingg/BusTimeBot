@@ -1,14 +1,9 @@
 package main;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,6 +25,7 @@ import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -37,42 +33,37 @@ import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
-import com.google.gson.Gson;
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
-import common.BusStop;
-import common.BusStop.Type;
-import common.BusStopMapping;
-import common.LocationComparator;
-import nusbus.NUSBusArrival;
-import nusbus.NUSBusArrivalContainer;
-import nusbus.NUSBusStop;
-import nusbus.NUSBusStopContainer;
-import postalToCoordinates.GeoCodeContainer;
-import publicbus.PublicBusStopArrival;
-import publicbus.PublicBusStopArrivalContainer;
-import publicbus.PublicBusStopContainer;
+import controller.NUSController;
+import controller.PublicController;
+import controller.Util;
+import controller.WebController;
+import entity.BusStop;
+import entity.BusStop.Type;
+import entity.LocationComparator;
+import entity.postalToCoordinates.GeoCodeContainer;
 
 public class BusTimeBot extends TelegramLongPollingBot{
 
 	public static void main(String[] args) {
-		//Favourites command
 		ApiContextInitializer.init();
 		TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 	    try {
-	        telegramBotsApi.registerBot(new BusTimeBot());
+	    	bot = new BusTimeBot();
+	        telegramBotsApi.registerBot(bot);
 	    } catch (TelegramApiException e) {
 	        e.printStackTrace();
 	    }
 	}
 	
+	public static BusTimeBot bot;
     public static String TELEGRAM_TOKEN;
     public static String LTA_TOKEN;
     public HashMap<String, BusStop> busStops;
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
     public double distance = 0.3;
-    public File log = new File("BusTimeBot.log");
     public boolean dev = true; //Use a different bot if we use dev (rmb to change back)
     
 	public BusTimeBot() {
@@ -82,10 +73,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 			busStops = new HashMap<String, BusStop>(10000); 
 			TELEGRAM_TOKEN = Files.readAllLines(Paths.get("keys/telegram_key").toAbsolutePath()).get(dev? 1 : 0);
 			LTA_TOKEN = Files.readAllLines(Paths.get("keys/lta_key").toAbsolutePath()).get(0);
-			if (!log.exists()) {
-				log.createNewFile();
-			}
-			//Get Busstop Locations
+			//Get bus stop Locations
 			getBusStopData();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -96,11 +84,11 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	public void onUpdateReceived(Update update) {
 		if (update.hasCallbackQuery()) { //If the user presses update
 			CallbackQuery callbackQuery = update.getCallbackQuery();
-			log(("Got an update call by " + callbackQuery.getFrom()));
+			Logger.log(("Got an update call by " + callbackQuery.getFrom()));
 			
 			//Update the timings if the query has been longer than 1 second
 			Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
-			long timeSince = lastQuery==null? Long.MAX_VALUE : getTimeFromNow(format.format(lastQuery), Calendar.SECOND)*-1;
+			long timeSince = lastQuery==null? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND)*-1;
 			if (timeSince>1) { //Only update if more than 1 second has passed
 				EditMessageText editMessageText = new EditMessageText();
 				editMessageText.setInlineMessageId(callbackQuery.getInlineMessageId());
@@ -116,7 +104,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 				String lastUpdated = "_Last updated at " + timeFormat.format(new Date()) + "_";
 				editMessageText.setText(getNearbyBusStopsAndTimings(latitude, longitude) + lastUpdated);
-				log("\nReturned:\n" + editMessageText.getText());
+				Logger.log("\nReturned:\n" + editMessageText.getText());
 				
 				//Re-add the inline keyboard
 	            editMessageText.setReplyMarkup(createUpdateInlineKeyboard(latitude, longitude));
@@ -125,7 +113,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				} catch (TelegramApiException e) {}	//Ignore if MessageNotEdited error
 	            lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
 			}
-			log("\n\n======================================================\n");
+			Logger.log("\n\n======================================================\n");
 			
 			//Send answer indicating a reply
 			AnswerCallbackQuery answer = new AnswerCallbackQuery();
@@ -142,70 +130,36 @@ public class BusTimeBot extends TelegramLongPollingBot{
 			Location location = message.getLocation();
 			if (text != null) {
 				if (text.equalsIgnoreCase("/start")) {
-			        SendMessage sendMessage = new SendMessage();
-			        sendMessage.setChatId(chatId);
-			        sendMessage.enableMarkdown(true);
-			        sendMessage.setReplyMarkup(createSendLocationKeyboard());
-			        sendMessage.setText("\nSend me your location (Using the GPS) and get your bus timings!\n"
-			        		+ "Alternatively, you can type /search <<Address or postal code>> (e.g. /search 118426)\n");
-			        try {
-			        	if (chatId > 0) {
-			        		sendMessage(sendMessage);
-			        	}
-					} catch (TelegramApiException e) {
-						e.printStackTrace();
-					}
+					String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings!\n"
+			        		+ "Alternatively, you can type /search <<Address or postal code>> (e.g. /search 118426)\n";
+					if (chatId > 0) {
+		        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
+		        	} else {
+		        		sendMessage(welcomeText, chatId, null);
+		        	}
 				} else if (text.startsWith("/search ")) { //Search by postal code
-					log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
-					GeoCodeContainer results = retrieveData("http://maps.googleapis.com/maps/api/geocode/json?address="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
+					Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
+					GeoCodeContainer results = WebController.retrieveData("http://maps.googleapis.com/maps/api/geocode/json?address="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
 					if (results.status.equals("OK")) {
 						double lat = results.results.get(0).geometry.location.lat;
 						double lon = results.results.get(0).geometry.location.lng;
-						//Send the message to user
-						SendMessage sendMessage = new SendMessage();
-						sendMessage.setChatId(chatId);
-						sendMessage.setText(getNearbyBusStopsAndTimings(lat, lon));
-						sendMessage.setParseMode(ParseMode.MARKDOWN);
-			            sendMessage.setReplyMarkup(createUpdateInlineKeyboard(lat, lon));
-			            log("Returned:\n" + sendMessage.getText());
-			            try {
-							sendMessage(sendMessage);
-						} catch (TelegramApiException e) {
-							e.printStackTrace();
-						}
+
+						String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
+			            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
+			            Logger.log("Returned:\n" + nearbyBusStops);
 					} else {
-						log("Returned:\nUnable to find location");
-						sendMessage("Unable to find location", chatId);
+						sendMessage("Unable to find location", chatId, null);
+						Logger.log("Returned:\nUnable to find location");
 					}
-					log("======================================================\n");
+					Logger.log("======================================================\n");
 				}
 			} else if (location != null) {//By Location
-				log("Got a location request by " + message.getFrom() + " for " + location +"\n");
+				Logger.log("Got a location request by " + message.getFrom() + " for " + location +"\n");
 				//Send the message to user
-				SendMessage sendMessage = new SendMessage();
-				sendMessage.setChatId(chatId);
-				sendMessage.setText(getNearbyBusStopsAndTimings(location));
-				sendMessage.setParseMode(ParseMode.MARKDOWN);
-	            sendMessage.setReplyMarkup(createUpdateInlineKeyboard(location));
-	            log("Returned:\n"+sendMessage.getText()+"\n======================================================\n");
-	            try {
-					sendMessage(sendMessage);
-				} catch (TelegramApiException e) {
-					e.printStackTrace();
-				}
+				String nearbyBusStops = getNearbyBusStopsAndTimings(location);
+				sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(location));
+	            Logger.log("Returned:\n"+nearbyBusStops+"\n======================================================\n");
 			}
-		}
-	}
-	
-	/**
-	 * Append information to the log file
-	 * @param text to append to log file
-	 */
-	public void log(String text) {
-		try {
-			Files.write(log.toPath(), text.getBytes(), StandardOpenOption.APPEND);
-		} catch (IOException e1) {
-			e1.printStackTrace();
 		}
 	}
 	
@@ -278,16 +232,16 @@ public class BusTimeBot extends TelegramLongPollingBot{
 			if (stop.type == Type.NUS_ONLY) {
 				stops.append(emoji.getUnicode() + "*"+stop.Description+"*");
 				stops.append("\n");
-				stops.append(getNUSArrivalTimings(stop));
+				stops.append(NUSController.getNUSArrivalTimings(stop));
 			} else if (stop.type == Type.PUBLIC_ONLY) {
 				stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
 				stops.append("\n");
-				stops.append(getPublicBusArrivalTimings(stop));
+				stops.append(PublicController.getPublicBusArrivalTimings(stop));
 			} else if (stop.type == Type.BOTH) {
 				stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NUSDescription+"*");
 				stops.append("\n");
-				stops.append(getNUSArrivalTimings(stop));
-				stops.append(getPublicBusArrivalTimings(stop));
+				stops.append(NUSController.getNUSArrivalTimings(stop));
+				stops.append(PublicController.getPublicBusArrivalTimings(stop));
 			}
 			stops.append("\n");
 			count++;
@@ -317,157 +271,12 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	}
 	
 	/**
-	 * Get NUS Shuttle Service bus arrival timings from comfort delgro servers
-	 * @param stop code for the Bus Stop
-	 * @return A string of bus timings formatted properly
-	 */
-	public String getNUSArrivalTimings(BusStop stop) {
-		StringBuffer busArrivals = new StringBuffer();
-		//Use the appropiate code
-		String code = stop.BusStopCode;
-		if (stop.type == Type.BOTH) {
-			code = stop.NUSStopCode;
-		}
-		
-		NUSBusArrivalContainer data = retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname="+code, NUSBusArrivalContainer.class);
-		Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-		for (NUSBusArrival s : data.ShuttleServiceResult.shuttles) {
-			//Append the bus and the service name
-			busArrivals.append(emoji.getUnicode() + "*" + s.name + "*: ");
-			//We either get "Arr", "-" or a time in minutes
-			String firstEstimatedBusTiming;
-			if (s.arrivalTime.equals("-")) { //No more bus service
-				firstEstimatedBusTiming = "N/A";
-			} else if (s.arrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
-				firstEstimatedBusTiming = s.arrivalTime;
-			} else {
-				firstEstimatedBusTiming = s.arrivalTime + "min";
-			}
-			
-			String secondEstimatedBusTiming;
-			if (s.nextArrivalTime.equals("-")) { //No more bus service, no need to append anything
-				secondEstimatedBusTiming = "";
-			} else if (s.nextArrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
-				secondEstimatedBusTiming = "  |  " + s.nextArrivalTime;
-			} else {
-				secondEstimatedBusTiming = "  |  " + s.nextArrivalTime + "min";
-			}
-			
-			busArrivals.append(firstEstimatedBusTiming + secondEstimatedBusTiming);
-			busArrivals.append("\n");
-		}
-		return busArrivals.toString();
-	}
-	
-	/**
-	 * Get Public bus arrival timings from LTA datamall servers
-	 * @param stop code for the Bus Stop
-	 * @return A string of bus timings formatted properly
-	 */
-	public String getPublicBusArrivalTimings(BusStop stop) {
-		StringBuffer busArrivals = new StringBuffer();
-		PublicBusStopArrivalContainer data = retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusArrival?BusStopID="+stop.BusStopCode+"&SST=True", PublicBusStopArrivalContainer.class);
-		Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-		for (PublicBusStopArrival services : data.Services) {
-			busArrivals.append(emoji.getUnicode() + "*" + services.ServiceNo + "*: ");
-			long firstEstimatedBus = getTimeFromNow(services.NextBus.EstimatedArrival, Calendar.MINUTE);
-			long secondEstimatedBus = getTimeFromNow(services.SubsequentBus.EstimatedArrival, Calendar.MINUTE);
-			
-			//Construct string based on error and difference
-			String firstEstimatedBusTime;
-			if (firstEstimatedBus == Long.MAX_VALUE) {
-				firstEstimatedBusTime = "N/A";
-			} else if (firstEstimatedBus <= 0) {
-				firstEstimatedBusTime = "Arr";
-			} else {
-				firstEstimatedBusTime = firstEstimatedBus + "min";
-			}
-			
-			String secondEstimatedBusTime;
-			if (secondEstimatedBus == Long.MAX_VALUE) {
-				secondEstimatedBusTime = "";
-			} else if (secondEstimatedBus <= 0) {
-				secondEstimatedBusTime = "  |  Arr";
-			} else {
-				secondEstimatedBusTime = "  |  " + secondEstimatedBus + "min";
-			}
-			
-			busArrivals.append(firstEstimatedBusTime + secondEstimatedBusTime);
-			busArrivals.append("\n");
-		}
-		return busArrivals.toString();
-	}
-	
-	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-	/**
-	 * Get time difference of the input date from the current time 
-	 * @param date string that is in "yyyy-MM-dd'T'HH:mm:ssXXX" format
-	 * @return (if Calendar.SECOND, return in seconds otherwise in minutes), Long.MAX_VALUE if date is invalid
-	 */
-	public long getTimeFromNow(String date, int type) {
-		long difference;
-		try {
-			long now = new Date().getTime();
-			long designatedTime = format.parse(date).getTime();
-			long divisor = type==Calendar.SECOND? 1000 : (60*1000); 
-			difference = (designatedTime-now)/divisor;
-		} catch (ParseException e) {
-			difference = Long.MAX_VALUE;
-		}
-		return difference;
-	}
-	
-	/**
 	 * Retrieve Bus stop data from NUS & LTA
 	 */
 	public void getBusStopData() {
-		getPublicBusStopData();
-		getNUSBusStopData();
+		PublicController.getPublicBusStopData();
+		NUSController.getNUSBusStopData();
 		System.out.println("Bus stop data loaded!");
-	}
-	
-	/**
-	 * Retrieve bus stop data from LTA
-	 */
-	public void getPublicBusStopData() {
-		int skip=0;
-		int stopCount=Integer.MAX_VALUE;
-		while (stopCount>=50) { //Read until the number of stops read in is less than 50
-			//Get 50 bus stops
-			PublicBusStopContainer data = retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip="+skip, PublicBusStopContainer.class);
-			//Update the stop count and number of stops to skip
-			stopCount = data.value.size();
-			skip += stopCount;
-			//Copy to the total number of stops
-			for (int i=0; i<data.value.size(); i++) {
-				data.value.get(i).type = Type.PUBLIC_ONLY;
-				busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
-			}
-		}
-	}
-	
-	/**
-	 * Retrieve bus stop data from NUS
-	 */
-	public void getNUSBusStopData() {
-		NUSBusStopContainer NUSdata = retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetBusStops?output=json", NUSBusStopContainer.class);
-		//Loop through and convert to SG bus stops style
-		for (NUSBusStop stop : NUSdata.BusStopsResult.busstops) {
-			if (BusStopMapping.getValue(stop.name) != null) { //Add on to public bus stop if it is the same bus stop (will be considered both NUS & Public bus stop)
-				BusStop existingStop = busStops.get(BusStopMapping.getValue(stop.name));
-				existingStop.NUSStopCode = stop.name;
-				existingStop.NUSDescription = stop.caption;
-				existingStop.type = Type.BOTH;
-			} else { //Otherwise it is most likely a NUS-only bus stop
-				BusStop newStop = new BusStop();
-				newStop.type = Type.NUS_ONLY;
-				newStop.BusStopCode = stop.name;
-				newStop.Description = stop.caption;
-				newStop.Latitude = stop.latitude;
-				newStop.Longitude = stop.longitude;
-				busStops.put(newStop.BusStopCode, newStop);
-			}
-		}
 	}
 	
 	/**
@@ -476,10 +285,13 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * @param id of the chat group
 	 * @return if the message is sent successfully
 	 */
-	public boolean sendMessage(String message, long id) {
+	public boolean sendMessage(String message, long id, ReplyKeyboard keyboard) {
 		SendMessage sendMessageRequest = new SendMessage();
         sendMessageRequest.setChatId(Long.toString(id)); //who should get from the message the sender that sent it.
         sendMessageRequest.setText(message);
+        if (keyboard!=null) {
+        	sendMessageRequest.setReplyMarkup(keyboard);
+        }
         sendMessageRequest.setParseMode(ParseMode.MARKDOWN); //Allow bold & italics
         boolean success = false;
         try {
@@ -489,54 +301,6 @@ public class BusTimeBot extends TelegramLongPollingBot{
         	e.printStackTrace();
         }
         return success;
-	}
-	
-	/**
-	 * Retrieve data from the URL and cast it to the class provided
-	 * @param url of the server to retrieve data from
-	 * @param objectClass class to cast the data into
-	 * @return An object of the class provided
-	 */
-	public <T> T retrieveData(String url, Class<T> objectClass) {
-		return jsonToObject(sendHTTPRequest(url), objectClass);
-	}
-	
-	/**
-	 * Send a GET HTTP request to the url indicated and returns the response
-	 * @param url of the server to retrieve data from
-	 * @return response returned from the Webserver
-	 */
-	public String sendHTTPRequest(String url) {
-		StringBuilder result = new StringBuilder();
-		try {
-			URL urlSite = new URL(url);
-			HttpURLConnection connection = (HttpURLConnection) urlSite.openConnection();
-			connection.setRequestMethod("GET");
-			connection.setRequestProperty("AccountKey", LTA_TOKEN);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				result.append(line);
-			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return result.toString();
-	}
-	
-	/**
-	 * Converts JSON data to the appropiate class given (Case-Sensitive for variables)
-	 * @param json data
-	 * @param objectClass class of the Object to cast to
-	 * @return An object of the class provided
-	 */
-	public <T> T jsonToObject (String json, Class<T> objectClass) {
-		Gson gson = new Gson();
-		//To make sure json is json, we extract only from the first { to the last }
-		//System.out.println(json);
-		json = json.substring(json.indexOf("{"), json.lastIndexOf("}")+1);
-		return gson.fromJson(json, objectClass);
 	}
 
 	/**
