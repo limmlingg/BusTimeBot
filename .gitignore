@@ -48,3 +48,4 @@ Temporary Items
 bin/*
 *.log
 src/keys/*
+BusTimeBot.log
