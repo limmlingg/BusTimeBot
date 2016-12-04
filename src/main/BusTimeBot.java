@@ -12,6 +12,15 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.TimeZone;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
@@ -41,19 +50,46 @@ import controller.WebController;
 import entity.BusStop;
 import entity.BusStop.Type;
 import entity.LocationComparator;
-import entity.postalToCoordinates.GeoCodeContainer;
+import entity.geocoding.GeoCodeContainer;
 
 public class BusTimeBot extends TelegramLongPollingBot{
 
 	public static void main(String[] args) {
+		trustAll();
 		ApiContextInitializer.init();
 		TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 	    try {
 	    	bot = new BusTimeBot();
+	    	//Initialize bus stop data
+	    	bot.getBusStopData();
 	        telegramBotsApi.registerBot(bot);
 	    } catch (TelegramApiException e) {
 	        e.printStackTrace();
 	    }
+	}
+	
+	public static void trustAll() {
+		TrustManager trm = new X509TrustManager() {
+		    public X509Certificate[] getAcceptedIssuers() {
+		        return null;
+		    }
+
+		    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+		    }
+
+		    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+		    }
+		};
+
+		try {
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, new TrustManager[] { trm }, null);
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		} catch (KeyManagementException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static BusTimeBot bot;
@@ -69,10 +105,8 @@ public class BusTimeBot extends TelegramLongPollingBot{
 		try {
 			lastQueried = new HashMap<Long, Date>();
 			busStops = new HashMap<String, BusStop>(10000); 
-			TELEGRAM_TOKEN = Files.readAllLines(Paths.get("keys/telegram_key").toAbsolutePath()).get(dev? 1 : 0);
-			LTA_TOKEN = Files.readAllLines(Paths.get("keys/lta_key").toAbsolutePath()).get(0);
-			//Get bus stop Locations
-			getBusStopData();
+			TELEGRAM_TOKEN = Files.readAllLines(Paths.get("src/keys/telegram_key").toAbsolutePath()).get(dev? 1 : 0);
+			LTA_TOKEN = Files.readAllLines(Paths.get("src/keys/lta_key").toAbsolutePath()).get(0);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -135,19 +169,23 @@ public class BusTimeBot extends TelegramLongPollingBot{
 		        	} else {
 		        		sendMessage(welcomeText, chatId, null);
 		        	}
-				} else if (text.startsWith("/search ")) { //Search by postal code
+				} else if (text.startsWith("/search")) { //Search by postal code
 					Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
-					GeoCodeContainer results = WebController.retrieveData("http://maps.googleapis.com/maps/api/geocode/json?address="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
-					if (results.status.equals("OK")) {
-						double lat = results.results.get(0).geometry.location.lat;
-						double lon = results.results.get(0).geometry.location.lng;
-
-						String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
-			            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
-			            Logger.log("Returned:\n" + nearbyBusStops);
-					} else {
-						sendMessage("Unable to find location", chatId, null);
-						Logger.log("Returned:\nUnable to find location");
+					if (text.equalsIgnoreCase("/search")) {
+						sendMessage("Search for an address or postal code (Example: /search 118426)", chatId, null);
+					} else { 
+						GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
+						if (results.status == 1) {
+							double lat = results.where.markers.get(0).getLatitude();
+							double lon = results.where.markers.get(0).getLongitude();
+	
+							String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
+				            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
+				            Logger.log("Returned:\n" + nearbyBusStops);
+						} else {
+							sendMessage("Unable to find location", chatId, null);
+							Logger.log("Returned:\nUnable to find location");
+						}
 					}
 					Logger.log("======================================================\n");
 				}
