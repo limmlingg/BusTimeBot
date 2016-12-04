@@ -20,13 +20,16 @@ Functions to check
 
 - Sending a location
 - Updating the list
-- Searching
+- Searching by popular location (amk hub)
+- Searching by postal code (118426)
+- Searching by address (Blk 1 Hougang Ave 1)
+- Searching by bus stop number (63151)
 
 ### Commands:
 
 start - see what you can do with this bot
 
-search - search by postal code or address (/search 118426)
+search - search by popular locations, postal codes, address, bus stop number
 
 ## Deployment
 
