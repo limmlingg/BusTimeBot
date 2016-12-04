@@ -9,6 +9,6 @@ LTA Key Application: https://www.mytransport.sg/content/mytransport/home/dataMal
 
 Telegram Bot Token: http://telegram.me/BotFather
 
-bus_time_bot keeps track of your information to for future enhancements/debugging of this bot
+*bus_time_bot keeps track of your information to for future enhancements/debugging of this bot
 
-We promise to not sell this data to any 3rd party.
+I promise to not sell this data to any 3rd party.*
