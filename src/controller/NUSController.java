@@ -44,7 +44,7 @@ public class NUSController {
 	 */
 	public static String getNUSArrivalTimings(BusStop stop) {
 		StringBuffer busArrivals = new StringBuffer();
-		//Use the appropiate code
+		//Use the appropriate code
 		String code = stop.BusStopCode;
 		if (stop.type == Type.BOTH) {
 			code = stop.NUSStopCode;
