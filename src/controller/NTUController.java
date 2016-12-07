@@ -127,6 +127,7 @@ public class NTUController {
 			timings.put(buses, new ArrayList<Integer>());
 		}
 		
+		//Append the bus timings for each bus
 		NTUBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/"+ code +"/?format=json", NTUBusArrivalContainer.class);
 		for (NTUBusArrival arrival : results.forecast) {
 			if (timings.containsKey(arrival.route.short_name)) {
@@ -150,6 +151,7 @@ public class NTUController {
 					busTimings.append(time + "min  |  ");
 				}
 			}
+			//Add N/A if no timing is available
 			if (!hasBus) {
 				busTimings.append("N/A  |  ");
 			}
