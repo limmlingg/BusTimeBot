@@ -52,6 +52,8 @@ Feel free to pull the project, I will merge the project if the feature is a good
 
 Bus Time Bot does indeed log your personal information. I use this data to see what improvements can be made to improve the user experience of this bot. Rest assured that I will not sell this data for any profit or monetary gain to a 3rd party.
 
+Bus timing from various organizations are retrieved from their respective servers. I am not responsible for the inaccuracy of the timings stated by the bot. 
+
 ## Authors
 
 * **Bernard Yip** - *Initial work* - [bernardyip](https://github.com/bernardyip)
