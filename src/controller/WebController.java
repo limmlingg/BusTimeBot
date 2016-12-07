@@ -33,6 +33,7 @@ public class WebController {
 	 * Retrieve data from the URL and cast it to the class provided
 	 * @param url of the server to retrieve data from
 	 * @param objectClass class to cast the data into
+	 * @param https true or false
 	 * @return An object of the class provided
 	 */
 	public static <T> T retrieveData(String url, Class<T> objectClass, boolean https) {
@@ -103,7 +104,7 @@ public class WebController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println(result);
+		//System.out.println(result);
 		return result.toString();
 	}
 	

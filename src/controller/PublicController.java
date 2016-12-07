@@ -14,7 +14,7 @@ import main.BusTimeBot;
 
 public class PublicController {
 	/**
-	 * Retrieve bus stop data from LTA
+	 * Retrieve bus stop data from LTA and put it into the bot's busStops list
 	 */
 	public static void getPublicBusStopData() {
 		int skip=0;

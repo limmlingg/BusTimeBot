@@ -14,7 +14,7 @@ import main.BusTimeBot;
 
 public class NUSController {
 	/**
-	 * Retrieve bus stop data from NUS
+	 * Retrieve bus stop data from NUS and put it into the bot's busStops list
 	 */
 	public static void getNUSBusStopData() {
 		NUSBusStopContainer NUSdata = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetBusStops?output=json", NUSBusStopContainer.class);
@@ -24,7 +24,7 @@ public class NUSController {
 				BusStop existingStop = BusTimeBot.bot.busStops.get(BusStopMapping.getValue(stop.name));
 				existingStop.NUSStopCode = stop.name;
 				existingStop.NUSDescription = stop.caption;
-				existingStop.type = Type.BOTH;
+				existingStop.type = Type.PUBLIC_NUS;
 			} else { //Otherwise it is most likely a NUS-only bus stop
 				BusStop newStop = new BusStop();
 				newStop.type = Type.NUS_ONLY;
@@ -46,7 +46,7 @@ public class NUSController {
 		StringBuffer busArrivals = new StringBuffer();
 		//Use the appropriate code
 		String code = stop.BusStopCode;
-		if (stop.type == Type.BOTH) {
+		if (stop.type == Type.PUBLIC_NUS) {
 			code = stop.NUSStopCode;
 		}
 		

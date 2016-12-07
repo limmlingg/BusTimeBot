@@ -5,8 +5,10 @@ import org.telegram.telegrambots.api.objects.Location;
 public class BusStop {
 	public enum Type {
 		NUS_ONLY,
+		NTU_ONLY,
 		PUBLIC_ONLY,
-		BOTH;
+		PUBLIC_NUS,
+		PUBLIC_NTU;
 	}
 	public Type type;
 	public String BusStopCode;
@@ -17,6 +19,8 @@ public class BusStop {
 	//If combining both stops (use public's coordinates)
 	public String NUSStopCode;
 	public String NUSDescription;
+	public String NTUStopCode;
+	public String NTUDescription;
 	
 	public double getDistance(Location location) {
 		return getDistance(Latitude, Longitude, location.getLatitude(), location.getLongitude());

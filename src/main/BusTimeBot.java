@@ -34,6 +34,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
+import controller.NTUController;
 import controller.NUSController;
 import controller.PublicController;
 import controller.Util;
@@ -231,12 +232,13 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 */ 
 	public String getNearbyBusStopsAndTimings(double latitude, double longitude) {
 		PriorityQueue<BusStop> busstops = getNearbyBusStops(latitude, longitude);
-		StringBuffer stops = new StringBuffer();
+		StringBuffer allStops = new StringBuffer();
 		int count = 0;
 		while (!busstops.isEmpty() && count < 5) {
 			BusStop stop = busstops.poll();
 			Emoji emoji = EmojiManager.getForAlias("busstop");
 			
+			StringBuffer stops = new StringBuffer();
 			if (stop.type == Type.NUS_ONLY) {
 				stops.append(emoji.getUnicode() + "*"+stop.Description+"*");
 				stops.append("\n");
@@ -245,21 +247,36 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
 				stops.append("\n");
 				stops.append(PublicController.getPublicBusArrivalTimings(stop));
-			} else if (stop.type == Type.BOTH) {
+			} else if (stop.type == Type.NTU_ONLY) {
+				stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
+				stops.append("\n");
+				stops.append(NTUController.getNTUBusArrivalTimings(stop));
+			} else if (stop.type == Type.PUBLIC_NUS) {
 				stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NUSDescription+"*");
 				stops.append("\n");
 				stops.append(NUSController.getNUSArrivalTimings(stop));
 				stops.append(PublicController.getPublicBusArrivalTimings(stop));
+			} else if (stop.type == Type.PUBLIC_NTU) {
+				stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NTUDescription+"*");
+				stops.append("\n");
+				stops.append(NTUController.getNTUBusArrivalTimings(stop));
+				stops.append(PublicController.getPublicBusArrivalTimings(stop));
 			}
-			stops.append("\n");
-			count++;
+			
+			//If there exist an oncoming_bus emoji, then we append, otherwise that bus stop has no buses
+			emoji = EmojiManager.getForAlias("oncoming_bus");
+			if (stops.toString().contains(emoji.getUnicode())) {
+				allStops.append(stops.toString());
+				allStops.append("\n");
+				count++;	
+			}
 		}
 		
-		if (stops.toString().equals("")) {
-			stops.append("No stops nearby\n\n");
+		if (allStops.toString().equals("")) {
+			allStops.append("No stops nearby\n\n");
 		}
 		
-		return stops.toString();
+		return allStops.toString();
 	}
 	
 	/**
@@ -284,6 +301,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	public void getBusStopData() {
 		PublicController.getPublicBusStopData();
 		NUSController.getNUSBusStopData();
+		NTUController.getNTUBusStopData();
 		System.out.println("Bus stop data loaded!");
 	}
 	
