@@ -2,6 +2,8 @@
 
 Bus Time Bot is a telegram bot that tells you bus timings of the nearest bus stops based on the location (GPS coordinates) you send to it.
 
+Currently supports bus timings for NUS, NTU, SBS Transit and SMRT Buses.
+
 Try it out at http://telegram.me/bus_time_bot
 
 ## Getting Started
@@ -18,7 +20,9 @@ No automated testing currently
 
 Functions to check
 
-- Sending a location
+- Sending a location (Public)
+- Sending a location (NUS)
+- Sending a location (NTU)
 - Updating the list
 - Searching by popular location (amk hub)
 - Searching by postal code (118426)
@@ -58,6 +62,6 @@ No License at the moment
 
 ## Acknowledgments
 
-* Telegram for allowing us to develop bots for their platform
+* Telegram for allowing me to develop bots for their platform
 * My friends who gave me inspiration for this bot
 * Authors of the libraries that I have used for making this bot possible
