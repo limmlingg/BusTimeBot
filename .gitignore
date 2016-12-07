@@ -49,3 +49,4 @@ bin/*
 *.log
 src/keys/*
 BusTimeBot.log
+main.db
