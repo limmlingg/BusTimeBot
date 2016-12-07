@@ -13,11 +13,25 @@ import entity.BusStopMapping;
 import entity.ntubus.Coordinate;
 import entity.ntubus.NTUBusArrival;
 import entity.ntubus.NTUBusArrivalContainer;
+import entity.ntubus.NTUBusList;
 import entity.ntubus.NTUBusStopContainer;
 import entity.ntubus.Node;
+import entity.ntubus.Route;
 import main.BusTimeBot;
 
 public class NTUController {
+	public static HashMap<String, String> busCode;
+	public static HashMap<String, ArrayList<String>> busList;
+	
+	static {
+		busList = new HashMap<String, ArrayList<String>>(50);
+		busCode = new HashMap<String, String>();
+		busCode.put("Campus Loop - Blue (CL-B)", "CL-B");
+		busCode.put("Campus Loop Red (CL-R)", "CL-R");
+		busCode.put("Campus Rider Green", "CR");
+		busCode.put("Campus WeekEnd Rider Brown", "CWR");
+	}
+	
 	/**
 	 * Retrieve bus stop data from NTU and put it into the bot's busStops list
 	 */
@@ -37,7 +51,8 @@ public class NTUController {
 							existingStop.NTUStopCode = Integer.toString(node.id);
 							existingStop.NTUDescription = fixName(isBlueRider, node);
 							existingStop.type = Type.PUBLIC_NTU;
-						} else { //Otherwise it is most likely a NUS-only bus stop
+							retrieveBusList(existingStop.NTUStopCode);
+						} else { //Otherwise it is most likely a NTU-only bus stop
 							BusStop stop = new BusStop();
 							stop.BusStopCode = Integer.toString(node.id);
 							stop.Description = fixName(isBlueRider, node);
@@ -45,6 +60,7 @@ public class NTUController {
 							stop.Longitude = node.lon;
 							stop.type = Type.NTU_ONLY;
 							BusTimeBot.bot.busStops.put(stop.BusStopCode, stop);
+							retrieveBusList(stop.BusStopCode);
 						}
 						//printStop(stop);
 						//getNTUArrivalTimings(stop);
@@ -53,6 +69,18 @@ public class NTUController {
 				//System.out.println("===================");
 			} //end coordinate for loop
 		}//end i for loop
+	}
+	
+	/**
+	 * Retrieve the types of NTU shuttle bus that will arrive at this particular stop (Since getting arrival timings will just not give the timings)
+	 * @param stopCode of the NTU Bus Stop
+	 */
+	public static void retrieveBusList(String stopCode) {
+		NTUBusList retrievedbusList = WebController.retrieveData("https://baseride.com/routes/api/platformroutelist/" + stopCode + "/?format=json", NTUBusList.class);
+		busList.put(stopCode, new ArrayList<String>());
+		for (Route route : retrievedbusList.routes) {
+			busList.get(stopCode).add(route.short_name);
+		}
 	}
 	
 	/**
@@ -91,17 +119,20 @@ public class NTUController {
 			code = stop.NTUStopCode;
 		}
 		
+		//We save the timings to a hash map first since the bus arrival timings are all given together in a list
 		HashMap<String, ArrayList<Integer>> timings = new HashMap<String, ArrayList<Integer>>();
+		
+		//We retrieve all the possible buses for that particular bus stop
+		for (String buses : busList.get(code)) {
+			timings.put(buses, new ArrayList<Integer>());
+		}
+		
 		NTUBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/"+ code +"/?format=json", NTUBusArrivalContainer.class);
 		for (NTUBusArrival arrival : results.forecast) {
 			if (timings.containsKey(arrival.route.short_name)) {
 				if (timings.get(arrival.route.short_name).size() < 2) {
 					timings.get(arrival.route.short_name).add((int) Math.ceil(arrival.forecast_seconds/60.0));
 				}
-			} else {
-				ArrayList<Integer> time = new ArrayList<Integer>();
-				time.add((int) Math.floor(arrival.forecast_seconds/60.0));
-				timings.put(arrival.route.short_name, time);
 			}
 		}
 		
@@ -109,13 +140,18 @@ public class NTUController {
 		StringBuffer busTimings = new StringBuffer();
 		//Now loop through the map and build the string
 		for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
-			busTimings.append(emoji.getUnicode() + "*" + entry.getKey() + "*: ");
+			busTimings.append(emoji.getUnicode() + "*" + busCode.get(entry.getKey()) + "*: ");
+			boolean hasBus = false;
 			for (Integer time : entry.getValue()) {
+				hasBus = true;
 				if (time <= 0) {
 					busTimings.append("Arr  |  ");
 				} else {
 					busTimings.append(time + "min  |  ");
 				}
+			}
+			if (!hasBus) {
+				busTimings.append("N/A  |  ");
 			}
 			busTimings.delete(busTimings.length()-5, busTimings.length());
 			busTimings.append("\n");

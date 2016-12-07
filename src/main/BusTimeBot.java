@@ -126,9 +126,10 @@ public class BusTimeBot extends TelegramLongPollingBot{
 		} if (update.hasMessage()) { //Standard messages
 			Message message = update.getMessage();
 			long chatId = message.getChatId();
-			String text = message.getText().replace("@BusTimeBot", ""); //Don't need the "@BusTimeBot" to handle commands
+			String text = message.getText();
 			Location location = message.getLocation();
 			if (text != null) {
+				text = message.getText().replace("@BusTimeBot", ""); //Don't need the "@BusTimeBot" to handle commands
 				if (text.equalsIgnoreCase("/start") || text.equalsIgnoreCase("/help")) {
 					String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n"
 			        		+ "Alternatively, you can type /search <Popular names/postal/address/bus stop number>\n"
@@ -299,10 +300,13 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * Retrieve Bus stop data from NUS & LTA
 	 */
 	public void getBusStopData() {
+		System.out.println("Retrieving Public Bus Stop Data");
 		PublicController.getPublicBusStopData();
+		System.out.println("Retrieving NUS Bus Stop Data");
 		NUSController.getNUSBusStopData();
+		System.out.println("Retrieving NTU Bus Stop Data");
 		NTUController.getNTUBusStopData();
-		System.out.println("Bus stop data loaded!");
+		System.out.println("All bus stop data loaded!");
 	}
 	
 	/**
