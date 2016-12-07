@@ -1,0 +1,141 @@
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*Campus Loop Red (CL-R)*: Arr  |  5min
+?*179*: 8min  |  11min
+
+?378234 *Hall 6 and Hall 2*
+?*Campus Loop - Blue (CL-B)*: Arr  |  7min
+
+?27261 *Hall 4*/*Hall 4*
+?*Campus Loop Red (CL-R)*: 3min
+?*179*: 2min  |  8min
+
+?27291 *Opp Hall 6*
+?*179*: Arr  |  9min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: 1min  |  8min
+
+_Last updated at 14:01:40_
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*Campus Loop Red (CL-R)*: 2min
+?*179*: 8min  |  10min
+
+?378234 *Hall 6 and Hall 2*
+?*Campus Loop - Blue (CL-B)*: 3min
+
+?27261 *Hall 4*/*Hall 4*
+?*Campus Loop Red (CL-R)*: 1min
+?*179*: Arr  |  6min
+
+?27291 *Opp Hall 6*
+?*179*: 9min  |  10min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: Arr  |  6min
+
+_Last updated at 14:03:24_
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*179*: Arr  |  8min
+
+?378234 *Hall 6 and Hall 2*
+?*Campus Loop - Blue (CL-B)*: Arr
+
+?27261 *Hall 4*/*Hall 4*
+?*179*: 9min  |  18min
+
+?27291 *Opp Hall 6*
+?*179*: Arr  |  9min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: 1min
+
+_Last updated at 14:13:08_
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*179*: Arr  |  8min
+
+?378234 *Hall 6 and Hall 2*
+?*Campus Loop - Blue (CL-B)*: -1min
+
+?27261 *Hall 4*/*Hall 4*
+?*179*: 9min  |  18min
+
+?27291 *Opp Hall 6*
+?*179*: Arr  |  9min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: 1min
+
+_Last updated at 14:13:15_
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*179*: Arr  |  8min
+
+?27261 *Hall 4*/*Hall 4*
+?*179*: 9min  |  18min
+
+?27291 *Opp Hall 6*
+?*179*: Arr  |  9min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: Arr
+
+_Last updated at 14:13:29_
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*179*: Arr  |  8min
+
+?27261 *Hall 4*/*Hall 4*
+?*179*: 9min  |  18min
+
+?27291 *Opp Hall 6*
+?*179*: Arr  |  9min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: Arr
+
+_Last updated at 14:13:37_
+
+======================================================
+Got an update call by User{id=80230692, firstName='Bernard', lastName='Yip', userName='SimpleLegend'}
+Returned:
+?27281 *Hall 1*/*Hall 1 (Blk 18)*
+?*179*: Arr  |  8min
+
+?378234 *Hall 6 and Hall 2*
+?*Campus Loop - Blue (CL-B)*: -1min  |  9min
+
+?27261 *Hall 4*/*Hall 4*
+?*179*: 9min  |  17min
+
+?27291 *Opp Hall 6*
+?*179*: Arr  |  9min
+
+?383004 *Opp. Hall 4*
+?*Campus Loop - Blue (CL-B)*: 1min  |  10min
+
+_Last updated at 14:13:41_
+
+======================================================

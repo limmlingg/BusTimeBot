@@ -111,7 +111,7 @@ public class NTUController {
 		for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
 			busTimings.append(emoji.getUnicode() + "*" + entry.getKey() + "*: ");
 			for (Integer time : entry.getValue()) {
-				if (time == 0) {
+				if (time <= 0) {
 					busTimings.append("Arr  |  ");
 				} else {
 					busTimings.append(time + "min  |  ");
