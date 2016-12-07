@@ -26,8 +26,8 @@ public class NTUController {
 	static {
 		busList = new HashMap<String, ArrayList<String>>(50);
 		busCode = new HashMap<String, String>();
-		busCode.put("Campus Loop - Blue (CL-B)", "CL-B");
-		busCode.put("Campus Loop Red (CL-R)", "CL-R");
+		busCode.put("Campus Loop - Blue (CL-B)", "CL-Blue");
+		busCode.put("Campus Loop Red (CL-R)", "CL-Red");
 		busCode.put("Campus Rider Green", "CR");
 		busCode.put("Campus WeekEnd Rider Brown", "CWR");
 	}
