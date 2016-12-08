@@ -166,23 +166,26 @@ public class BusTimeBot extends TelegramLongPollingBot{
 					}
 					Logger.log("======================================================\n");
 				} else if (text.startsWith("/bus")) {
+					Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/bus ", "") + "\n");
 					text = text.replaceAll("/bus ", "");
+					String info;
 					if (text.equalsIgnoreCase("/bus")) {
-						sendMessage("Type /bus <Service Number> to look up first and last bus timings!\n"
-								+ "Example: /bus 969", chatId, null);
+						info = "Type /bus <Service Number> to look up first and last bus timings!\n"
+								+ "Example: /bus 969";
 					} else if (Character.isDigit(text.charAt(0)) || text.startsWith("BPS") || text.startsWith("NR") || text.startsWith("CT")) {//searching for public bus information
-						sendMessage(BusInfoController.getPublicBusInfo(text), chatId, null);
+						info = BusInfoController.getPublicBusInfo(text);
 					} else if (text.equalsIgnoreCase("CL-Blue") ||
 							text.equalsIgnoreCase("CL-Red") ||
 							text.equalsIgnoreCase("CR") ||
 							text.equalsIgnoreCase("CWR")) { //NTU bus data
-						sendMessage(BusInfoController.getNTUBusInfo(text), chatId, null);
-					} else if (text.startsWith("A") || text.startsWith("B") || text.startsWith("C") || text.startsWith("D") || 
-							text.startsWith("a") || text.startsWith("b") || text.startsWith("c") || text.startsWith("d")) { //NUS bus data 
-						sendMessage(BusInfoController.getNUSBusInfo(text), chatId, null);
+						info = BusInfoController.getNTUBusInfo(text);
+					} else if (text.startsWith("a") || text.startsWith("b") || text.startsWith("c") || text.startsWith("d") || text.startsWith("A") || text.startsWith("B") || text.startsWith("C") || text.startsWith("D")) { //NUS bus data 
+						info = BusInfoController.getNUSBusInfo(text);
 					} else {
-						sendMessage("No such bus service", chatId, null);
+						info = "No such bus service";
 					}
+					sendMessage(info, chatId, null);
+		            Logger.log("Returned:\n"+info+"\n======================================================\n");
 				}
 			} else if (location != null) {//By Location
 				Logger.log("Got a location request by " + message.getFrom() + " for " + location +"\n");

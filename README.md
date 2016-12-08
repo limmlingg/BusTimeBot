@@ -23,16 +23,20 @@ Functions to check
 - Sending a location (Public)
 - Sending a location (NUS)
 - Sending a location (NTU)
-- Updating the list
 - Searching by popular location (amk hub)
 - Searching by postal code (118426)
 - Searching by address (Blk 1 Hougang Ave 1)
 - Searching by bus stop number (63151)
+- Look up bus info for Public Transit (1 way, 112)
+- Look up bus info for Public Transit (2 way, 854)
+- Look up bus info for NUS (A1)
+- Look up bus info for NTU (CWR)
 
 ### Commands:
 
-- start - see what you can do with this bot
-- search - search by popular locations, postal codes, address, bus stop number
+- help - See what you can do with this bot
+- search - Search by popular locations, postal codes, address, bus stop number
+- bus - Look up bus information
 
 ## Deployment
 
