@@ -133,7 +133,9 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				text = message.getText().replace("@BusTimeBot", ""); //Don't need the "@BusTimeBot" to handle commands
 				if (text.equalsIgnoreCase("/start") || text.equalsIgnoreCase("/help")) {
 					String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n"
-			        		+ "Alternatively, you can type /search <Popular names/postal/address/bus stop number>\n"
+							+ "Look up bus information by typing /bus <Service Number>\n"
+							+ "Example: /bus 969\n\n"
+			        		+ "You can type /search <Popular names/postal/address/bus stop number>\n"
 			        		+ "Some examples:\n"
 			        		+ "/search amk hub\n"
 			        		+ "/search 118426\n"
