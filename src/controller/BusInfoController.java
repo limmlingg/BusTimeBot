@@ -3,12 +3,121 @@ package controller;
 import java.util.ArrayList;
 
 public class BusInfoController {
+	
+	/**
+	 * Return information regarding NTU shuttle buses
+	 * @param serviceNo of NTU bus
+	 * @return a nicely formatted string with the first/last bus
+	 */
+	public static String getNTUBusInfo(String serviceNo) {
+		//A1, A2, B, C, D1, D2, BTC1,
+		serviceNo = serviceNo.toUpperCase();
+		ArrayList<String> busTiming = new ArrayList<String>();
+		if (serviceNo.equalsIgnoreCase("CL-Blue")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0800");
+			busTiming.add("2300");
+			busTiming.add("0800");
+			busTiming.add("2300");
+			busTiming.add("0800");
+			busTiming.add("2300");
+		} else if (serviceNo.equalsIgnoreCase("CL-Red")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0800");
+			busTiming.add("2300");
+			busTiming.add("0800");
+			busTiming.add("2300");
+			busTiming.add("0800");
+			busTiming.add("2300");
+		} else if (serviceNo.equalsIgnoreCase("CR")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0730");
+			busTiming.add("2300");
+			busTiming.add("0730");
+			busTiming.add("2300");
+			busTiming.add("0730");
+			busTiming.add("2300");
+		} else if (serviceNo.equalsIgnoreCase("CWR")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0730");
+			busTiming.add("2300");
+			busTiming.add("0730");
+			busTiming.add("2300");
+			busTiming.add("0730");
+			busTiming.add("2300");
+		}
+		
+		if (busTiming.size() <= 0) {
+			return "No such bus service";
+		} else {
+			return formatInformation(busTiming);
+		}
+	}
+	
+	/**
+	 * Return information regarding NUS shuttle buses
+	 * @param serviceNo of NUS bus
+	 * @return a nicely formatted string with the first/last bus
+	 */
+	public static String getNUSBusInfo(String serviceNo) {
+		//A1, A2, B, C, D1, D2, BTC1,
+		serviceNo = serviceNo.toUpperCase();
+		ArrayList<String> busTiming = new ArrayList<String>();
+		if (serviceNo.equalsIgnoreCase("A1") || serviceNo.equalsIgnoreCase("A2")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0900");
+			busTiming.add("2300");
+		} else if (serviceNo.equalsIgnoreCase("B")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0715");
+			busTiming.add("1900");
+			busTiming.add("No Service");
+			busTiming.add("No Service");
+		} else if (serviceNo.equalsIgnoreCase("BTC")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0720");
+			busTiming.add("2130");
+			busTiming.add("0830");
+			busTiming.add("1230");
+			busTiming.add("No Service");
+			busTiming.add("No Service");
+		} else if (serviceNo.equalsIgnoreCase("C")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0715");
+			busTiming.add("1900");
+			busTiming.add("No Service");
+			busTiming.add("No Service");
+		} else if (serviceNo.equalsIgnoreCase("D1") || serviceNo.equalsIgnoreCase("D1")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0900");
+			busTiming.add("2300");
+		}
+		
+		if (busTiming.size() <= 0) {
+			return "No such bus service";
+		} else {
+			return formatInformation(busTiming);
+		}
+	}
+	
 	/**
 	 * Returns a nicely formatted string that contains bus information on a public bus service number
 	 * @param serviceNo
 	 * @return
 	 */
-	public static String getPublicBusTiming(String serviceNo) {
+	public static String getPublicBusInfo(String serviceNo) {
 		String response = WebController.sendHTTPRequest("http://www.transitlink.com.sg/eservice/eguide/service_route.php?service="+serviceNo, false);
 		//Extract the table
 		String starting = "<section class=\"eguide-table\">";
@@ -23,11 +132,11 @@ public class BusInfoController {
 			formattedInformation.append("*Service " + serviceNo.toUpperCase() + "*\n");
 			//First set
 			String data = splitResponse[splitResponse.length-1];
-			formattedInformation.append(formatInformation(serviceNo, extractInformation(data)) + "\n\n");
+			formattedInformation.append(formatInformation(extractPublicInformation(data)) + "\n\n");
 			
 			if (splitResponse.length == 5) {//Second set
 				data = splitResponse[splitResponse.length-2];
-				formattedInformation.append(formatInformation(serviceNo, extractInformation(data)));
+				formattedInformation.append(formatInformation(extractPublicInformation(data)));
 			}
 		} else {
 			formattedInformation.append("No such bus service");
@@ -35,7 +144,12 @@ public class BusInfoController {
 		return formattedInformation.toString();
 	}
 	
-	public static String formatInformation(String serviceNo, ArrayList<String> information) {
+	/**
+	 * Format information in a present-able manner
+	 * @param information List of String (Size: 7) in this order: Header, Weekday 1st bus, Weekday last bus, Sat 1st bus, Sat last bus, Sun & P.H 1st bus, Sun & P.H last bus
+	 * @return a nicely formatted string with all the information presented nicely
+	 */
+	public static String formatInformation(ArrayList<String> information) {
 		if (information.size() != 7) {
 			return null;
 		}
@@ -55,7 +169,7 @@ public class BusInfoController {
 	 * @param data string containing the table taken from transitlink.com.sg
 	 * @return List of String (Size: 7) in this order: Interchange, Weekday 1st bus, Weekday last bus, Sat 1st bus, Sat last bus, Sun & P.H 1st bus, Sun & P.H last bus
 	 */
-	public static ArrayList<String> extractInformation(String data) {
+	public static ArrayList<String> extractPublicInformation(String data) {
 		ArrayList<String> information = new ArrayList<String>();
 		String[] timings = data.split("<td width=\"10%\" align=\"center\">");
 		String busHeaderStart = "<td width=\"20%\">";

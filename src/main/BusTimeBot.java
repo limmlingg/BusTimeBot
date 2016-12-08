@@ -171,11 +171,17 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						sendMessage("Type /bus <Service Number> to look up first and last bus timings!\n"
 								+ "Example: /bus 969", chatId, null);
 					} else if (Character.isDigit(text.charAt(0)) || text.startsWith("BPS") || text.startsWith("NR") || text.startsWith("CT")) {//searching for public bus information
-						sendMessage(BusInfoController.getPublicBusTiming(text), chatId, null);
-					} else if (false) { //NUS bus data
+						sendMessage(BusInfoController.getPublicBusInfo(text), chatId, null);
+					} else if (text.equalsIgnoreCase("CL-Blue") ||
+							text.equalsIgnoreCase("CL-Red") ||
+							text.equalsIgnoreCase("CR") ||
+							text.equalsIgnoreCase("CWR")) { //NTU bus data
 						
-					} else if (false) { //NTU bus data
-						
+					} else if (text.startsWith("A") || text.startsWith("B") || text.startsWith("C") || text.startsWith("D") || 
+							text.startsWith("a") || text.startsWith("b") || text.startsWith("c") || text.startsWith("d")) { //NUS bus data 
+						sendMessage(BusInfoController.getNUSBusInfo(text), chatId, null);
+					} else {
+						sendMessage("No such bus service", chatId, null);
 					}
 				}
 			} else if (location != null) {//By Location
