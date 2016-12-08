@@ -133,7 +133,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				text = message.getText().replace("@BusTimeBot", ""); //Don't need the "@BusTimeBot" to handle commands
 				if (text.equalsIgnoreCase("/start") || text.equalsIgnoreCase("/help")) {
 					String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n"
-							+ "Look up bus information by typing /bus <Service Number>\n"
+							+ "Look up bus information by typing /bus <Service Number>, bus timings shown is the timing when the bus leaves the interchange\n"
 							+ "Example: /bus 969\n\n"
 			        		+ "You can type /search <Popular names/postal/address/bus stop number>\n"
 			        		+ "Some examples:\n"
@@ -176,7 +176,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 							text.equalsIgnoreCase("CL-Red") ||
 							text.equalsIgnoreCase("CR") ||
 							text.equalsIgnoreCase("CWR")) { //NTU bus data
-						
+						sendMessage(BusInfoController.getNTUBusInfo(text), chatId, null);
 					} else if (text.startsWith("A") || text.startsWith("B") || text.startsWith("C") || text.startsWith("D") || 
 							text.startsWith("a") || text.startsWith("b") || text.startsWith("c") || text.startsWith("d")) { //NUS bus data 
 						sendMessage(BusInfoController.getNUSBusInfo(text), chatId, null);
