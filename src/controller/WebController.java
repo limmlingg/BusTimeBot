@@ -65,12 +65,23 @@ public class WebController {
 	 * @return response returned from the Webserver
 	 */
 	public static String sendHTTPRequest(String url) {
+		return sendHTTPRequest(url, true);
+	}
+	
+	/**
+	 * Send a GET HTTP request to the url indicated and returns the response
+	 * @param url of the server to retrieve data from
+	 * @return response returned from the Webserver
+	 */
+	public static String sendHTTPRequest(String url, boolean includeToken) {
 		StringBuilder result = new StringBuilder();
 		try {
 			URL urlSite = new URL(url);
 			HttpURLConnection connection = (HttpURLConnection) urlSite.openConnection();
 			connection.setRequestMethod("GET");
-			connection.setRequestProperty("AccountKey", BusTimeBot.LTA_TOKEN);
+			if (includeToken) {
+				connection.setRequestProperty("AccountKey", BusTimeBot.LTA_TOKEN);
+			}
 			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			String line;
 			while ((line = reader.readLine()) != null) {

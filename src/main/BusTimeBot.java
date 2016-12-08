@@ -34,6 +34,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
+import controller.BusInfoController;
 import controller.NTUController;
 import controller.NUSController;
 import controller.PublicController;
@@ -162,6 +163,18 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						}
 					}
 					Logger.log("======================================================\n");
+				} else if (text.startsWith("/bus")) {
+					text = text.replaceAll("/bus ", "");
+					if (text.equalsIgnoreCase("/bus")) {
+						sendMessage("Type /bus <Service Number> to look up first and last bus timings!\n"
+								+ "Example: /bus 969", chatId, null);
+					} else if (Character.isDigit(text.charAt(0)) || text.startsWith("BPS") || text.startsWith("NR") || text.startsWith("CT")) {//searching for public bus information
+						sendMessage(BusInfoController.getPublicBusTiming(text), chatId, null);
+					} else if (false) { //NUS bus data
+						
+					} else if (false) { //NTU bus data
+						
+					}
 				}
 			} else if (location != null) {//By Location
 				Logger.log("Got a location request by " + message.getFrom() + " for " + location +"\n");
