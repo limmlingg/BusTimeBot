@@ -67,7 +67,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
     public HashMap<String, BusStop> busStops;
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
     public double distance = 0.3;
-    public boolean dev = true; //Use a different bot if we use dev (rmb to change back)
+    public boolean dev = false; //Use a different bot if we use dev (rmb to change back)
     
 	public BusTimeBot() {
 		super();
@@ -166,7 +166,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 					}
 					Logger.log("======================================================\n");
 				} else if (text.startsWith("/bus")) {
-					Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/bus ", "") + "\n");
+					Logger.log("Got a bus info request by " + message.getFrom() + " for " + text.replace("/bus ", "") + "\n");
 					text = text.replaceAll("/bus ", "");
 					String info;
 					if (text.equalsIgnoreCase("/bus")) {
