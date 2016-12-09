@@ -130,7 +130,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 			String text = message.getText();
 			Location location = message.getLocation();
 			if (text != null) {
-				text = message.getText().replace("@BusTimeBot", ""); //Don't need the "@BusTimeBot" to handle commands
+				text = message.getText().replace("@bus_time_bot", ""); //Don't need the "@BusTimeBot" to handle commands
 				if (text.equalsIgnoreCase("/start") || text.equalsIgnoreCase("/help")) {
 					String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n"
 							+ "Look up bus information by typing /bus <Service Number>, bus timings shown is the timing when the bus leaves the interchange\n"
