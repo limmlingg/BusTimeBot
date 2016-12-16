@@ -11,6 +11,7 @@ import entity.nusbus.NUSBusArrivalContainer;
 import entity.nusbus.NUSBusStop;
 import entity.nusbus.NUSBusStopContainer;
 import main.BusTimeBot;
+import main.Logger;
 
 public class NUSController {
 	/**
@@ -43,40 +44,45 @@ public class NUSController {
 	 * @return A string of bus timings formatted properly
 	 */
 	public static String getNUSArrivalTimings(BusStop stop) {
-		StringBuffer busArrivals = new StringBuffer();
-		//Use the appropriate code
-		String code = stop.BusStopCode;
-		if (stop.type == Type.PUBLIC_NUS) {
-			code = stop.NUSStopCode;
-		}
-		
-		NUSBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname="+code, NUSBusArrivalContainer.class);
-		Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-		for (NUSBusArrival s : data.ShuttleServiceResult.shuttles) {
-			//Append the bus and the service name
-			busArrivals.append(emoji.getUnicode() + "*" + s.name + "*: ");
-			//We either get "Arr", "-" or a time in minutes
-			String firstEstimatedBusTiming;
-			if (s.arrivalTime.equals("-")) { //No more bus service
-				firstEstimatedBusTiming = "N/A";
-			} else if (s.arrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
-				firstEstimatedBusTiming = s.arrivalTime;
-			} else {
-				firstEstimatedBusTiming = s.arrivalTime + "min";
+		try {
+			StringBuffer busArrivals = new StringBuffer();
+			//Use the appropriate code
+			String code = stop.BusStopCode;
+			if (stop.type == Type.PUBLIC_NUS) {
+				code = stop.NUSStopCode;
 			}
 			
-			String secondEstimatedBusTiming;
-			if (s.nextArrivalTime.equals("-")) { //No more bus service, no need to append anything
-				secondEstimatedBusTiming = "";
-			} else if (s.nextArrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
-				secondEstimatedBusTiming = "  |  " + s.nextArrivalTime;
-			} else {
-				secondEstimatedBusTiming = "  |  " + s.nextArrivalTime + "min";
+			NUSBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname="+code, NUSBusArrivalContainer.class);
+			Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
+			for (NUSBusArrival s : data.ShuttleServiceResult.shuttles) {
+				//Append the bus and the service name
+				busArrivals.append(emoji.getUnicode() + "*" + s.name + "*: ");
+				//We either get "Arr", "-" or a time in minutes
+				String firstEstimatedBusTiming;
+				if (s.arrivalTime.equals("-")) { //No more bus service
+					firstEstimatedBusTiming = "N/A";
+				} else if (s.arrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
+					firstEstimatedBusTiming = s.arrivalTime;
+				} else {
+					firstEstimatedBusTiming = s.arrivalTime + "min";
+				}
+				
+				String secondEstimatedBusTiming;
+				if (s.nextArrivalTime.equals("-")) { //No more bus service, no need to append anything
+					secondEstimatedBusTiming = "";
+				} else if (s.nextArrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
+					secondEstimatedBusTiming = "  |  " + s.nextArrivalTime;
+				} else {
+					secondEstimatedBusTiming = "  |  " + s.nextArrivalTime + "min";
+				}
+				
+				busArrivals.append(firstEstimatedBusTiming + secondEstimatedBusTiming);
+				busArrivals.append("\n");
 			}
-			
-			busArrivals.append(firstEstimatedBusTiming + secondEstimatedBusTiming);
-			busArrivals.append("\n");
+			return busArrivals.toString();
+		} catch (Exception e) {
+			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			return null;
 		}
-		return busArrivals.toString();
 	}
 }

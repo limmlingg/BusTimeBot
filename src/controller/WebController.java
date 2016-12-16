@@ -1,12 +1,9 @@
 package controller;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -17,6 +14,7 @@ import javax.net.ssl.X509TrustManager;
 import com.google.gson.Gson;
 
 import main.BusTimeBot;
+import main.Logger;
 
 public class WebController {
 	/**
@@ -88,8 +86,8 @@ public class WebController {
 				result.append(line);
 			}
 			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
 		}
 		//System.out.println(result);
 		return result.toString();
@@ -112,8 +110,8 @@ public class WebController {
 				result.append(line);
 			}
 			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
 		}
 		//System.out.println(result);
 		return result.toString();
@@ -139,10 +137,8 @@ public class WebController {
 			SSLContext sc = SSLContext.getInstance("SSL");
 			sc.init(null, new TrustManager[] { trm }, null);
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
 		}
 	}
 }

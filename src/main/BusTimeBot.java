@@ -1,5 +1,4 @@
 package main;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -43,7 +42,12 @@ import controller.WebController;
 import entity.BusStop;
 import entity.BusStop.Type;
 import entity.LocationComparator;
+import entity.LocationDistanceFunction;
 import entity.geocoding.GeoCodeContainer;
+import entity.kdtree.KdTree;
+import entity.kdtree.NearestNeighborIterator;
+import entity.kdtree.SquareEuclideanDistanceFunction;
+import entity.kdtree.datastructures.MaxHeap;
 
 public class BusTimeBot extends TelegramLongPollingBot{
 
@@ -55,9 +59,32 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	    	bot = new BusTimeBot();
 	    	//Initialize bus stop data
 	    	bot.getBusStopData();
-	        telegramBotsApi.registerBot(bot);
-	    } catch (TelegramApiException e) {
-	        e.printStackTrace();
+	    	
+	    	//Test KDTree
+	    	for (BusStop stop : bot.busStops.values()) {
+	    		double[] point = new double[2];
+	    		point[0] = stop.Latitude;
+	    		point[1] = stop.Longitude;
+	    		bot.busStops2.addPoint(point, stop);
+	    	}
+	    	//longitude=103.885274, latitude=1.368716
+	    	System.out.println("Comparison of searching...");
+	    	long start = System.nanoTime();
+	    	double[] searchPoint = {1.369241, 103.881391};
+	    	PriorityQueue<BusStop> result = bot.getNearbyBusStops(searchPoint[0], searchPoint[1]);
+	    	System.out.println("Linear Time: " + (System.nanoTime()-start) + "\n"+ result);
+	    	for (BusStop stop : result) {
+	    		System.out.println(stop.BusStopCode + " (" + stop.Description + ")");
+	    	}
+	    	start = System.nanoTime();
+	    	NearestNeighborIterator<BusStop> result2 = bot.busStops2.getNearestNeighborIterator(searchPoint, 5, new SquareEuclideanDistanceFunction());
+	    	System.out.println("\nKD-Tree: " + (System.nanoTime()-start) + "\n" + result2);
+	    	for (BusStop stop : result2) {
+	    		System.out.println(stop.BusStopCode + " (" + stop.Description + ")");
+	    	}
+	        //telegramBotsApi.registerBot(bot);
+	    } catch (Exception e) {
+	        Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
 	    }
 	}
 	
@@ -65,19 +92,21 @@ public class BusTimeBot extends TelegramLongPollingBot{
     public static String TELEGRAM_TOKEN;
     public static String LTA_TOKEN;
     public HashMap<String, BusStop> busStops;
+    public KdTree<BusStop> busStops2;
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
     public double distance = 0.3;
-    public boolean dev = false; //Use a different bot if we use dev (rmb to change back)
+    public boolean dev = true; //Use a different bot if we use dev (rmb to change back)
     
 	public BusTimeBot() {
 		super();
 		try {
 			lastQueried = new HashMap<Long, Date>();
 			busStops = new HashMap<String, BusStop>(10000); 
+			busStops2 = new KdTree<BusStop>(2, 100);
 			TELEGRAM_TOKEN = Files.readAllLines(Paths.get("src/keys/telegram_key").toAbsolutePath()).get(dev? 1 : 0);
 			LTA_TOKEN = Files.readAllLines(Paths.get("src/keys/lta_key").toAbsolutePath()).get(0);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
 		}
 	}
 	
@@ -351,8 +380,8 @@ public class BusTimeBot extends TelegramLongPollingBot{
         try {
             sendMessage(sendMessageRequest); //at the end, so some magic and send the message ;)
             success = true;
-        } catch (TelegramApiException e) {
-        	e.printStackTrace();
+        } catch (Exception e) {
+        	Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
         }
         return success;
 	}

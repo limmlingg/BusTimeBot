@@ -18,6 +18,7 @@ import entity.ntubus.NTUBusStopContainer;
 import entity.ntubus.Node;
 import entity.ntubus.Route;
 import main.BusTimeBot;
+import main.Logger;
 
 public class NTUController {
 	public static HashMap<String, String> busCode;
@@ -114,50 +115,55 @@ public class NTUController {
 	 * @return A string of bus timings formatted properly
 	 */
 	public static String getNTUBusArrivalTimings(BusStop stop) {
-		String code = stop.BusStopCode;
-		if (stop.type == Type.PUBLIC_NTU) {
-			code = stop.NTUStopCode;
-		}
-		
-		//We save the timings to a hash map first since the bus arrival timings are all given together in a list
-		HashMap<String, ArrayList<Integer>> timings = new HashMap<String, ArrayList<Integer>>();
-		
-		//We retrieve all the possible buses for that particular bus stop
-		for (String buses : busList.get(code)) {
-			timings.put(buses, new ArrayList<Integer>());
-		}
-		
-		//Append the bus timings for each bus
-		NTUBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/"+ code +"/?format=json", NTUBusArrivalContainer.class);
-		for (NTUBusArrival arrival : results.forecast) {
-			if (timings.containsKey(arrival.route.short_name)) {
-				if (timings.get(arrival.route.short_name).size() < 2) {
-					timings.get(arrival.route.short_name).add((int) Math.ceil(arrival.forecast_seconds/60.0));
+		try {
+			String code = stop.BusStopCode;
+			if (stop.type == Type.PUBLIC_NTU) {
+				code = stop.NTUStopCode;
+			}
+			
+			//We save the timings to a hash map first since the bus arrival timings are all given together in a list
+			HashMap<String, ArrayList<Integer>> timings = new HashMap<String, ArrayList<Integer>>();
+			
+			//We retrieve all the possible buses for that particular bus stop
+			for (String buses : busList.get(code)) {
+				timings.put(buses, new ArrayList<Integer>());
+			}
+			
+			//Append the bus timings for each bus
+			NTUBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/"+ code +"/?format=json", NTUBusArrivalContainer.class);
+			for (NTUBusArrival arrival : results.forecast) {
+				if (timings.containsKey(arrival.route.short_name)) {
+					if (timings.get(arrival.route.short_name).size() < 2) {
+						timings.get(arrival.route.short_name).add((int) Math.ceil(arrival.forecast_seconds/60.0));
+					}
 				}
 			}
-		}
-		
-		Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-		StringBuffer busTimings = new StringBuffer();
-		//Now loop through the map and build the string
-		for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
-			busTimings.append(emoji.getUnicode() + "*" + busCode.get(entry.getKey()) + "*: ");
-			boolean hasBus = false;
-			for (Integer time : entry.getValue()) {
-				hasBus = true;
-				if (time <= 0) {
-					busTimings.append("Arr  |  ");
-				} else {
-					busTimings.append(time + "min  |  ");
+			
+			Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
+			StringBuffer busTimings = new StringBuffer();
+			//Now loop through the map and build the string
+			for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
+				busTimings.append(emoji.getUnicode() + "*" + busCode.get(entry.getKey()) + "*: ");
+				boolean hasBus = false;
+				for (Integer time : entry.getValue()) {
+					hasBus = true;
+					if (time <= 0) {
+						busTimings.append("Arr  |  ");
+					} else {
+						busTimings.append(time + "min  |  ");
+					}
 				}
+				//Add N/A if no timing is available
+				if (!hasBus) {
+					busTimings.append("N/A  |  ");
+				}
+				busTimings.delete(busTimings.length()-5, busTimings.length());
+				busTimings.append("\n");
 			}
-			//Add N/A if no timing is available
-			if (!hasBus) {
-				busTimings.append("N/A  |  ");
-			}
-			busTimings.delete(busTimings.length()-5, busTimings.length());
-			busTimings.append("\n");
+			return busTimings.toString();
+		} catch (Exception e) {
+			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			return null;
 		}
-		return busTimings.toString();
 	}
 }
