@@ -87,7 +87,7 @@ public class WebController {
 			}
 			reader.close();
 		} catch (Exception e) {
-			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 		}
 		//System.out.println(result);
 		return result.toString();

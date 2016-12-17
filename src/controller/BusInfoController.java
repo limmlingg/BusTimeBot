@@ -146,7 +146,7 @@ public class BusInfoController {
 			}
 			return formattedInformation.toString();
 		} catch (Exception e) {
-			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 			return null;
 		}
 	}
@@ -171,7 +171,7 @@ public class BusInfoController {
 			busInfo.append("1st Bus: " + information.get(5) + " | Last Bus: " + information.get(6));
 			return busInfo.toString();
 		} catch (Exception e) {
-			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 			return null;
 		}
 	}
@@ -193,7 +193,7 @@ public class BusInfoController {
 			}
 			return information;
 		} catch (Exception e) {
-			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 			return null;
 		}
 	}

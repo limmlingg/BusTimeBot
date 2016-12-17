@@ -74,7 +74,7 @@ public class PublicController {
 			}
 			return busArrivals.toString();
 		} catch (Exception e) {
-			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 			return null;
 		}
 	}

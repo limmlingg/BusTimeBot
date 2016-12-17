@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.TimeZone;
 
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -41,13 +41,10 @@ import controller.Util;
 import controller.WebController;
 import entity.BusStop;
 import entity.BusStop.Type;
-import entity.LocationComparator;
 import entity.LocationDistanceFunction;
 import entity.geocoding.GeoCodeContainer;
 import entity.kdtree.KdTree;
 import entity.kdtree.NearestNeighborIterator;
-import entity.kdtree.SquareEuclideanDistanceFunction;
-import entity.kdtree.datastructures.MaxHeap;
 
 public class BusTimeBot extends TelegramLongPollingBot{
 
@@ -60,31 +57,16 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	    	//Initialize bus stop data
 	    	bot.getBusStopData();
 	    	
-	    	//Test KDTree
+	    	//Populate the KD-tree after merging bus stops
 	    	for (BusStop stop : bot.busStops.values()) {
 	    		double[] point = new double[2];
 	    		point[0] = stop.Latitude;
 	    		point[1] = stop.Longitude;
-	    		bot.busStops2.addPoint(point, stop);
-	    	}
-	    	//longitude=103.885274, latitude=1.368716
-	    	System.out.println("Comparison of searching...");
-	    	long start = System.nanoTime();
-	    	double[] searchPoint = {1.369241, 103.881391};
-	    	PriorityQueue<BusStop> result = bot.getNearbyBusStops(searchPoint[0], searchPoint[1]);
-	    	System.out.println("Linear Time: " + (System.nanoTime()-start) + "\n"+ result);
-	    	for (BusStop stop : result) {
-	    		System.out.println(stop.BusStopCode + " (" + stop.Description + ")");
-	    	}
-	    	start = System.nanoTime();
-	    	NearestNeighborIterator<BusStop> result2 = bot.busStops2.getNearestNeighborIterator(searchPoint, 5, new SquareEuclideanDistanceFunction());
-	    	System.out.println("\nKD-Tree: " + (System.nanoTime()-start) + "\n" + result2);
-	    	for (BusStop stop : result2) {
-	    		System.out.println(stop.BusStopCode + " (" + stop.Description + ")");
-	    	}
-	        //telegramBotsApi.registerBot(bot);
+	    		bot.busStopsSortedByCoordinates.addPoint(point, stop);
+	    	}	    	
+	        telegramBotsApi.registerBot(bot);
 	    } catch (Exception e) {
-	        Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 	    }
 	}
 	
@@ -92,9 +74,9 @@ public class BusTimeBot extends TelegramLongPollingBot{
     public static String TELEGRAM_TOKEN;
     public static String LTA_TOKEN;
     public HashMap<String, BusStop> busStops;
-    public KdTree<BusStop> busStops2;
+    public KdTree<BusStop> busStopsSortedByCoordinates;
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
-    public double distance = 0.3;
+    public double distance = 0.35;
     public boolean dev = true; //Use a different bot if we use dev (rmb to change back)
     
 	public BusTimeBot() {
@@ -102,11 +84,11 @@ public class BusTimeBot extends TelegramLongPollingBot{
 		try {
 			lastQueried = new HashMap<Long, Date>();
 			busStops = new HashMap<String, BusStop>(10000); 
-			busStops2 = new KdTree<BusStop>(2, 100);
+			busStopsSortedByCoordinates = new KdTree<BusStop>(2, 100);
 			TELEGRAM_TOKEN = Files.readAllLines(Paths.get("src/keys/telegram_key").toAbsolutePath()).get(dev? 1 : 0);
 			LTA_TOKEN = Files.readAllLines(Paths.get("src/keys/lta_key").toAbsolutePath()).get(0);
 		} catch (Exception e) {
-			Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+			Logger.logError(e);
 		}
 	}
 	
@@ -285,52 +267,55 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * Gets a nicely formatted String of text of the 5 nearest bus stops and their bus timings
 	 */ 
 	public String getNearbyBusStopsAndTimings(double latitude, double longitude) {
-		PriorityQueue<BusStop> busstops = getNearbyBusStops(latitude, longitude);
-		StringBuffer allStops = new StringBuffer();
-		int count = 0;
-		while (!busstops.isEmpty() && count < 5) {
-			BusStop stop = busstops.poll();
-			Emoji emoji = EmojiManager.getForAlias("busstop");
-			
-			StringBuffer stops = new StringBuffer();
-			if (stop.type == Type.NUS_ONLY) {
-				stops.append(emoji.getUnicode() + "*"+stop.Description+"*");
-				stops.append("\n");
-				stops.append(NUSController.getNUSArrivalTimings(stop));
-			} else if (stop.type == Type.PUBLIC_ONLY) {
-				stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
-				stops.append("\n");
-				stops.append(PublicController.getPublicBusArrivalTimings(stop));
-			} else if (stop.type == Type.NTU_ONLY) {
-				stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
-				stops.append("\n");
-				stops.append(NTUController.getNTUBusArrivalTimings(stop));
-			} else if (stop.type == Type.PUBLIC_NUS) {
-				stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NUSDescription+"*");
-				stops.append("\n");
-				stops.append(NUSController.getNUSArrivalTimings(stop));
-				stops.append(PublicController.getPublicBusArrivalTimings(stop));
-			} else if (stop.type == Type.PUBLIC_NTU) {
-				stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NTUDescription+"*");
-				stops.append("\n");
-				stops.append(NTUController.getNTUBusArrivalTimings(stop));
-				stops.append(PublicController.getPublicBusArrivalTimings(stop));
+		try {
+			Iterator<BusStop> busstops = getNearbyBusStops(latitude, longitude);
+			StringBuffer allStops = new StringBuffer();
+			while (busstops.hasNext()) {
+				BusStop stop = busstops.next();
+				Emoji emoji = EmojiManager.getForAlias("busstop");
+				
+				StringBuffer stops = new StringBuffer();
+				if (stop.type == Type.NUS_ONLY) {
+					stops.append(emoji.getUnicode() + "*"+stop.Description+"*");
+					stops.append("\n");
+					stops.append(NUSController.getNUSArrivalTimings(stop));
+				} else if (stop.type == Type.PUBLIC_ONLY) {
+					stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
+					stops.append("\n");
+					stops.append(PublicController.getPublicBusArrivalTimings(stop));
+				} else if (stop.type == Type.NTU_ONLY) {
+					stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*"+stop.Description+"*");
+					stops.append("\n");
+					stops.append(NTUController.getNTUBusArrivalTimings(stop));
+				} else if (stop.type == Type.PUBLIC_NUS) {
+					stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NUSDescription+"*");
+					stops.append("\n");
+					stops.append(NUSController.getNUSArrivalTimings(stop));
+					stops.append(PublicController.getPublicBusArrivalTimings(stop));
+				} else if (stop.type == Type.PUBLIC_NTU) {
+					stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*"+stop.NTUDescription+"*");
+					stops.append("\n");
+					stops.append(NTUController.getNTUBusArrivalTimings(stop));
+					stops.append(PublicController.getPublicBusArrivalTimings(stop));
+				}
+				
+				//If there exist an oncoming_bus emoji, then we append, otherwise that bus stop has no buses
+				emoji = EmojiManager.getForAlias("oncoming_bus");
+				if (stops.toString().contains(emoji.getUnicode())) {
+					allStops.append(stops.toString());
+					allStops.append("\n");
+				}
 			}
 			
-			//If there exist an oncoming_bus emoji, then we append, otherwise that bus stop has no buses
-			emoji = EmojiManager.getForAlias("oncoming_bus");
-			if (stops.toString().contains(emoji.getUnicode())) {
-				allStops.append(stops.toString());
-				allStops.append("\n");
-				count++;	
+			if (allStops.toString().equals("")) {
+				allStops.append("No stops nearby\n\n");
 			}
+			
+			return allStops.toString();
+		} catch (Exception e) {
+			Logger.logError(e);
+			return null;
 		}
-		
-		if (allStops.toString().equals("")) {
-			allStops.append("No stops nearby\n\n");
-		}
-		
-		return allStops.toString();
 	}
 	
 	/**
@@ -339,14 +324,24 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * @param longitude of the user
 	 * @return a list of bus stops near that location sorted by distance
 	 */
-	public PriorityQueue<BusStop> getNearbyBusStops(double latitude, double longitude) {
-		PriorityQueue<BusStop> nearbyBusStops = new PriorityQueue<BusStop>(30, new LocationComparator(latitude, longitude));
-		for (BusStop stop : busStops.values()) {	
-			if (stop.getDistance(latitude, longitude) <= distance) {
-				nearbyBusStops.add(stop);
-			}
+	public Iterator<BusStop> getNearbyBusStops(double latitude, double longitude) {
+		try {
+			ArrayList<BusStop> busstops = new ArrayList<BusStop>();
+			double[] searchPoint = {latitude, longitude};
+	    	NearestNeighborIterator<BusStop> result = bot.busStopsSortedByCoordinates.getNearestNeighborIterator(searchPoint, 5, new LocationDistanceFunction());
+	    	Iterator<BusStop> iterator = result.iterator();
+	    	while (iterator.hasNext()) {
+	    		BusStop stop = iterator.next();
+	    		double distance = Util.getDistance(stop.Latitude, stop.Longitude, latitude, longitude);
+	    		if (distance < this.distance) {
+	    			busstops.add(stop);
+	    		}
+	    	}
+			return busstops.iterator();
+		} catch (Exception e) {
+			Logger.logError(e);
+			return null;
 		}
-		return nearbyBusStops;
 	}
 	
 	/**
@@ -381,7 +376,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
             sendMessage(sendMessageRequest); //at the end, so some magic and send the message ;)
             success = true;
         } catch (Exception e) {
-        	Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+        	Logger.logError(e);
         }
         return success;
 	}
