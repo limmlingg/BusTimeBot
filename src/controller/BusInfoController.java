@@ -114,7 +114,7 @@ public class BusInfoController {
 			busTiming.add("1900");
 			busTiming.add("No Service");
 			busTiming.add("No Service");
-		} else if (serviceNo.equalsIgnoreCase("D1") || serviceNo.equalsIgnoreCase("D1")) {
+		} else if (serviceNo.equalsIgnoreCase("D1") || serviceNo.equalsIgnoreCase("D2")) {
 			busTiming.add(serviceNo);
 			busTiming.add("0715");
 			busTiming.add("2300");
@@ -144,7 +144,7 @@ public class BusInfoController {
 			String ending = "</table>";
 			response = response.substring(response.indexOf(starting) + starting.length(), response.indexOf(ending, response.indexOf(starting))+ending.length());
 			boolean valid = response.startsWith("<table border=\"0\" cellspacing=\"0\" width=\"100%\"><tr>");
-			String[] splitResponse = response.split("<tr>"); //5 if 2 way, 4 if 1 way
+			String[] splitResponse = response.split("<tr>"); //5 if 2 way, 4 if 1 way, 3 if its special service
 			
 			StringBuffer formattedInformation = new StringBuffer();
 			//Extract first and last bus timings
