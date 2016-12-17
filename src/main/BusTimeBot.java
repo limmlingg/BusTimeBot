@@ -153,7 +153,8 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				        		+ "/search amk hub\n"
 				        		+ "/search 118426\n"
 				        		+ "/search Blk 1 Hougang Ave 1\n"
-				        		+ "/search 63151";
+				        		+ "/search 63151\n\n"
+				        		+ "Contact @SimpleLegend for bugs/suggestions!";
 						if (chatId > 0) {
 			        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
 			        	} else {
