@@ -143,10 +143,10 @@ public class BusInfoController {
 			String starting = "<section class=\"eguide-table\">";
 			String ending = "</table>";
 			response = response.substring(response.indexOf(starting) + starting.length(), response.indexOf(ending, response.indexOf(starting))+ending.length());
-			System.out.println(response);
+			//System.out.println(response);
 			boolean valid = response.startsWith("<table border=\"0\" cellspacing=\"0\" width=\"100%\"><tr>");
 			String[] splitResponse = response.split("<tr>"); //5 if 2 way, 4 if 1 way/Night Rider
-			System.out.println(splitResponse.length);
+			//System.out.println(splitResponse.length);
 			StringBuffer formattedInformation = new StringBuffer();
 			//Extract first and last bus timings
 			if (valid) {
