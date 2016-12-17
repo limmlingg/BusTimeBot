@@ -1,10 +1,19 @@
 package controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import main.Logger;
 
 public class BusInfoController {
+	public static String[] NUSBus = {"A1", "A2", "B1", "B2", "C", "D1", "D2", "BTC", "BTC1"};
+	public static String[] NTUBus = {"CL-BLUE", "CL-RED", "CR", "CWR"};
+	static {
+		Arrays.sort(NUSBus);
+		Arrays.sort(NTUBus);
+	}
 	
 	/**
 	 * Return information regarding NTU shuttle buses
@@ -12,7 +21,7 @@ public class BusInfoController {
 	 * @return a nicely formatted string with the first/last bus
 	 */
 	public static String getNTUBusInfo(String serviceNo) {
-		//A1, A2, B, C, D1, D2, BTC1,
+		//A1, A2, B1, B2, C, D1, D2, BTC/BTC1
 		serviceNo = serviceNo.toUpperCase();
 		ArrayList<String> busTiming = new ArrayList<String>();
 		if (serviceNo.equalsIgnoreCase("CL-Blue")) {
@@ -73,15 +82,23 @@ public class BusInfoController {
 			busTiming.add("2300");
 			busTiming.add("0900");
 			busTiming.add("2300");
-		} else if (serviceNo.equalsIgnoreCase("B")) {
+		} else if (serviceNo.equalsIgnoreCase("B1")) {
 			busTiming.add(serviceNo);
 			busTiming.add("0715");
-			busTiming.add("2300");
+			busTiming.add("1900");
 			busTiming.add("0715");
 			busTiming.add("1900");
 			busTiming.add("No Service");
 			busTiming.add("No Service");
-		} else if (serviceNo.equalsIgnoreCase("BTC")) {
+		} else if (serviceNo.equalsIgnoreCase("B2")) {
+			busTiming.add(serviceNo);
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("0715");
+			busTiming.add("2300");
+			busTiming.add("No Service");
+			busTiming.add("No Service");
+		} else if (serviceNo.equalsIgnoreCase("BTC") || serviceNo.equalsIgnoreCase("BTC1")) {
 			busTiming.add(serviceNo);
 			busTiming.add("0720");
 			busTiming.add("2130");
@@ -91,9 +108,9 @@ public class BusInfoController {
 			busTiming.add("No Service");
 		} else if (serviceNo.equalsIgnoreCase("C")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0715");
+			busTiming.add("1000");
 			busTiming.add("2300");
-			busTiming.add("0715");
+			busTiming.add("1000");
 			busTiming.add("1900");
 			busTiming.add("No Service");
 			busTiming.add("No Service");
@@ -121,7 +138,7 @@ public class BusInfoController {
 	 */
 	public static String getPublicBusInfo(String serviceNo) {
 		try {
-			String response = WebController.sendHTTPRequest("http://www.transitlink.com.sg/eservice/eguide/service_route.php?service="+serviceNo, false);
+			String response = WebController.sendHTTPRequest("http://www.transitlink.com.sg/eservice/eguide/service_route.php?service="+URLEncoder.encode(serviceNo, StandardCharsets.UTF_8.toString()), false);
 			//Extract the table
 			String starting = "<section class=\"eguide-table\">";
 			String ending = "</table>";
@@ -147,7 +164,7 @@ public class BusInfoController {
 			return formattedInformation.toString();
 		} catch (Exception e) {
 			Logger.logError(e);
-			return null;
+			return "No such bus service";
 		}
 	}
 	

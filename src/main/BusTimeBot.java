@@ -3,6 +3,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -94,117 +95,116 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	
 	@Override
 	public void onUpdateReceived(Update update) {
-		if (update.hasCallbackQuery()) { //If the user presses update
-			CallbackQuery callbackQuery = update.getCallbackQuery();
-			Logger.log(("Got an update call by " + callbackQuery.getFrom()));
-			
-			//Update the timings if the query has been longer than 1 second
-			Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
-			long timeSince = lastQuery==null? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND)*-1;
-			if (timeSince>1) { //Only update if more than 1 second has passed
-				EditMessageText editMessageText = new EditMessageText();
-				editMessageText.setInlineMessageId(callbackQuery.getInlineMessageId());
-				editMessageText.setChatId(callbackQuery.getMessage().getChatId());
-				editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-				editMessageText.setParseMode(ParseMode.MARKDOWN);
+		try {
+			if (update.hasCallbackQuery()) { //If the user presses update
+				CallbackQuery callbackQuery = update.getCallbackQuery();
+				Logger.log(("Got an update call by " + callbackQuery.getFrom()));
 				
-				//New timings to update
-				String[] data = callbackQuery.getData().split(":");
-				double latitude = Double.parseDouble(data[0]);
-				double longitude = Double.parseDouble(data[1]);
-				SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-				timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-				String lastUpdated = "_Last updated at " + timeFormat.format(new Date()) + "_";
-				editMessageText.setText(getNearbyBusStopsAndTimings(latitude, longitude) + lastUpdated);
-				Logger.log("\nReturned:\n" + editMessageText.getText());
-				
-				//Re-add the inline keyboard
-	            editMessageText.setReplyMarkup(createUpdateInlineKeyboard(latitude, longitude));
-	            try {
-					editMessageText(editMessageText);
-				} catch (TelegramApiException e) {}	//Ignore if MessageNotEdited error
-	            lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
-			}
-			Logger.log("\n\n======================================================\n");
-			
-			//Send answer indicating a reply
-			AnswerCallbackQuery answer = new AnswerCallbackQuery();
-			answer.setCallbackQueryId(callbackQuery.getId());
-			
-			try {
-				answerCallbackQuery(answer);
-			} catch (TelegramApiException e) {} //Ignore query errors, probably expired queries
-
-		} if (update.hasMessage()) { //Standard messages
-			Message message = update.getMessage();
-			long chatId = message.getChatId();
-			String text = message.getText();
-			Location location = message.getLocation();
-			if (text != null) {
-				text = message.getText().replace("@bus_time_bot", ""); //Don't need the "@BusTimeBot" to handle commands
-				if (text.equalsIgnoreCase("/start") || text.equalsIgnoreCase("/help")) {
-					String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n"
-							+ "Look up bus information by typing /bus <Service Number>, bus timings shown is the timing when the bus leaves the interchange\n"
-							+ "Example: /bus 969\n\n"
-			        		+ "You can type /search <Popular names/postal/address/bus stop number>\n"
-			        		+ "Some examples:\n"
-			        		+ "/search amk hub\n"
-			        		+ "/search 118426\n"
-			        		+ "/search Blk 1 Hougang Ave 1\n"
-			        		+ "/search 63151";
-					if (chatId > 0) {
-		        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
-		        	} else {
-		        		sendMessage(welcomeText, chatId, null);
-		        	}
-				} else if (text.startsWith("/search")) { //Search by postal code
-					Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
-					if (text.equalsIgnoreCase("/search")) {
-						sendMessage("Search for an address or postal code (Example: /search 118426)", chatId, null);
-					} else { 
-						GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
-						if (results.status == 1) {
-							double lat = results.where.markers.get(0).getLatitude();
-							double lon = results.where.markers.get(0).getLongitude();
-	
-							String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
-				            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
-				            Logger.log("Returned:\n" + nearbyBusStops);
-						} else {
-							sendMessage("Unable to find location", chatId, null);
-							Logger.log("Returned:\nUnable to find location");
-						}
-					}
-					Logger.log("======================================================\n");
-				} else if (text.startsWith("/bus")) {
-					Logger.log("Got a bus info request by " + message.getFrom() + " for " + text.replace("/bus ", "") + "\n");
-					text = text.replaceAll("/bus ", "");
-					String info;
-					if (text.equalsIgnoreCase("/bus")) {
-						info = "Type /bus <Service Number> to look up first and last bus timings!\n"
-								+ "Example: /bus 969";
-					} else if (Character.isDigit(text.charAt(0)) || text.startsWith("BPS") || text.startsWith("NR") || text.startsWith("CT")) {//searching for public bus information
-						info = BusInfoController.getPublicBusInfo(text);
-					} else if (text.equalsIgnoreCase("CL-Blue") ||
-							text.equalsIgnoreCase("CL-Red") ||
-							text.equalsIgnoreCase("CR") ||
-							text.equalsIgnoreCase("CWR")) { //NTU bus data
-						info = BusInfoController.getNTUBusInfo(text);
-					} else if (text.startsWith("a") || text.startsWith("b") || text.startsWith("c") || text.startsWith("d") || text.startsWith("A") || text.startsWith("B") || text.startsWith("C") || text.startsWith("D")) { //NUS bus data 
-						info = BusInfoController.getNUSBusInfo(text);
-					} else {
-						info = "No such bus service";
-					}
-					sendMessage(info, chatId, null);
-		            Logger.log("Returned:\n"+info+"\n======================================================\n");
+				//Update the timings if the query has been longer than 1 second
+				Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
+				long timeSince = lastQuery==null? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND)*-1;
+				if (timeSince>1) { //Only update if more than 1 second has passed
+					EditMessageText editMessageText = new EditMessageText();
+					editMessageText.setInlineMessageId(callbackQuery.getInlineMessageId());
+					editMessageText.setChatId(callbackQuery.getMessage().getChatId());
+					editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+					editMessageText.setParseMode(ParseMode.MARKDOWN);
+					
+					//New timings to update
+					String[] data = callbackQuery.getData().split(":");
+					double latitude = Double.parseDouble(data[0]);
+					double longitude = Double.parseDouble(data[1]);
+					SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+					timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+					String lastUpdated = "_Last updated at " + timeFormat.format(new Date()) + "_";
+					editMessageText.setText(getNearbyBusStopsAndTimings(latitude, longitude) + lastUpdated);
+					Logger.log("\nReturned:\n" + editMessageText.getText());
+					
+					//Re-add the inline keyboard
+		            editMessageText.setReplyMarkup(createUpdateInlineKeyboard(latitude, longitude));
+		            try {
+						editMessageText(editMessageText);
+					} catch (TelegramApiException e) {}	//Ignore if MessageNotEdited error
+		            lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
 				}
-			} else if (location != null) {//By Location
-				Logger.log("Got a location request by " + message.getFrom() + " for " + location +"\n");
-				//Send the message to user
-				String nearbyBusStops = getNearbyBusStopsAndTimings(location);
-				sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(location));
-	            Logger.log("Returned:\n"+nearbyBusStops+"\n======================================================\n");
+				Logger.log("\n\n======================================================\n");
+				
+				//Send answer indicating a reply
+				AnswerCallbackQuery answer = new AnswerCallbackQuery();
+				answer.setCallbackQueryId(callbackQuery.getId());
+				
+				try {
+					answerCallbackQuery(answer);
+				} catch (TelegramApiException e) {} //Ignore query errors, probably expired queries
+	
+			} if (update.hasMessage()) { //Standard messages
+				Message message = update.getMessage();
+				long chatId = message.getChatId();
+				String text = message.getText();
+				Location location = message.getLocation();
+				if (text != null) {
+					text = message.getText().replace("@bus_time_bot", ""); //Don't need the "@BusTimeBot" to handle commands
+					if (text.equalsIgnoreCase("/start") || text.equalsIgnoreCase("/help")) {
+						String welcomeText = "\nSend me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n"
+								+ "Look up bus information by typing /bus <Service Number>, bus timings shown is the timing when the bus leaves the interchange\n"
+								+ "Example: /bus 969\n\n"
+				        		+ "You can type /search <Popular names/postal/address/bus stop number>\n"
+				        		+ "Some examples:\n"
+				        		+ "/search amk hub\n"
+				        		+ "/search 118426\n"
+				        		+ "/search Blk 1 Hougang Ave 1\n"
+				        		+ "/search 63151";
+						if (chatId > 0) {
+			        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
+			        	} else {
+			        		sendMessage(welcomeText, chatId, null);
+			        	}
+					} else if (text.startsWith("/search")) { //Search by postal code
+						Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
+						if (text.equalsIgnoreCase("/search")) {
+							sendMessage("Search for an address or postal code (Example: /search 118426)", chatId, null);
+						} else { 
+							GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
+							if (results.status == 1) {
+								double lat = results.where.markers.get(0).getLatitude();
+								double lon = results.where.markers.get(0).getLongitude();
+		
+								String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
+					            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
+					            Logger.log("Returned:\n" + nearbyBusStops);
+							} else {
+								sendMessage("Unable to find location", chatId, null);
+								Logger.log("Returned:\nUnable to find location");
+							}
+						}
+						Logger.log("======================================================\n");
+					} else if (text.startsWith("/bus")) {
+						Logger.log("Got a bus info request by " + message.getFrom() + " for " + text.replace("/bus ", "") + "\n");
+						text = text.replaceAll("/bus ", "").toUpperCase();
+						String info;
+						if (text.equalsIgnoreCase("/bus")) {
+							info = "Type /bus <Service Number> to look up first and last bus timings!\n"
+									+ "Example: /bus 969";
+						} else if (Arrays.binarySearch(BusInfoController.NTUBus, text) >= 0) { //NTU bus data
+							info = BusInfoController.getNTUBusInfo(text);
+						} else if (Arrays.binarySearch(BusInfoController.NUSBus, text) >= 0) { //NUS bus data 
+							info = BusInfoController.getNUSBusInfo(text);
+						} else {
+							info = BusInfoController.getPublicBusInfo(text);
+						}
+						sendMessage(info, chatId, null);
+			            Logger.log("Returned:\n"+info+"\n======================================================\n");
+					}
+				} else if (location != null) {//By Location
+					Logger.log("Got a location request by " + message.getFrom() + " for " + location +"\n");
+					//Send the message to user
+					String nearbyBusStops = getNearbyBusStopsAndTimings(location);
+					sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(location));
+		            Logger.log("Returned:\n"+nearbyBusStops+"\n======================================================\n");
+				}
 			}
+		} catch (Exception e) {
+			Logger.logError(e);
 		}
 	}
 	
