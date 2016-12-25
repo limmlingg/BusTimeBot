@@ -1,4 +1,6 @@
 package main;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -56,15 +58,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	    try {
 	    	bot = new BusTimeBot();
 	    	//Initialize bus stop data
-	    	bot.getBusStopData();
-	    	
-	    	//Populate the KD-tree after merging bus stops
-	    	for (BusStop stop : bot.busStops.values()) {
-	    		double[] point = new double[2];
-	    		point[0] = stop.Latitude;
-	    		point[1] = stop.Longitude;
-	    		bot.busStopsSortedByCoordinates.addPoint(point, stop);
-	    	}	    	
+	    	bot.getBusStopData();   	
 	        telegramBotsApi.registerBot(bot);
 	    } catch (Exception e) {
 			Logger.logError(e);
@@ -165,7 +159,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						if (text.equalsIgnoreCase("/search")) {
 							sendMessage("Search for an address or postal code (Example: /search 118426)", chatId, null);
 						} else { 
-							GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+text.replace("/search ", "").replace(" ", "%20"), GeoCodeContainer.class);
+							GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+URLEncoder.encode(text.replace("/search ", ""), StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
 							if (results.status == 1) {
 								double lat = results.where.markers.get(0).getLatitude();
 								double lon = results.where.markers.get(0).getLongitude();
@@ -355,6 +349,14 @@ public class BusTimeBot extends TelegramLongPollingBot{
 		NUSController.getNUSBusStopData();
 		System.out.println("Retrieving NTU Bus Stop Data");
 		NTUController.getNTUBusStopData();
+		System.out.println("Populating KD-tree");
+    	//Populate the KD-tree after merging bus stops
+    	for (BusStop stop : bot.busStops.values()) {
+    		double[] point = new double[2];
+    		point[0] = stop.Latitude;
+    		point[1] = stop.Longitude;
+    		bot.busStopsSortedByCoordinates.addPoint(point, stop);
+    	}
 		System.out.println("All bus stop data loaded!");
 	}
 	
