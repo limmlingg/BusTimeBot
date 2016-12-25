@@ -152,12 +152,12 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						if (chatId > 0) {
 			        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
 			        	} else {
-			        		sendMessage(welcomeText, chatId, null);
+			        		sendMessage(welcomeText, chatId);
 			        	}
 					} else if (text.startsWith("/search")) { //Search by postal code
 						Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
 						if (text.equalsIgnoreCase("/search")) {
-							sendMessage("Search for an address or postal code (Example: /search 118426)", chatId, null);
+							sendMessage("Search for an address or postal code (Example: /search 118426)", chatId);
 						} else { 
 							GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+URLEncoder.encode(text.replace("/search ", ""), StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
 							if (results.status == 1) {
@@ -168,7 +168,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 					            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
 					            Logger.log("Returned:\n" + nearbyBusStops);
 							} else {
-								sendMessage("Unable to find location", chatId, null);
+								sendMessage("Unable to find location", chatId);
 								Logger.log("Returned:\nUnable to find location");
 							}
 						}
@@ -187,7 +187,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 						} else {
 							info = BusInfoController.getPublicBusInfo(text);
 						}
-						sendMessage(info, chatId, null);
+						sendMessage(info, chatId);
 			            Logger.log("Returned:\n"+info+"\n======================================================\n");
 					}
 				} else if (location != null) {//By Location
@@ -362,8 +362,19 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	
 	/**
 	 * Sends a message to the given chat id
+	 * @param message
+	 * @param id of the chat group
+	 * @return
+	 */
+	public boolean sendMessage(String message, long id) {
+		return sendMessage(message, id, null);
+	}
+	
+	/**
+	 * Sends a message to the given chat id
 	 * @param message to send to the chat id
 	 * @param id of the chat group
+	 * @param keyboard to attach to message if there is any
 	 * @return if the message is sent successfully
 	 */
 	public boolean sendMessage(String message, long id, ReplyKeyboard keyboard) {
