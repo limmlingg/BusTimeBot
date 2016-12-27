@@ -24,6 +24,10 @@ public class Logger {
 		}
 	}
 	
+	/**
+	 * Log errors if there are any to fix in the future
+	 * @param e Exception caused
+	 */
 	public static void logError(Exception e) {
 		try {
 			Logger.log("\nError!!!!\n");

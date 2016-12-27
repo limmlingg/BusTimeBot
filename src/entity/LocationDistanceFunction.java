@@ -4,12 +4,26 @@ import controller.Util;
 import entity.kdtree.DistanceFunction;
 
 public class LocationDistanceFunction implements DistanceFunction{
+	
 	@Override
+	/**
+	 * Return distance in km given 2 coordinates (lat followed by long)
+	 * @param p1 coordinate {lat, long}
+	 * @param p2 coordinate {lat, long}
+	 * @return distance in km between the 2 coordinates
+	 */
 	public double distance(double[] p1, double[] p2) {
 		return Util.getDistance(p1[0], p1[1], p2[0], p2[1]);
 	}
 
 	@Override
+	/**
+	 * Return the shortest distance in km of a coordinate to an area
+	 * @param point coordinate {lat, long} to check
+	 * @param min, btm left, coordinate {lat, long}
+	 * @param max, top right, coordinate {lat, long}
+	 * @return distance in km of point to the bound
+	 */
 	public double distanceToRect(double[] point, double[] min, double[] max) {
 		double distance = 0;
 		/*

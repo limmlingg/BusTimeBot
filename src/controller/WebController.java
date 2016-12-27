@@ -118,7 +118,7 @@ public class WebController {
 	}
 	
 	/**
-	 * Required to be able to retrieve searching using gothere.sg, will need to change next time
+	 * Required to be able to retrieve searching using https protocol, will need to change next time
 	 */
 	public static void trustAll() {
 		TrustManager trm = new X509TrustManager() {

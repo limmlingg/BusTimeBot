@@ -25,22 +25,40 @@ public class Util {
 		return difference;
 	}
 	
+	/**
+	 * Calculate the distance between 2 coordinates (lat+lon = 1 coordinate)
+	 * @param lat1 coordinate
+	 * @param lon1 coordinate
+	 * @param lat2 coordinate
+	 * @param lon2 coordinate
+	 * @return distance in km
+	 */
 	public static double getDistance(double lat1, double lon1, double lat2, double lon2) {
 		double theta = lon1 - lon2;
-		double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
-		dist = Math.acos(dist);
-		dist = rad2deg(dist);
-		dist = dist * 60 * 1.1515;
+		double distance = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+		distance = Math.acos(distance);
+		distance = rad2deg(distance);
+		distance = distance * 60 * 1.1515;
 		//Convert to Km
-		dist = dist * 1.609344;
-		return dist;
+		distance = distance * 1.609344;
+		return distance;
 	}
 	
-	private static double deg2rad(double deg) {
-		return (deg * Math.PI / 180.0);
+	/**
+	 * Convert degree to radian
+	 * @param degree
+	 * @return radian
+	 */
+	private static double deg2rad(double degree) {
+		return (degree * Math.PI / 180.0);
 	}
 
-	private static double rad2deg(double rad) {
-		return (rad * 180 / Math.PI);
+	/**
+	 * Convert radian to degree
+	 * @param radian
+	 * @return degree
+	 */
+	private static double rad2deg(double radian) {
+		return (radian * 180 / Math.PI);
 	}
 }

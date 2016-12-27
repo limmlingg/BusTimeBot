@@ -86,7 +86,7 @@ public class BusInfoController {
 	/**
 	 * Returns a nicely formatted string that contains bus information on a public bus service number
 	 * @param serviceNo
-	 * @return
+	 * @return Nicely formatted string that contains public bus info (timings and interchange)
 	 */
 	public static String getPublicBusInfo(String serviceNo) {
 		try {
@@ -142,7 +142,7 @@ public class BusInfoController {
 	/**
 	 * Format information in a present-able manner
 	 * @param information List of String (Size: 7) in this order: Header, Weekday 1st bus, Weekday last bus, Sat 1st bus, Sat last bus, Sun & P.H 1st bus, Sun & P.H last bus
-	 * @return a nicely formatted string with all the information presented nicely
+	 * @return Formatted string of bus information
 	 */
 	public static String formatInformation(ArrayList<String> information) {
 		try {
@@ -164,6 +164,11 @@ public class BusInfoController {
 		}
 	}
 	
+	/**
+	 * Format Night Rider information from SBST website
+	 * @param information List in order {Service number, first bus, last bus}
+	 * @return Formatted string of bus information
+	 */
 	public static String formatNRInformation(ArrayList<String> information) {
 		try {
 			if (information.size() != 3) {

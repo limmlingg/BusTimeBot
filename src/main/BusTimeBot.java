@@ -310,7 +310,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * Sends a message to the given chat id
 	 * @param message
 	 * @param id of the chat group
-	 * @return
+	 * @return success of sending the message
 	 */
 	public boolean sendMessage(String message, long id) {
 		return sendMessage(message, id, null);
@@ -321,7 +321,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 	 * @param message to send to the chat id
 	 * @param id of the chat group
 	 * @param keyboard to attach to message if there is any
-	 * @return if the message is sent successfully
+	 * @return success of sending the message
 	 */
 	public boolean sendMessage(String message, long id, ReplyKeyboard keyboard) {
 		SendMessage sendMessageRequest = new SendMessage();
