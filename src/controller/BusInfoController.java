@@ -24,38 +24,19 @@ public class BusInfoController {
 		//A1, A2, B1, B2, C, D1, D2, BTC/BTC1
 		serviceNo = serviceNo.toUpperCase();
 		ArrayList<String> busTiming = new ArrayList<String>();
+		//In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
 		if (serviceNo.equalsIgnoreCase("CL-Blue")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0800");
-			busTiming.add("2300");
-			busTiming.add("0800");
-			busTiming.add("2300");
-			busTiming.add("0800");
-			busTiming.add("2300");
+			busTiming.addAll(Arrays.asList("0800", "2300", "0800", "2300", "0800", "2300"));
 		} else if (serviceNo.equalsIgnoreCase("CL-Red")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0800");
-			busTiming.add("2300");
-			busTiming.add("0800");
-			busTiming.add("2300");
-			busTiming.add("0800");
-			busTiming.add("2300");
+			busTiming.addAll(Arrays.asList("0800", "2300", "0800", "2300", "0800", "2300"));
 		} else if (serviceNo.equalsIgnoreCase("CR")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0730");
-			busTiming.add("2300");
-			busTiming.add("0730");
-			busTiming.add("2300");
-			busTiming.add("0730");
-			busTiming.add("2300");
+			busTiming.addAll(Arrays.asList("0730", "2300", "0730", "2300", "0730", "2300"));
 		} else if (serviceNo.equalsIgnoreCase("CWR")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0730");
-			busTiming.add("2300");
-			busTiming.add("0730");
-			busTiming.add("2300");
-			busTiming.add("0730");
-			busTiming.add("2300");
+			busTiming.addAll(Arrays.asList("0730", "2300", "0730", "2300", "0730", "2300"));
 		}
 		
 		if (busTiming.size() <= 0) {
@@ -74,54 +55,25 @@ public class BusInfoController {
 		//A1, A2, B, C, D1, D2, BTC1,
 		serviceNo = serviceNo.toUpperCase();
 		ArrayList<String> busTiming = new ArrayList<String>();
+		//In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
 		if (serviceNo.equalsIgnoreCase("A1") || serviceNo.equalsIgnoreCase("A2")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0715");
-			busTiming.add("2300");
-			busTiming.add("0715");
-			busTiming.add("2300");
-			busTiming.add("0900");
-			busTiming.add("2300");
+			busTiming.addAll(Arrays.asList("0715", "2300", "0715", "2300", "0900", "2300"));
 		} else if (serviceNo.equalsIgnoreCase("B1")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0715");
-			busTiming.add("1900");
-			busTiming.add("0715");
-			busTiming.add("1900");
-			busTiming.add("No Service");
-			busTiming.add("No Service");
+			busTiming.addAll(Arrays.asList("0715", "1900", "0715", "1900", "No Service", "No Service"));
 		} else if (serviceNo.equalsIgnoreCase("B2")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0715");
-			busTiming.add("2300");
-			busTiming.add("0715");
-			busTiming.add("2300");
-			busTiming.add("No Service");
-			busTiming.add("No Service");
+			busTiming.addAll(Arrays.asList("0715", "2300", "0715", "2300", "No Service", "No Service"));
 		} else if (serviceNo.equalsIgnoreCase("BTC") || serviceNo.equalsIgnoreCase("BTC1")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0720");
-			busTiming.add("2130");
-			busTiming.add("0830");
-			busTiming.add("1230");
-			busTiming.add("No Service");
-			busTiming.add("No Service");
+			busTiming.addAll(Arrays.asList("0720", "2130", "0830", "1230", "No Service", "No Service"));
 		} else if (serviceNo.equalsIgnoreCase("C")) {
 			busTiming.add(serviceNo);
-			busTiming.add("1000");
-			busTiming.add("2300");
-			busTiming.add("1000");
-			busTiming.add("1900");
-			busTiming.add("No Service");
-			busTiming.add("No Service");
+			busTiming.addAll(Arrays.asList("1000", "2300", "1000", "1900", "No Service", "No Service"));
 		} else if (serviceNo.equalsIgnoreCase("D1") || serviceNo.equalsIgnoreCase("D2")) {
 			busTiming.add(serviceNo);
-			busTiming.add("0715");
-			busTiming.add("2300");
-			busTiming.add("0715");
-			busTiming.add("2300");
-			busTiming.add("0900");
-			busTiming.add("2300");
+			busTiming.addAll(Arrays.asList("0715", "2300", "0715", "2300", "0900", "2300"));
 		}
 		
 		if (busTiming.size() <= 0) {

@@ -45,7 +45,7 @@ No extra steps needed, it might be a good idea to use a different telegram token
 ## Built With
 
 * [Java Telegram Bot API](https://github.com/rubenlagus/TelegramBots) - The telegram bot framework
-* [GSON](https://github.com/google/gson) - Parsing of jason data retrieved from the bus timing services
+* [GSON](https://github.com/google/gson) - Parsing of json data retrieved from the bus timing services
 * [Emoji Java](https://github.com/vdurmont/emoji-java) - Used to generate the emoji unicode for the text
 
 ## Contributing
