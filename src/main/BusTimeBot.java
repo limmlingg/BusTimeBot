@@ -10,8 +10,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.TimeZone;
 
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -24,12 +22,7 @@ import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
-import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
-import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
@@ -48,6 +41,7 @@ import entity.LocationDistanceFunction;
 import entity.geocoding.GeoCodeContainer;
 import entity.kdtree.KdTree;
 import entity.kdtree.NearestNeighborIterator;
+import factory.KeyboardFactory;
 
 public class BusTimeBot extends TelegramLongPollingBot{
 
@@ -110,12 +104,12 @@ public class BusTimeBot extends TelegramLongPollingBot{
 					double longitude = Double.parseDouble(data[1]);
 					SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 					timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-					String lastUpdated = "_Last updated at " + timeFormat.format(new Date()) + "_";
+					String lastUpdated = "_Last updated: " + timeFormat.format(new Date()) + "_";
 					editMessageText.setText(getNearbyBusStopsAndTimings(latitude, longitude) + lastUpdated);
 					Logger.log("\nReturned:\n" + editMessageText.getText());
 					
 					//Re-add the inline keyboard
-		            editMessageText.setReplyMarkup(createUpdateInlineKeyboard(latitude, longitude));
+		            editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude));
 		            try {
 						editMessageText(editMessageText);
 					} catch (TelegramApiException e) {}	//Ignore if MessageNotEdited error
@@ -149,14 +143,14 @@ public class BusTimeBot extends TelegramLongPollingBot{
 				        		+ "/search Blk 1 Hougang Ave 1\n"
 				        		+ "/search 63151\n\n"
 				        		+ "Contact @SimpleLegend for bugs/suggestions!";
-						if (chatId > 0) {
-			        		sendMessage(welcomeText, chatId, createSendLocationKeyboard());
-			        	} else {
+						if (chatId > 0) { //is a 1-1 chat
+			        		sendMessage(welcomeText, chatId, KeyboardFactory.createSendLocationKeyboard());
+			        	} else { //No location keyboard for group chats
 			        		sendMessage(welcomeText, chatId);
 			        	}
-					} else if (text.startsWith("/search")) { //Search by postal code
+					} else if (text.startsWith("/search")) { //Search by postal code/popular names/bus stop
 						Logger.log("Got a search request by " + message.getFrom() + " for " + text.replace("/search ", "") + "\n");
-						if (text.equalsIgnoreCase("/search")) {
+						if (text.equalsIgnoreCase("/search")) { //Give help text if only /search was given
 							sendMessage("Search for an address or postal code (Example: /search 118426)", chatId);
 						} else { 
 							GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+URLEncoder.encode(text.replace("/search ", ""), StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
@@ -165,7 +159,7 @@ public class BusTimeBot extends TelegramLongPollingBot{
 								double lon = results.where.markers.get(0).getLongitude();
 		
 								String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
-					            sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(lat, lon));
+					            sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(lat, lon));
 					            Logger.log("Returned:\n" + nearbyBusStops);
 							} else {
 								sendMessage("Unable to find location", chatId);
@@ -194,61 +188,13 @@ public class BusTimeBot extends TelegramLongPollingBot{
 					Logger.log("Got a location request by " + message.getFrom() + " for " + location +"\n");
 					//Send the message to user
 					String nearbyBusStops = getNearbyBusStopsAndTimings(location);
-					sendMessage(nearbyBusStops, chatId, createUpdateInlineKeyboard(location));
+					sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(location));
 		            Logger.log("Returned:\n"+nearbyBusStops+"\n======================================================\n");
 				}
 			}
 		} catch (Exception e) {
 			Logger.logError(e);
 		}
-	}
-	
-	/**
-	 * Creates an inline keyboard with the update button for users to update the bus timings
-	 * @param location of the user
-	 * @return an InlineKeyboardMarkup with the button update
-	 */
-	public InlineKeyboardMarkup createUpdateInlineKeyboard(Location location) {
-		return createUpdateInlineKeyboard(location.getLatitude(), location.getLongitude());
-	}
-	
-	/**
-	 * Creates an inline keyboard with the update button for users to update the bus timings
-	 * @param latitude of the user
-	 * @param longitude of the user
-	 * @return an InlineKeyboardMarkup with the button update
-	 */
-	public InlineKeyboardMarkup createUpdateInlineKeyboard(double latitude, double longitude) {
-		InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> btns = new LinkedList<List<InlineKeyboardButton>>();
-        List<InlineKeyboardButton> firstRow = new LinkedList<InlineKeyboardButton>();
-        InlineKeyboardButton btn = new InlineKeyboardButton();
-        btn.setText("Update");
-        btn.setCallbackData(latitude +":" + longitude);
-        firstRow.add(btn);
-        btns.add(firstRow);
-        inlineKeyboard.setKeyboard(btns);
-        return inlineKeyboard;
-	}
-	
-	/**
-	 * Create a keyboard for the user to send their location
-	 * @return keyboardMarkup that allows user to send location
-	 */
-	public ReplyKeyboardMarkup createSendLocationKeyboard() {
-		ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        replyKeyboardMarkup.setSelective(true);
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboad(false);
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow keyboardFirstRow = new KeyboardRow();
-        KeyboardButton button = new KeyboardButton();
-        button.setText("Send Location");
-        button.setRequestLocation(true);
-        keyboardFirstRow.add(button);
-        keyboard.add(keyboardFirstRow);
-        replyKeyboardMarkup.setKeyboard(keyboard);
-        return replyKeyboardMarkup;
 	}
 	
 	/**
