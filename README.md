@@ -71,3 +71,4 @@ No License at the moment
 * Telegram for allowing me to develop bots for their platform
 * My friends who gave me inspiration for this bot
 * Authors of the libraries that I have used for making this bot possible
+* Hostgagements for promoting this application to their clients!
