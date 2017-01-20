@@ -34,7 +34,7 @@ Functions to check
 
 ### Commands:
 
-- help - See what you can do with this bot
+- start/help - See what you can do with this bot
 - search - Search by popular locations, postal codes, address, bus stop number
 - bus - Look up bus information
 
