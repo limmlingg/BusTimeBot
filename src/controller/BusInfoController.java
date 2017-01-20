@@ -21,7 +21,7 @@ public class BusInfoController {
 	 * @return a nicely formatted string with the first/last bus
 	 */
 	public static String getNTUBusInfo(String serviceNo) {
-		//A1, A2, B1, B2, C, D1, D2, BTC/BTC1
+		//CL-Blue, CL-Red, CR, CWR
 		serviceNo = serviceNo.toUpperCase();
 		ArrayList<String> busTiming = new ArrayList<String>();
 		//In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
@@ -52,7 +52,7 @@ public class BusInfoController {
 	 * @return a nicely formatted string with the first/last bus
 	 */
 	public static String getNUSBusInfo(String serviceNo) {
-		//A1, A2, B, C, D1, D2, BTC1,
+		//A1, A2, B1, B2, C, D1, D2, BTC/BTC1
 		serviceNo = serviceNo.toUpperCase();
 		ArrayList<String> busTiming = new ArrayList<String>();
 		//In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
@@ -113,7 +113,7 @@ public class BusInfoController {
 					end = "</td>";
 					String interchange = data.substring(data.indexOf(start) + start.length(), data.indexOf(end));
 					
-					System.out.println(interchange + ": " + time[0] + " - " + time[1]);
+					//System.out.println(interchange + ": " + time[0] + " - " + time[1]);
 					ArrayList<String> timeInfo = new ArrayList<String>();
 					timeInfo.add(interchange);
 					timeInfo.add(time[0]);

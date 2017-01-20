@@ -140,27 +140,27 @@ public class NTUController {
 			}
 			
 			Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-			StringBuffer busTimings = new StringBuffer();
+			StringBuffer busArrivals = new StringBuffer();
 			//Now loop through the map and build the string
 			for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
-				busTimings.append(emoji.getUnicode() + "*" + busCode.get(entry.getKey()) + "*: ");
+				busArrivals.append(emoji.getUnicode() + "*" + busCode.get(entry.getKey()) + "*: ");
 				boolean hasBus = false;
 				for (Integer time : entry.getValue()) {
 					hasBus = true;
 					if (time <= 0) {
-						busTimings.append("Arr  |  ");
+						busArrivals.append("Arr  |  ");
 					} else {
-						busTimings.append(time + "min  |  ");
+						busArrivals.append(time + "min  |  ");
 					}
 				}
 				//Add N/A if no timing is available
 				if (!hasBus) {
-					busTimings.append("N/A  |  ");
+					busArrivals.append("N/A  |  ");
 				}
-				busTimings.delete(busTimings.length()-5, busTimings.length());
-				busTimings.append("\n");
+				busArrivals.delete(busArrivals.length()-5, busArrivals.length());
+				busArrivals.append("\n");
 			}
-			return busTimings.toString();
+			return busArrivals.toString();
 		} catch (Exception e) {
 			Logger.logError(e);
 			return null;

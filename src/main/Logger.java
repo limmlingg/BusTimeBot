@@ -9,6 +9,8 @@ import java.nio.file.StandardOpenOption;
 
 public class Logger {
     public static File log = new File("BusTimeBot.log");
+	public static final String DEBUG_SEPARATOR = "\n\n======================================================\n";
+
 	/**
 	 * Append information to the log file
 	 * @param text to append to log file
@@ -19,8 +21,8 @@ public class Logger {
 				log.createNewFile();
 			}
 			Files.write(log.toPath(), text.getBytes(), StandardOpenOption.APPEND);
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -35,7 +37,7 @@ public class Logger {
 			ps = new PrintStream(Logger.log);
 			e.printStackTrace(ps);
 	        ps.close();
-	        Logger.log("\n======================================================\n");
+	        Logger.log(DEBUG_SEPARATOR);
 		} catch (FileNotFoundException e1) {}
 	}
 }
