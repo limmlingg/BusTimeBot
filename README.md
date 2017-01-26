@@ -1,5 +1,7 @@
 # Bus Time Bot (SGBus)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3eb9dfac269d4cadac76da4716f245db)](https://www.codacy.com/app/bernardyip/BusTimeBot?utm_source=github.com&utm_medium=referral&utm_content=bernardyip/BusTimeBot&utm_campaign=badger)
+
 Bus Time Bot is a telegram bot that tells you bus timings of the nearest bus stops based on the location (GPS coordinates) you send to it.
 
 Currently supports bus timings for NUS, NTU, SBS Transit and SMRT Buses.
