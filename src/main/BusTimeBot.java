@@ -136,7 +136,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
     /**
      * Process Update Request
      */
-    private void executeUpdateCommand(Update update) {
+    public void executeUpdateCommand(Update update) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         Logger.log(MessageFormat.format(DEBUG_UPDATE_TEXT, callbackQuery.getFrom()));
 
@@ -168,14 +168,14 @@ public class BusTimeBot extends TelegramLongPollingBot {
     /**
      * Remove any instance of {@value #KEYWORD_BOT_MENTION}
      */
-    private String removeMention(String text) {
+    public String removeMention(String text) {
         return text.replaceAll(KEYWORD_BOT_MENTION, "");
     }
 
     /**
      * Process request with location sent
      */
-    private void executeLocationRequestCommand(Message message) {
+    public void executeLocationRequestCommand(Message message) {
         long chatId = message.getChatId();
         Location location = message.getLocation();
 
@@ -188,7 +188,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
     /**
      * Process /bus commands
      */
-    private void executeBusCommand(Message message) {
+    public void executeBusCommand(Message message) {
         long chatId = message.getChatId();
         String text = message.getText();
 
@@ -211,7 +211,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
     /**
      * Process /search <location> commands
      */
-    private void executeSearchCommand(Message message) throws UnsupportedEncodingException {
+    public void executeSearchCommand(Message message) throws UnsupportedEncodingException {
         long chatId = message.getChatId();
         String text = message.getText();
 
@@ -241,7 +241,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
      * Process /help and /start commands
      * @param chatId
      */
-    private void executeHelpCommand(long chatId) {
+    public void executeHelpCommand(long chatId) {
         if (chatId > 0) { //is a 1-1 chat (+ve)
             sendMessage(WELCOME_TEXT, chatId, KeyboardFactory.createSendLocationKeyboard());
         } else { //No location keyboard for group chats
