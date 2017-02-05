@@ -148,26 +148,20 @@ public class WebController {
      */
     public static void trustAll() {
         TrustManager trm = new X509TrustManager() {
-            /**
-             * Ignore all accepted issuers
-             */
+
             @Override
             public X509Certificate[] getAcceptedIssuers() {
-                return null;
+                return null; //Ignore all accepted issuers
             }
 
-            /**
-             * Override to do nothing when checking if client is trusted
-             */
             @Override
             public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                //Override to do nothing when checking if client is trusted
             }
 
-            /**
-             * Override to do nothing when checking if server is trusted
-             */
             @Override
             public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                //Override to do nothing when checking if server is trusted
             }
         };
 
