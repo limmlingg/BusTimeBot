@@ -159,58 +159,58 @@ public class BusTimeBot extends TelegramLongPollingBot{
 					text = message.getText().replace(KEYWORD_BOT_MENTION, ""); //Don't need the "@BusTimeBot" to handle commands
 					String command = getCommand(text);
 					switch (command) {
-						case COMMAND_START : //Fall through
-						case COMMAND_HELP : 
-							if (chatId > 0) { //is a 1-1 chat
-				        		sendMessage(WELCOME_TEXT, chatId, KeyboardFactory.createSendLocationKeyboard());
-				        	} else { //No location keyboard for group chats
-				        		sendMessage(WELCOME_TEXT, chatId);
-				        	}
-							break;
-						case COMMAND_SEARCH : //Search by postal code/popular names/bus stop
-							Logger.log(MessageFormat.format(DEBUG_SEARCH_TEXT, message.getFrom(), text));
-							text = text.toLowerCase().replace(KEYWORD_SEARCH, "");
-							if (text.equalsIgnoreCase(COMMAND_SEARCH) || text.isEmpty()) { //Give help text if only /search was given
-								sendMessage(SEARCH_HELP_TEXT, chatId);
-							} else { 
-								GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+URLEncoder.encode(text, StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
-								Logger.log("Returned:\n");
-								if (results.status == 1) {
-									double lat = results.where.markers.get(0).getLatitude();
-									double lon = results.where.markers.get(0).getLongitude();
-			
-									String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
-						            sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(lat, lon));
-						            Logger.log(nearbyBusStops);
-								} else {
-									sendMessage("Unable to find location", chatId);
-									Logger.log("Unable to find location");
-								}
-							}
-							Logger.log(Logger.DEBUG_SEPARATOR);
-							break;
-						case COMMAND_BUS : //searching for bus info
-							Logger.log(MessageFormat.format(DEBUG_BUS_TEXT, message.getFrom(), text));
-							text = text.toLowerCase().replaceAll(KEYWORD_BUS, "").toUpperCase();
-							String info;
-							if (text.equalsIgnoreCase(COMMAND_BUS) || text.isEmpty()) {
-								info = BUS_HELP_TEXT;
-							} else if (Arrays.binarySearch(BusInfoController.NTUBus, text) >= 0) { //NTU bus data
-								info = BusInfoController.getNTUBusInfo(text);
-							} else if (Arrays.binarySearch(BusInfoController.NUSBus, text) >= 0) { //NUS bus data 
-								info = BusInfoController.getNUSBusInfo(text);
+					case COMMAND_START : //Fall through
+					case COMMAND_HELP :
+						if (chatId > 0) { //is a 1-1 chat
+							sendMessage(WELCOME_TEXT, chatId, KeyboardFactory.createSendLocationKeyboard());
+						} else { //No location keyboard for group chats
+							sendMessage(WELCOME_TEXT, chatId);
+						}
+						break;
+					case COMMAND_SEARCH : //Search by postal code/popular names/bus stop
+						Logger.log(MessageFormat.format(DEBUG_SEARCH_TEXT, message.getFrom(), text));
+						text = text.toLowerCase().replace(KEYWORD_SEARCH, "");
+						if (text.equalsIgnoreCase(COMMAND_SEARCH) || text.isEmpty()) { //Give help text if only /search was given
+							sendMessage(SEARCH_HELP_TEXT, chatId);
+						} else {
+							GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q="+URLEncoder.encode(text, StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
+							Logger.log("Returned:\n");
+							if (results != null && results.status == 1) {
+								double lat = results.where.markers.get(0).getLatitude();
+								double lon = results.where.markers.get(0).getLongitude();
+
+								String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
+								sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(lat, lon));
+								Logger.log(nearbyBusStops);
 							} else {
-								info = BusInfoController.getPublicBusInfo(text);
+								sendMessage("Unable to find location", chatId);
+								Logger.log("Unable to find location");
 							}
-							sendMessage(info, chatId);
-				            Logger.log("Returned:\n" + info + Logger.DEBUG_SEPARATOR);
-				            break;
+						}
+						Logger.log(Logger.DEBUG_SEPARATOR);
+						break;
+					case COMMAND_BUS : //searching for bus info
+						Logger.log(MessageFormat.format(DEBUG_BUS_TEXT, message.getFrom(), text));
+						text = text.toLowerCase().replaceAll(KEYWORD_BUS, "").toUpperCase();
+						String info;
+						if (text.equalsIgnoreCase(COMMAND_BUS) || text.isEmpty()) {
+							info = BUS_HELP_TEXT;
+						} else if (Arrays.binarySearch(BusInfoController.NTUBus, text) >= 0) { //NTU bus data
+							info = BusInfoController.getNTUBusInfo(text);
+						} else if (Arrays.binarySearch(BusInfoController.NUSBus, text) >= 0) { //NUS bus data
+							info = BusInfoController.getNUSBusInfo(text);
+						} else {
+							info = BusInfoController.getPublicBusInfo(text);
+						}
+						sendMessage(info, chatId);
+						Logger.log("Returned:\n" + info + Logger.DEBUG_SEPARATOR);
+						break;
 					}
 				} else if (location != null) {//By Location
 					Logger.log(MessageFormat.format(DEBUG_LOCATION_TEXT, message.getFrom(), location));
 					String nearbyBusStops = getNearbyBusStopsAndTimings(location);
 					sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(location));
-		            Logger.log("Returned:\n" + nearbyBusStops + Logger.DEBUG_SEPARATOR);
+					Logger.log("Returned:\n" + nearbyBusStops + Logger.DEBUG_SEPARATOR);
 				}
 			}
 		} catch (Exception e) {
