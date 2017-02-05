@@ -1,5 +1,6 @@
 package main;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -105,99 +106,146 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         try {
             if (update.hasCallbackQuery()) { //If the user presses update
-                CallbackQuery callbackQuery = update.getCallbackQuery();
-                Logger.log(MessageFormat.format(DEBUG_UPDATE_TEXT, callbackQuery.getFrom()));
-
-                //Update the timings if the query has been longer than 1 second
-                Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
-                long timeSince = lastQuery == null ? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND) * -1;
-                if (timeSince > 1) { //Only update if more than 1 second has passed
-                    EditMessageText editMessageText = generateEditedMessage(callbackQuery);
-                    Logger.log("\nReturned:\n" + editMessageText.getText());
-
-                    try {
-                        editMessageText(editMessageText);
-                    } catch (TelegramApiException e) {
-                    } //Ignore if MessageNotEdited error
-                    lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
-                }
-                Logger.log(Logger.DEBUG_SEPARATOR);
-
-                //Send answer indicating a reply
-                AnswerCallbackQuery answer = new AnswerCallbackQuery();
-                answer.setCallbackQueryId(callbackQuery.getId());
-
-                try {
-                    answerCallbackQuery(answer);
-                } catch (TelegramApiException e) {
-                } //Ignore query errors, probably expired queries
-
-            }
-            if (update.hasMessage()) { //Standard messages
+                executeUpdateCommand(update);
+            } else if (update.hasMessage()) { //Standard messages
                 Message message = update.getMessage();
-                long chatId = message.getChatId();
-                String text = message.getText();
-                Location location = message.getLocation();
-                if (text != null) {
-                    text = message.getText().replace(KEYWORD_BOT_MENTION, ""); //Don't need the "@BusTimeBot" to handle commands
+                if (message.getText() != null) {
+                    String text = removeMention(message.getText()); //Don't need the "@BusTimeBot" to handle commands
                     String command = getCommand(text);
                     switch (command) {
                     case COMMAND_START: //Fall through
                     case COMMAND_HELP:
-                        if (chatId > 0) { //is a 1-1 chat
-                            sendMessage(WELCOME_TEXT, chatId, KeyboardFactory.createSendLocationKeyboard());
-                        } else { //No location keyboard for group chats
-                            sendMessage(WELCOME_TEXT, chatId);
-                        }
+                        executeHelpCommand(message.getChatId());
                         break;
                     case COMMAND_SEARCH: //Search by postal code/popular names/bus stop
-                        Logger.log(MessageFormat.format(DEBUG_SEARCH_TEXT, message.getFrom(), text));
-                        text = text.toLowerCase().replace(KEYWORD_SEARCH, "");
-                        if (text.equalsIgnoreCase(COMMAND_SEARCH) || text.isEmpty()) { //Give help text if only /search was given
-                            sendMessage(SEARCH_HELP_TEXT, chatId);
-                        } else {
-                            GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q=" + URLEncoder.encode(text, StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
-                            Logger.log("Returned:\n");
-                            if (results != null && results.status == 1) {
-                                double lat = results.where.markers.get(0).getLatitude();
-                                double lon = results.where.markers.get(0).getLongitude();
-
-                                String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
-                                sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(lat, lon));
-                                Logger.log(nearbyBusStops);
-                            } else {
-                                sendMessage("Unable to find location", chatId);
-                                Logger.log("Unable to find location");
-                            }
-                        }
-                        Logger.log(Logger.DEBUG_SEPARATOR);
+                        executeSearchCommand(message);
                         break;
                     case COMMAND_BUS: //searching for bus info
-                        Logger.log(MessageFormat.format(DEBUG_BUS_TEXT, message.getFrom(), text));
-                        text = text.toLowerCase().replaceAll(KEYWORD_BUS, "").toUpperCase();
-                        String info;
-                        if (text.equalsIgnoreCase(COMMAND_BUS) || text.isEmpty()) {
-                            info = BUS_HELP_TEXT;
-                        } else if (Arrays.binarySearch(BusInfoController.NTUBus, text) >= 0) { //NTU bus data
-                            info = BusInfoController.getNTUBusInfo(text);
-                        } else if (Arrays.binarySearch(BusInfoController.NUSBus, text) >= 0) { //NUS bus data
-                            info = BusInfoController.getNUSBusInfo(text);
-                        } else {
-                            info = BusInfoController.getPublicBusInfo(text);
-                        }
-                        sendMessage(info, chatId);
-                        Logger.log("Returned:\n" + info + Logger.DEBUG_SEPARATOR);
+                        executeBusCommand(message);
                         break;
                     }
-                } else if (location != null) {//By Location
-                    Logger.log(MessageFormat.format(DEBUG_LOCATION_TEXT, message.getFrom(), location));
-                    String nearbyBusStops = getNearbyBusStopsAndTimings(location);
-                    sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(location));
-                    Logger.log("Returned:\n" + nearbyBusStops + Logger.DEBUG_SEPARATOR);
+                } else if (message.getLocation() != null) {//By Location
+                    executeLocationRequestCommand(message);
                 }
             }
         } catch (Exception e) {
             Logger.logError(e);
+        }
+    }
+
+    /**
+     * Process Update Request
+     */
+    private void executeUpdateCommand(Update update) {
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        Logger.log(MessageFormat.format(DEBUG_UPDATE_TEXT, callbackQuery.getFrom()));
+
+        //Update the timings if the query has been longer than 1 second
+        Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
+        long timeSince = lastQuery == null ? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND) * -1;
+        if (timeSince > 1) { //Only update if more than 1 second has passed
+            EditMessageText editMessageText = generateEditedMessage(callbackQuery);
+            Logger.log("\nReturned:\n" + editMessageText.getText());
+
+            try {
+                editMessageText(editMessageText);
+            } catch (TelegramApiException e) {
+            } //Ignore if MessageNotEdited error
+            lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
+        }
+        Logger.log(Logger.DEBUG_SEPARATOR);
+
+        //Send answer indicating a reply
+        AnswerCallbackQuery answer = new AnswerCallbackQuery();
+        answer.setCallbackQueryId(callbackQuery.getId());
+
+        try {
+            answerCallbackQuery(answer);
+        } catch (TelegramApiException e) {
+        } //Ignore query errors, probably expired queries
+    }
+
+    /**
+     * Remove any instance of {@value #KEYWORD_BOT_MENTION}
+     */
+    private String removeMention(String text) {
+        return text.replaceAll(KEYWORD_BOT_MENTION, "");
+    }
+
+    /**
+     * Process request with location sent
+     */
+    private void executeLocationRequestCommand(Message message) {
+        long chatId = message.getChatId();
+        Location location = message.getLocation();
+
+        Logger.log(MessageFormat.format(DEBUG_LOCATION_TEXT, message.getFrom(), location));
+        String nearbyBusStops = getNearbyBusStopsAndTimings(location);
+        sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(location));
+        Logger.log("Returned:\n" + nearbyBusStops + Logger.DEBUG_SEPARATOR);
+    }
+
+    /**
+     * Process /bus commands
+     */
+    private void executeBusCommand(Message message) {
+        long chatId = message.getChatId();
+        String text = message.getText();
+
+        Logger.log(MessageFormat.format(DEBUG_BUS_TEXT, message.getFrom(), text));
+        text = text.toLowerCase().replaceAll(KEYWORD_BUS, "").toUpperCase();
+        String info;
+        if (text.equalsIgnoreCase(COMMAND_BUS) || text.isEmpty()) {
+            info = BUS_HELP_TEXT;
+        } else if (Arrays.binarySearch(BusInfoController.NTUBus, text) >= 0) { //NTU bus data
+            info = BusInfoController.getNTUBusInfo(text);
+        } else if (Arrays.binarySearch(BusInfoController.NUSBus, text) >= 0) { //NUS bus data
+            info = BusInfoController.getNUSBusInfo(text);
+        } else {
+            info = BusInfoController.getPublicBusInfo(text);
+        }
+        sendMessage(info, chatId);
+        Logger.log("Returned:\n" + info + Logger.DEBUG_SEPARATOR);
+    }
+
+    /**
+     * Process /search <location> commands
+     */
+    private void executeSearchCommand(Message message) throws UnsupportedEncodingException {
+        long chatId = message.getChatId();
+        String text = message.getText();
+
+        Logger.log(MessageFormat.format(DEBUG_SEARCH_TEXT, message.getFrom(), text));
+        text = text.toLowerCase().replace(KEYWORD_SEARCH, "");
+        if (text.equalsIgnoreCase(COMMAND_SEARCH) || text.isEmpty()) { //Give help text if only /search was given
+            sendMessage(SEARCH_HELP_TEXT, chatId);
+        } else {
+            GeoCodeContainer results = WebController.retrieveData("https://gothere.sg/a/search?q=" + URLEncoder.encode(text, StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
+            Logger.log("Returned:\n");
+            if (results != null && results.status == 1) {
+                double lat = results.where.markers.get(0).getLatitude();
+                double lon = results.where.markers.get(0).getLongitude();
+
+                String nearbyBusStops = getNearbyBusStopsAndTimings(lat, lon);
+                sendMessage(nearbyBusStops, chatId, KeyboardFactory.createUpdateInlineKeyboard(lat, lon));
+                Logger.log(nearbyBusStops);
+            } else {
+                sendMessage("Unable to find location", chatId);
+                Logger.log("Unable to find location");
+            }
+        }
+        Logger.log(Logger.DEBUG_SEPARATOR);
+    }
+
+    /**
+     * Process /help and /start commands
+     * @param chatId
+     */
+    private void executeHelpCommand(long chatId) {
+        if (chatId > 0) { //is a 1-1 chat (+ve)
+            sendMessage(WELCOME_TEXT, chatId, KeyboardFactory.createSendLocationKeyboard());
+        } else { //No location keyboard for group chats
+            sendMessage(WELCOME_TEXT, chatId);
         }
     }
 
