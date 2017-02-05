@@ -19,8 +19,11 @@ import main.Logger;
 public class WebController {
     /**
      * Retrieve data from the URL and cast it to the class provided
-     * @param url of the server to retrieve data from
-     * @param objectClass class to cast the data into
+     *
+     * @param url
+     *            of the server to retrieve data from
+     * @param objectClass
+     *            class to cast the data into
      * @return An object of the class provided
      */
     public static <T> T retrieveData(String url, Class<T> objectClass) {
@@ -35,9 +38,13 @@ public class WebController {
 
     /**
      * Retrieve data from the URL and cast it to the class provided
-     * @param url of the server to retrieve data from
-     * @param objectClass class to cast the data into
-     * @param https true or false
+     *
+     * @param url
+     *            of the server to retrieve data from
+     * @param objectClass
+     *            class to cast the data into
+     * @param https
+     *            true or false
      * @return An object of the class provided
      */
     public static <T> T retrieveData(String url, Class<T> objectClass, boolean https) {
@@ -56,22 +63,26 @@ public class WebController {
 
     /**
      * Converts JSON data to the appropiate class given (Case-Sensitive for variables)
-     * @param json data
-     * @param objectClass class of the Object to cast to
+     *
+     * @param json
+     *            data
+     * @param objectClass
+     *            class of the Object to cast to
      * @return An object of the class provided
      */
-    public static <T> T jsonToObject (String json, Class<T> objectClass) throws Exception {
+    public static <T> T jsonToObject(String json, Class<T> objectClass) throws Exception {
         Gson gson = new Gson();
         //To make sure json is json, we extract only from the first { to the last }
         //System.out.println(json);
-        json = json.substring(json.indexOf("{"), json.lastIndexOf("}")+1);
+        json = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
         return gson.fromJson(json, objectClass);
     }
 
-
     /**
      * Send a GET HTTP request to the url indicated and returns the response
-     * @param url of the server to retrieve data from
+     *
+     * @param url
+     *            of the server to retrieve data from
      * @return response returned from the Webserver
      */
     public static String sendHTTPRequest(String url) {
@@ -80,7 +91,9 @@ public class WebController {
 
     /**
      * Send a GET HTTP request to the url indicated and returns the response
-     * @param url of the server to retrieve data from
+     *
+     * @param url
+     *            of the server to retrieve data from
      * @return response returned from the Webserver
      */
     public static String sendHTTPRequest(String url, boolean includeToken) {
@@ -107,7 +120,9 @@ public class WebController {
 
     /**
      * Send a GET HTTPS request to the url indicated and returns the response
-     * @param url of the server to retrieve data from
+     *
+     * @param url
+     *            of the server to retrieve data from
      * @return response returned from the Webserver
      */
     public static String sendHTTPsRequest(String url) {
@@ -123,7 +138,7 @@ public class WebController {
             }
             reader.close();
         } catch (Exception e) {
-            Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+            Logger.log("Error!!!!\n" + e.toString() + "\n======================================================\n");
         }
         //System.out.println(result);
         return result.toString();
@@ -134,23 +149,26 @@ public class WebController {
      */
     public static void trustAll() {
         TrustManager trm = new X509TrustManager() {
+            @Override
             public X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
 
+            @Override
             public void checkClientTrusted(X509Certificate[] certs, String authType) {
             }
 
+            @Override
             public void checkServerTrusted(X509Certificate[] certs, String authType) {
             }
         };
 
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, new TrustManager[] { trm }, null);
+            sc.init(null, new TrustManager[] {trm}, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (Exception e) {
-            Logger.log("Error!!!!\n" + e.toString()  + "\n======================================================\n");
+            Logger.log("Error!!!!\n" + e.toString() + "\n======================================================\n");
         }
     }
 }

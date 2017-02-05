@@ -1,4 +1,5 @@
 package entity.nusbus;
+
 public class NUSBusStopContainer {
-	public NUSBusStops BusStopsResult;
+    public NUSBusStops BusStopsResult;
 }

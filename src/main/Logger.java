@@ -9,35 +9,40 @@ import java.nio.file.StandardOpenOption;
 
 public class Logger {
     public static File log = new File("BusTimeBot.log");
-	public static final String DEBUG_SEPARATOR = "\n\n======================================================\n";
+    public static final String DEBUG_SEPARATOR = "\n\n======================================================\n";
 
-	/**
-	 * Append information to the log file
-	 * @param text to append to log file
-	 */
-	public static void log(String text) {
-		try {
-			if (!log.exists()) {
-				log.createNewFile();
-			}
-			Files.write(log.toPath(), text.getBytes(), StandardOpenOption.APPEND);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Log errors if there are any to fix in the future
-	 * @param e Exception caused
-	 */
-	public static void logError(Exception e) {
-		try {
-			Logger.log("\nError!!!!\n");
-	        PrintStream ps;
-			ps = new PrintStream(Logger.log);
-			e.printStackTrace(ps);
-	        ps.close();
-	        Logger.log(DEBUG_SEPARATOR);
-		} catch (FileNotFoundException e1) {}
-	}
+    /**
+     * Append information to the log file
+     *
+     * @param text
+     *            to append to log file
+     */
+    public static void log(String text) {
+        try {
+            if (!log.exists()) {
+                log.createNewFile();
+            }
+            Files.write(log.toPath(), text.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Log errors if there are any to fix in the future
+     *
+     * @param e
+     *            Exception caused
+     */
+    public static void logError(Exception e) {
+        try {
+            Logger.log("\nError!!!!\n");
+            PrintStream ps;
+            ps = new PrintStream(Logger.log);
+            e.printStackTrace(ps);
+            ps.close();
+            Logger.log(DEBUG_SEPARATOR);
+        } catch (FileNotFoundException e1) {
+        }
+    }
 }

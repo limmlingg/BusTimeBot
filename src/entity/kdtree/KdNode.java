@@ -32,8 +32,8 @@ class KdNode<T> {
         this.singlePoint = true;
 
         // Init leaf elements
-        this.points = new double[bucketCapacity+1][];
-        this.data = new Object[bucketCapacity+1];
+        this.points = new double[bucketCapacity + 1][];
+        this.data = new Object[bucketCapacity + 1];
     }
 
     /* -------- SIMPLE GETTERS -------- */
@@ -55,8 +55,7 @@ class KdNode<T> {
             cursor.size++;
             if (point[cursor.splitDimension] > cursor.splitValue) {
                 cursor = cursor.right;
-            }
-            else {
+            } else {
                 cursor = cursor.left;
             }
         }
@@ -85,10 +84,12 @@ class KdNode<T> {
     }
 
     @SuppressWarnings("unused")
-	private boolean checkBounds(double[] point) {
+    private boolean checkBounds(double[] point) {
         for (int i = 0; i < dimensions; i++) {
-            if (point[i] > maxBound[i]) return false;
-            if (point[i] < minBound[i]) return false;
+            if (point[i] > maxBound[i])
+                return false;
+            if (point[i] < minBound[i])
+                return false;
         }
         return true;
     }
@@ -107,12 +108,10 @@ class KdNode<T> {
                 }
                 minBound[i] = Double.NaN;
                 maxBound[i] = Double.NaN;
-            }
-            else if (minBound[i] > point[i]) {
+            } else if (minBound[i] > point[i]) {
                 minBound[i] = point[i];
                 singlePoint = false;
-            }
-            else if (maxBound[i] < point[i]) {
+            } else if (maxBound[i] < point[i]) {
                 maxBound[i] = point[i];
                 singlePoint = false;
             }
@@ -120,17 +119,19 @@ class KdNode<T> {
     }
 
     private void increaseLeafCapacity() {
-        points = Arrays.copyOf(points, points.length*2);
-        data = Arrays.copyOf(data, data.length*2);
+        points = Arrays.copyOf(points, points.length * 2);
+        data = Arrays.copyOf(data, data.length * 2);
     }
 
     private boolean calculateSplit() {
-        if (singlePoint) return false;
+        if (singlePoint)
+            return false;
 
         double width = 0;
         for (int i = 0; i < dimensions; i++) {
             double dwidth = (maxBound[i] - minBound[i]);
-            if (Double.isNaN(dwidth)) dwidth = 0;
+            if (Double.isNaN(dwidth))
+                dwidth = 0;
             if (dwidth > width) {
                 splitDimension = i;
                 width = dwidth;
@@ -147,8 +148,7 @@ class KdNode<T> {
         // Never split on infinity or NaN
         if (splitValue == Double.POSITIVE_INFINITY) {
             splitValue = Double.MAX_VALUE;
-        }
-        else if (splitValue == Double.NEGATIVE_INFINITY) {
+        } else if (splitValue == Double.NEGATIVE_INFINITY) {
             splitValue = -Double.MAX_VALUE;
         }
 
@@ -163,7 +163,7 @@ class KdNode<T> {
     }
 
     @SuppressWarnings("unchecked")
-	private void splitLeafNode() {
+    private void splitLeafNode() {
         right = new KdNode<T>(dimensions, bucketCapacity);
         left = new KdNode<T>(dimensions, bucketCapacity);
 
@@ -173,8 +173,7 @@ class KdNode<T> {
             Object oldData = data[i];
             if (oldLocation[splitDimension] > splitValue) {
                 right.addLeafPoint(oldLocation, (T) oldData);
-            }
-            else {
+            } else {
                 left.addLeafPoint(oldLocation, (T) oldData);
             }
         }
