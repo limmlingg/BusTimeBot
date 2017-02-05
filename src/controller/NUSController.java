@@ -61,18 +61,18 @@ public class NUSController {
                 busArrivals.append(emoji.getUnicode() + "*" + s.name + "*: ");
                 //We either get "Arr", "-" or a time in minutes
                 String firstEstimatedBusTiming;
-                if (s.arrivalTime.equals("-")) { //No more bus service
+                if ("-".equals(s.arrivalTime)) { //No more bus service
                     firstEstimatedBusTiming = "N/A";
-                } else if (s.arrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
+                } else if ("Arr".equalsIgnoreCase(s.arrivalTime)) { //First bus arriving
                     firstEstimatedBusTiming = s.arrivalTime;
                 } else {
                     firstEstimatedBusTiming = s.arrivalTime + "min";
                 }
 
                 String secondEstimatedBusTiming;
-                if (s.nextArrivalTime.equals("-")) { //No more bus service, no need to append anything
+                if ("-".equals(s.nextArrivalTime)) { //No more bus service, no need to append anything
                     secondEstimatedBusTiming = "";
-                } else if (s.nextArrivalTime.equalsIgnoreCase("Arr")) { //First bus arriving
+                } else if ("Arr".equalsIgnoreCase(s.nextArrivalTime)) { //First bus arriving
                     secondEstimatedBusTiming = "  |  " + s.nextArrivalTime;
                 } else {
                     secondEstimatedBusTiming = "  |  " + s.nextArrivalTime + "min";

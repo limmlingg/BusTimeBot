@@ -62,7 +62,7 @@ public class NTUController {
                         //getNTUArrivalTimings(stop);
                     }
                 } //End node for loop
-                  //System.out.println("===================");
+                //System.out.println("===================");
             } //end coordinate for loop
         } //end i for loop
     }
@@ -135,10 +135,8 @@ public class NTUController {
             //Append the bus timings for each bus
             NTUBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/" + code + "/?format=json", NTUBusArrivalContainer.class);
             for (NTUBusArrival arrival : results.forecast) {
-                if (timings.containsKey(arrival.route.short_name)) {
-                    if (timings.get(arrival.route.short_name).size() < 2) {
-                        timings.get(arrival.route.short_name).add((int) Math.ceil(arrival.forecast_seconds / 60.0));
-                    }
+                if (timings.containsKey(arrival.route.short_name) && timings.get(arrival.route.short_name).size() < 2) {
+                    timings.get(arrival.route.short_name).add((int) Math.ceil(arrival.forecast_seconds / 60.0));
                 }
             }
 

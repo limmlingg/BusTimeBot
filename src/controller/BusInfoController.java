@@ -18,26 +18,26 @@ public class BusInfoController {
     /**
      * Return information regarding NTU shuttle buses
      *
-     * @param serviceNo
+     * @param serviceNoUpper
      *            of NTU bus
      * @return a nicely formatted string with the first/last bus
      */
     public static String getNTUBusInfo(String serviceNo) {
         //CL-Blue, CL-Red, CR, CWR
-        serviceNo = serviceNo.toUpperCase();
+        String serviceNoUpper = serviceNo.toUpperCase();
         ArrayList<String> busTiming = new ArrayList<String>();
         //In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
-        if (serviceNo.equalsIgnoreCase("CL-Blue")) {
-            busTiming.add(serviceNo);
+        if (serviceNoUpper.equalsIgnoreCase("CL-Blue")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0800", "2300", "0800", "2300", "0800", "2300"));
-        } else if (serviceNo.equalsIgnoreCase("CL-Red")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("CL-Red")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0800", "2300", "0800", "2300", "0800", "2300"));
-        } else if (serviceNo.equalsIgnoreCase("CR")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("CR")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0730", "2300", "0730", "2300", "0730", "2300"));
-        } else if (serviceNo.equalsIgnoreCase("CWR")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("CWR")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0730", "2300", "0730", "2300", "0730", "2300"));
         }
 
@@ -51,32 +51,32 @@ public class BusInfoController {
     /**
      * Return information regarding NUS shuttle buses
      *
-     * @param serviceNo
+     * @param serviceNoUpper
      *            of NUS bus
      * @return a nicely formatted string with the first/last bus
      */
     public static String getNUSBusInfo(String serviceNo) {
         //A1, A2, B1, B2, C, D1, D2, BTC/BTC1
-        serviceNo = serviceNo.toUpperCase();
+        String serviceNoUpper = serviceNo.toUpperCase();
         ArrayList<String> busTiming = new ArrayList<String>();
         //In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
-        if (serviceNo.equalsIgnoreCase("A1") || serviceNo.equalsIgnoreCase("A2")) {
-            busTiming.add(serviceNo);
+        if (serviceNoUpper.equalsIgnoreCase("A1") || serviceNoUpper.equalsIgnoreCase("A2")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0715", "2300", "0715", "2300", "0900", "2300"));
-        } else if (serviceNo.equalsIgnoreCase("B1")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("B1")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0715", "1900", "0715", "1900", "No Service", "No Service"));
-        } else if (serviceNo.equalsIgnoreCase("B2")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("B2")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0715", "2300", "0715", "2300", "No Service", "No Service"));
-        } else if (serviceNo.equalsIgnoreCase("BTC") || serviceNo.equalsIgnoreCase("BTC1")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("BTC") || serviceNoUpper.equalsIgnoreCase("BTC1")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0720", "2130", "0830", "1230", "No Service", "No Service"));
-        } else if (serviceNo.equalsIgnoreCase("C")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("C")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("1000", "2300", "1000", "1900", "No Service", "No Service"));
-        } else if (serviceNo.equalsIgnoreCase("D1") || serviceNo.equalsIgnoreCase("D2")) {
-            busTiming.add(serviceNo);
+        } else if (serviceNoUpper.equalsIgnoreCase("D1") || serviceNoUpper.equalsIgnoreCase("D2")) {
+            busTiming.add(serviceNoUpper);
             busTiming.addAll(Arrays.asList("0715", "2300", "0715", "2300", "0900", "2300"));
         }
 

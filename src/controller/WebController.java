@@ -73,9 +73,8 @@ public class WebController {
     public static <T> T jsonToObject(String json, Class<T> objectClass) throws Exception {
         Gson gson = new Gson();
         //To make sure json is json, we extract only from the first { to the last }
-        //System.out.println(json);
-        json = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
-        return gson.fromJson(json, objectClass);
+        String jsonTrimmed = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
+        return gson.fromJson(jsonTrimmed, objectClass);
     }
 
     /**
@@ -149,15 +148,24 @@ public class WebController {
      */
     public static void trustAll() {
         TrustManager trm = new X509TrustManager() {
+            /**
+             * Ignore all accepted issuers
+             */
             @Override
             public X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
 
+            /**
+             * Override to do nothing when checking if client is trusted
+             */
             @Override
             public void checkClientTrusted(X509Certificate[] certs, String authType) {
             }
 
+            /**
+             * Override to do nothing when checking if server is trusted
+             */
             @Override
             public void checkServerTrusted(X509Certificate[] certs, String authType) {
             }

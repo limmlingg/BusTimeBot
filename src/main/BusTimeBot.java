@@ -37,20 +37,6 @@ import factory.KeyboardFactory;
 
 public class BusTimeBot extends TelegramLongPollingBot {
 
-    public static void main(String[] args) {
-        WebController.trustAll();
-        ApiContextInitializer.init();
-        TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
-        try {
-            bot = new BusTimeBot();
-            //Initialize bus stop data
-            bot.getBusStopData();
-            telegramBotsApi.registerBot(bot);
-        } catch (Exception e) {
-            Logger.logError(e);
-        }
-    }
-
     public static BusTimeBot bot;
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
     public static String TELEGRAM_TOKEN;
@@ -89,6 +75,20 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public static final String KEYWORD_SEARCH = "/search ";
     public static final String KEYWORD_BUS = "/bus ";
 
+    public static void main(String[] args) {
+        WebController.trustAll();
+        ApiContextInitializer.init();
+        TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
+        try {
+            bot = new BusTimeBot();
+            //Initialize bus stop data
+            bot.getBusStopData();
+            telegramBotsApi.registerBot(bot);
+        } catch (Exception e) {
+            Logger.logError(e);
+        }
+    }
+
     public BusTimeBot() {
         super();
         try {
@@ -122,6 +122,8 @@ public class BusTimeBot extends TelegramLongPollingBot {
                         break;
                     case COMMAND_BUS: //searching for bus info
                         executeBusCommand(message);
+                        break;
+                    default : //Do nothing
                         break;
                     }
                 } else if (message.getLocation() != null) {//By Location
@@ -337,7 +339,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
                 }
             }
 
-            if (allStops.toString().equals("")) {
+            if (allStops.length() == 0) {
                 allStops.append("No stops nearby");
             }
 
