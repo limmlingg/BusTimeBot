@@ -11,10 +11,16 @@ Try it out at http://telegram.me/bus_time_bot
 ## Getting Started
 
 1. Clone the project
-2. Create a file lta_key and telegram_key and go to the links below to get a token
-3. LTA Key Application: https://www.mytransport.sg/content/mytransport/home/dataMall.html
-4. Telegram Bot Token: http://telegram.me/BotFather
-5. Run!
+2. Create a file `key.properties` in the project's root folder and go to the links below to get a token
+   - LTA Token: https://www.mytransport.sg/content/mytransport/home/dataMall.html
+   - Telegram Bot Token: http://telegram.me/BotFather
+3. Fill the contents of `key.properties` like this:
+```
+lta=<<insert lta token here>>
+telegram=<<insert telegram token here>>
+telegram_dev=<<insert alternate telegram token here, usually use this for development>>
+```
+4. Run!
 
 ## Running the tests
 
@@ -42,7 +48,7 @@ Functions to check
 
 ## Deployment
 
-No extra steps needed, it might be a good idea to use a different telegram token to differentiate your production/development bot
+No extra steps needed.
 
 ## Built With
 
