@@ -76,9 +76,10 @@ public class Util {
      * Pads the string with spaces until a certain length
      */
     public static String pad(String input, int length) {
-        while (input.length() < length) {
-            input = input + " ";
+        String paddedInput = input;
+        while (paddedInput.length() < length) {
+            paddedInput = paddedInput + " ";
         }
-        return input;
+        return paddedInput;
     }
 }
