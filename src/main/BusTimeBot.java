@@ -1,10 +1,9 @@
 package main;
 
+import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -47,8 +46,14 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
     public double maxDistanceFromPoint = 0.35;
 
+    //Properties
+    private static final String PROPERTIES_FILE = "key.properties";
+    private static String PROPERTIES_KEY_LTA = "lta";
+    private static String PROPERTIES_KEY_TELEGRAM = "telegram";
+    private static String PROPERTIES_KEY_TELEGRAM_DEV = "telegram_dev";
+
     //Development and Debugging attributes
-    public boolean dev = true;
+    public boolean isDev = true;
     private static final String DEBUG_UPDATE_TEXT = "Got an update call by {0}";
     private static final String DEBUG_SEARCH_TEXT = "Got a search request by {0} for {1}\n";
     private static final String DEBUG_BUS_TEXT = "Got a bus info request by {0} for {1}\n";
@@ -81,7 +86,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
             bot = new BusTimeBot();
-            //Initialize bus stop data
+            //Initialize bus stop data (we run it this way to prevent the api from registering the bot before it is fully initialized)
             bot.getBusStopData();
             telegramBotsApi.registerBot(bot);
         } catch (Exception e) {
@@ -92,11 +97,31 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public BusTimeBot() {
         super();
         try {
+            loadProperties(isDev);
             lastQueried = new HashMap<Long, Date>();
             busStops = new HashMap<String, BusStop>(10000);
             busStopsSortedByCoordinates = new KdTree<BusStop>(2, 100);
-            TELEGRAM_TOKEN = Files.readAllLines(Paths.get("src/keys/telegram_key").toAbsolutePath()).get(dev ? 1 : 0);
-            LTA_TOKEN = Files.readAllLines(Paths.get("src/keys/lta_key").toAbsolutePath()).get(0);
+        } catch (Exception e) {
+            Logger.logError(e);
+        }
+    }
+
+    /**
+     * Loads properties from the properties file
+     */
+    private void loadProperties(boolean isDev) {
+        try {
+            FileInputStream propertiesStream = new FileInputStream(PROPERTIES_FILE);
+            Properties properties = new Properties();
+            properties.load(propertiesStream);
+
+            if (isDev) {
+                TELEGRAM_TOKEN = properties.getProperty(PROPERTIES_KEY_TELEGRAM_DEV);
+            } else {
+                TELEGRAM_TOKEN = properties.getProperty(PROPERTIES_KEY_TELEGRAM);
+            }
+
+            LTA_TOKEN = properties.getProperty(PROPERTIES_KEY_LTA);
         } catch (Exception e) {
             Logger.logError(e);
         }
@@ -301,7 +326,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public String getNearbyBusStopsAndTimings(double latitude, double longitude) {
         try {
             Iterator<BusStop> busstops = getNearbyBusStops(latitude, longitude);
-            StringBuffer allStops = new StringBuffer();
+            StringBuilder allStops = new StringBuilder();
             while (busstops.hasNext()) {
                 BusStop stop = busstops.next();
                 Emoji emoji = EmojiManager.getForAlias(EMOJI_BUSSTOP);
@@ -309,26 +334,31 @@ public class BusTimeBot extends TelegramLongPollingBot {
                 StringBuffer stops = new StringBuffer();
                 if (stop.type == Type.NUS_ONLY) {
                     stops.append(emoji.getUnicode() + "*" + stop.Description + "*");
-                    stops.append("\n");
+                    stops.append("\n```\n");
                     stops.append(NUSController.getNUSArrivalTimings(stop));
+                    stops.append("```");
                 } else if (stop.type == Type.PUBLIC_ONLY) {
-                    stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*" + stop.Description + "*");
-                    stops.append("\n");
+                    stops.append(emoji.getUnicode() + stop.BusStopCode + " " + stop.Description);
+                    stops.append("\n```\n");
                     stops.append(PublicController.getPublicBusArrivalTimings(stop));
+                    stops.append("```");
                 } else if (stop.type == Type.NTU_ONLY) {
                     stops.append(emoji.getUnicode() + stop.BusStopCode + " " + "*" + stop.Description + "*");
-                    stops.append("\n");
+                    stops.append("\n```\n");
                     stops.append(NTUController.getNTUBusArrivalTimings(stop));
+                    stops.append("```");
                 } else if (stop.type == Type.PUBLIC_NUS) {
                     stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*" + stop.NUSDescription + "*");
-                    stops.append("\n");
+                    stops.append("\n```\n");
                     stops.append(NUSController.getNUSArrivalTimings(stop));
                     stops.append(PublicController.getPublicBusArrivalTimings(stop));
+                    stops.append("```");
                 } else if (stop.type == Type.PUBLIC_NTU) {
                     stops.append(emoji.getUnicode() + (stop.BusStopCode + " ") + "*" + stop.Description + "*/" + "*" + stop.NTUDescription + "*");
-                    stops.append("\n");
+                    stops.append("\n```\n");
                     stops.append(NTUController.getNTUBusArrivalTimings(stop));
                     stops.append(PublicController.getPublicBusArrivalTimings(stop));
+                    stops.append("```");
                 }
 
                 //If there exist an oncoming_bus emoji, then we append, otherwise that bus stop has no buses
@@ -427,10 +457,11 @@ public class BusTimeBot extends TelegramLongPollingBot {
         SendMessage sendMessageRequest = new SendMessage();
         sendMessageRequest.setChatId(Long.toString(id)); //who should get from the message the sender that sent it.
         sendMessageRequest.setText(message);
+        sendMessageRequest.enableMarkdown(true);
+        sendMessageRequest.setParseMode(ParseMode.MARKDOWN); //Allow bold & italics
         if (keyboard != null) {
             sendMessageRequest.setReplyMarkup(keyboard);
         }
-        sendMessageRequest.setParseMode(ParseMode.MARKDOWN); //Allow bold & italics
         boolean success = false;
         try {
             sendMessage(sendMessageRequest); //at the end, so some magic and send the message ;)

@@ -47,7 +47,7 @@ public class NUSController {
      */
     public static String getNUSArrivalTimings(BusStop stop) {
         try {
-            StringBuffer busArrivals = new StringBuffer();
+            StringBuilder busArrivals = new StringBuilder();
             //Use the appropriate code
             String code = stop.BusStopCode;
             if (stop.type == Type.PUBLIC_NUS) {
@@ -58,24 +58,24 @@ public class NUSController {
             Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
             for (NUSBusArrival s : data.ShuttleServiceResult.shuttles) {
                 //Append the bus and the service name
-                busArrivals.append(emoji.getUnicode() + "*" + s.name + "*: ");
+                busArrivals.append(emoji.getUnicode() + Util.pad(s.name, 13) + ": ");
                 //We either get "Arr", "-" or a time in minutes
                 String firstEstimatedBusTiming;
                 if ("-".equals(s.arrivalTime)) { //No more bus service
-                    firstEstimatedBusTiming = "N/A";
+                    firstEstimatedBusTiming = "N/A ";
                 } else if ("Arr".equalsIgnoreCase(s.arrivalTime)) { //First bus arriving
-                    firstEstimatedBusTiming = s.arrivalTime;
+                    firstEstimatedBusTiming = Util.pad(s.arrivalTime, 5) + " ";
                 } else {
-                    firstEstimatedBusTiming = s.arrivalTime + "min";
+                    firstEstimatedBusTiming = Util.pad(s.arrivalTime + "min", 5);
                 }
 
                 String secondEstimatedBusTiming;
                 if ("-".equals(s.nextArrivalTime)) { //No more bus service, no need to append anything
                     secondEstimatedBusTiming = "";
                 } else if ("Arr".equalsIgnoreCase(s.nextArrivalTime)) { //First bus arriving
-                    secondEstimatedBusTiming = "  |  " + s.nextArrivalTime;
+                    secondEstimatedBusTiming = " | " + s.nextArrivalTime;
                 } else {
-                    secondEstimatedBusTiming = "  |  " + s.nextArrivalTime + "min";
+                    secondEstimatedBusTiming = " | " + s.nextArrivalTime + "min";
                 }
 
                 busArrivals.append(firstEstimatedBusTiming + secondEstimatedBusTiming);

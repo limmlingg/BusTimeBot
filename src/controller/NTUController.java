@@ -144,19 +144,19 @@ public class NTUController {
             StringBuffer busArrivals = new StringBuffer();
             //Now loop through the map and build the string
             for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
-                busArrivals.append(emoji.getUnicode() + "*" + busCode.get(entry.getKey()) + "*: ");
+                busArrivals.append(emoji.getUnicode() + Util.pad(busCode.get(entry.getKey()), 13) + ": ");
                 boolean hasBus = false;
                 for (Integer time : entry.getValue()) {
                     hasBus = true;
                     if (time <= 0) {
-                        busArrivals.append("Arr  |  ");
+                        busArrivals.append(Util.pad("Arr", 5) + "| ");
                     } else {
-                        busArrivals.append(time + "min  |  ");
+                        busArrivals.append(Util.pad(time + "min", 5) + "| ");
                     }
                 }
                 //Add N/A if no timing is available
                 if (!hasBus) {
-                    busArrivals.append("N/A  |  ");
+                    busArrivals.append("N/A  | ");
                 }
                 busArrivals.delete(busArrivals.length() - 5, busArrivals.length());
                 busArrivals.append("\n");

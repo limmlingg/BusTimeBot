@@ -71,4 +71,14 @@ public class Util {
     private static double rad2deg(double radian) {
         return (radian * 180 / Math.PI);
     }
+
+    /**
+     * Pads the string with spaces until a certain length
+     */
+    public static String pad(String input, int length) {
+        while (input.length() < length) {
+            input = input + " ";
+        }
+        return input;
+    }
 }

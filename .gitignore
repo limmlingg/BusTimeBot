@@ -51,3 +51,4 @@ src/keys/*
 BusTimeBot.log
 main.db
 *.html
+/.gradle/
