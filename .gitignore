@@ -45,10 +45,14 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Java project related files
+*.html
+/.gradle/
 bin/*
+
+# Project specific files
 *.log
 key.properties
 BusTimeBot.log
 main.db
-*.html
-/.gradle/
