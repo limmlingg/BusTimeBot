@@ -1,12 +1,17 @@
 package main;
 
-import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TimeZone;
 
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
@@ -25,32 +30,33 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
-import controller.*;
-import entity.BusStop;
-import entity.BusStop.Type;
-import entity.LocationDistanceFunction;
-import entity.geocoding.GeoCodeContainer;
-import entity.kdtree.KdTree;
-import entity.kdtree.NearestNeighborIterator;
+import datastructures.kdtree.KdTree;
+import datastructures.kdtree.NearestNeighborIterator;
 import factory.KeyboardFactory;
+import logic.LocationDistanceFunction;
+import logic.PropertiesLoader;
+import logic.Util;
+import logic.controller.BusInfoController;
+import logic.controller.NTUController;
+import logic.controller.NUSController;
+import logic.controller.PublicController;
+import logic.controller.WebController;
+import model.BusStop;
+import model.BusStop.Type;
+import model.geocoding.GeoCodeContainer;
 
 public class BusTimeBot extends TelegramLongPollingBot {
 
-    public static BusTimeBot bot;
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
+    public static BusTimeBot bot;
     public static String TELEGRAM_TOKEN;
     public static String LTA_TOKEN;
 
     public HashMap<String, BusStop> busStops;
     public KdTree<BusStop> busStopsSortedByCoordinates;
     public HashMap<Long, Date> lastQueried; //use to prevent spamming of the update button
+    public PropertiesLoader propertiesLoader;
     public double maxDistanceFromPoint = 0.35;
-
-    //Properties
-    private static final String PROPERTIES_FILE = "key.properties";
-    private static String PROPERTIES_KEY_LTA = "lta";
-    private static String PROPERTIES_KEY_TELEGRAM = "telegram";
-    private static String PROPERTIES_KEY_TELEGRAM_DEV = "telegram_dev";
 
     //Development and Debugging attributes
     public boolean isDev = true;
@@ -60,7 +66,15 @@ public class BusTimeBot extends TelegramLongPollingBot {
     private static final String DEBUG_LOCATION_TEXT = "Got a location request by {0} for {1}\n";
 
     //Message Texts
-    public static final String WELCOME_TEXT = "Send me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n" + "Look up bus information by typing /bus <Service Number>, bus timings shown is the timing when the bus leaves the interchange\n" + "Example: /bus 969\n\n" + "You can type /search <Popular names/postal/address/bus stop number>\n" + "Some examples:\n" + "/search amk hub\n" + "/search 118426\n" + "/search Blk 1 Hougang Ave 1\n" + "/search 63151\n\n" + "Contact @SimpleLegend for bugs/suggestions!";
+    public static final String WELCOME_TEXT = "Send me your location (Using the GPS) and get your bus timings(Public, NUS shuttle, NTU shuttle)!\n\n" +
+                                              "Look up bus information by typing /bus <Service Number>, bus timings shown is the timing when the bus leaves the interchange\n" +
+                                              "Example: /bus 969\n\n" + "You can type /search <Popular names/postal/address/bus stop number>\n" +
+                                              "Some examples:\n" +
+                                              "/search amk hub\n" +
+                                              "/search 118426\n" +
+                                              "/search Blk 1 Hougang Ave 1\n" +
+                                              "/search 63151\n\n" +
+                                              "Contact @SimpleLegend for bugs/suggestions!";
     private static final String SEARCH_HELP_TEXT = "Search for an address or postal code (Example: /search 118426)";
     private static final String BUS_HELP_TEXT = "Type /bus <Service Number> to look up first and last bus timings!\n" + "Example: /bus 969";
     private static final String LAST_UPDATED_TEXT = "\n\n_Last updated: {0}_";
@@ -97,6 +111,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public BusTimeBot() {
         super();
         try {
+            propertiesLoader = new PropertiesLoader();
             loadProperties(isDev);
             lastQueried = new HashMap<Long, Date>();
             busStops = new HashMap<String, BusStop>(10000);
@@ -107,23 +122,14 @@ public class BusTimeBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Loads properties from the properties file
+     * Loads properties into token variables
      */
     private void loadProperties(boolean isDev) {
-        try {
-            FileInputStream propertiesStream = new FileInputStream(PROPERTIES_FILE);
-            Properties properties = new Properties();
-            properties.load(propertiesStream);
-
-            if (isDev) {
-                TELEGRAM_TOKEN = properties.getProperty(PROPERTIES_KEY_TELEGRAM_DEV);
-            } else {
-                TELEGRAM_TOKEN = properties.getProperty(PROPERTIES_KEY_TELEGRAM);
-            }
-
-            LTA_TOKEN = properties.getProperty(PROPERTIES_KEY_LTA);
-        } catch (Exception e) {
-            Logger.logError(e);
+        LTA_TOKEN = propertiesLoader.getLtaToken();
+        if (isDev) {
+            TELEGRAM_TOKEN = propertiesLoader.getTelegramDevToken();
+        } else {
+            TELEGRAM_TOKEN = propertiesLoader.getTelegramToken();
         }
     }
 
