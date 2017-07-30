@@ -64,8 +64,6 @@ public class NtuController {
                             BusTimeBot.bot.busStops.put(stop.BusStopCode, stop);
                             retrieveBusList(stop.BusStopCode);
                         }
-                        //printStop(stop);
-                        //getNTUArrivalTimings(stop);
                     }
                 } //End node for loop
             } //end coordinate for loop
