@@ -17,6 +17,7 @@ import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
+import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -35,6 +36,7 @@ import logic.controller.NusController;
 import logic.controller.PublicController;
 import logic.controller.WebController;
 import model.BusStop;
+import model.CommandResponse;
 
 public class BusTimeBot extends TelegramLongPollingBot {
 
@@ -54,7 +56,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
     public boolean isDev = true;
 
     //Message Texts
-    private static final String LAST_UPDATED_TEXT = "\n\n_Last updated: {0}_";
+    private static final String LAST_UPDATED_TEXT = "\n_Last updated: {0}_";
 
     public static void main(String[] args) {
         WebController.trustAll();
@@ -126,9 +128,14 @@ public class BusTimeBot extends TelegramLongPollingBot {
             }
 
             if (command != null) {
-                String reply = command.execute();
-                Logger.log("\nReturned:\n" + reply);
-                sendMessage(reply, update.getMessage().getChatId());
+                CommandResponse reply = command.execute();
+                InlineKeyboardMarkup keyboard = null;
+                if (reply.data != null) {
+                    double latitude = Double.parseDouble(reply.data.get("latitude"));
+                    double longitude = Double.parseDouble(reply.data.get("longitude"));
+                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude);
+                }
+                sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
             }
         } catch (Exception e) {
             Logger.logError(e);
@@ -203,8 +210,9 @@ public class BusTimeBot extends TelegramLongPollingBot {
         String lastUpdated = MessageFormat.format(LAST_UPDATED_TEXT, timeFormat.format(new Date()));
 
         Command busTimeCommand = new LocationCommand(latitude, longitude);
+        CommandResponse answer = busTimeCommand.execute();
 
-        editMessageText.setText(busTimeCommand.execute() + lastUpdated);
+        editMessageText.setText(answer.text + lastUpdated);
 
         //Re-add the inline keyboard
         editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude));

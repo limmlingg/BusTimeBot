@@ -1,5 +1,7 @@
 package logic.command;
 
+import model.CommandResponse;
+
 /**
  * A command to show the welcome text when the user needs and introduction to the bot
  */
@@ -18,8 +20,8 @@ public class StartHelpCommand implements Command {
             "Contact @SimpleLegend for bugs/suggestions!";
 
     @Override
-    public String execute() {
-        return WELCOME_TEXT;
+    public CommandResponse execute() {
+        return new CommandResponse(WELCOME_TEXT);
     }
 
 }

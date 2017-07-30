@@ -3,6 +3,7 @@ package logic.command;
 import java.util.Arrays;
 
 import logic.controller.BusInfoController;
+import model.CommandResponse;
 
 /**
  * A command to handle the `/bus` command from users
@@ -20,7 +21,7 @@ public class BusCommand implements Command {
     }
 
     @Override
-    public String execute() {
+    public CommandResponse execute() {
         String busInformation;
         if (searchTerm == null || searchTerm.isEmpty()) {
             busInformation = BUS_HELP_TEXT;
@@ -31,7 +32,7 @@ public class BusCommand implements Command {
         } else {
             busInformation = BusInfoController.getPublicBusInfo(searchTerm);
         }
-        return busInformation;
+        return new CommandResponse(busInformation);
     }
 
 }

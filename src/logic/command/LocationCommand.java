@@ -1,6 +1,7 @@
 package logic.command;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.vdurmont.emoji.Emoji;
@@ -15,6 +16,7 @@ import logic.controller.PublicController;
 import main.BusTimeBot;
 import main.Logger;
 import model.BusStop;
+import model.CommandResponse;
 
 /**
  * A command that returns bus times given a latitude and longitude
@@ -34,7 +36,7 @@ public class LocationCommand implements Command {
     }
 
     @Override
-    public String execute() {
+    public CommandResponse execute() {
         try {
             Iterator<BusStop> busstops = getNearbyBusStops(latitude, longitude);
             StringBuilder allStops = new StringBuilder();
@@ -71,7 +73,12 @@ public class LocationCommand implements Command {
                 allStops.append("No stops nearby");
             }
 
-            return allStops.toString().trim();
+            //Build data to return
+            HashMap<String, String> data = new HashMap<String, String>();
+            data.put("latitude", Double.toString(latitude));
+            data.put("longitude", Double.toString(longitude));
+
+            return new CommandResponse(allStops.toString().trim(), data);
         } catch (Exception e) {
             Logger.logError(e);
             return null;

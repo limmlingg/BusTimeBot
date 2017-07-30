@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import logic.controller.WebController;
+import model.CommandResponse;
 import model.json.gothere.GeoCodeContainer;
 
 /**
@@ -20,9 +21,9 @@ public class SearchCommand implements Command {
         this.searchTerm = searchTerm.toLowerCase().replace(KEYWORD_SEARCH, "");
     }
 
-    public String execute() {
+    public CommandResponse execute() {
         GeoCodeContainer results;
-        String result;
+        CommandResponse result;
         try {
             results = WebController.retrieveData("https://gothere.sg/a/search?q=" + URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
             if (results != null && results.status == 1) {
@@ -32,10 +33,10 @@ public class SearchCommand implements Command {
                 LocationCommand busTimeCommand = new LocationCommand(lat, lon);
                 result = busTimeCommand.execute();
             } else {
-                result = "Unable to find location";
+                result = new CommandResponse("Unable to find location");
             }
         } catch (UnsupportedEncodingException e) {
-            result = "Unable to find location";
+            result = new CommandResponse("Unable to find location");
         }
         return result;
     }
