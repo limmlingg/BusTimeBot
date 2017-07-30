@@ -1,4 +1,4 @@
-package model.publicbus;
+package model.json.publicbus;
 
 import java.util.LinkedList;
 

@@ -1,4 +1,4 @@
-package model.publicbus;
+package model.json.publicbus;
 
 public class PublicBusArrival {
     public String EstimatedArrival;

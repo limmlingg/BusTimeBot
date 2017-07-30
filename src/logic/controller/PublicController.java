@@ -9,10 +9,9 @@ import logic.Util;
 import main.BusTimeBot;
 import main.Logger;
 import model.BusStop;
-import model.BusStop.Type;
-import model.publicbus.PublicBusStopArrival;
-import model.publicbus.PublicBusStopArrivalContainer;
-import model.publicbus.PublicBusStopContainer;
+import model.json.publicbus.PublicBusStopArrival;
+import model.json.publicbus.PublicBusStopArrivalContainer;
+import model.json.publicbus.PublicBusStopContainer;
 
 public class PublicController {
     /**
@@ -29,7 +28,7 @@ public class PublicController {
             skip += stopCount;
             //Copy to the total number of stops
             for (int i = 0; i < data.value.size(); i++) {
-                data.value.get(i).type = Type.PUBLIC_ONLY;
+                data.value.get(i).isPublic = true;
                 BusTimeBot.bot.busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
             }
         }

@@ -1,6 +1,6 @@
-package model.nusbus;
+package model.json.nusbus;
 
-public class NUSBusArrival {
+public class NusBusArrival {
     public String arrivalTime;
     public String name;
     public String nextArrivalTime;

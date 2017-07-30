@@ -1,4 +1,4 @@
-package model.ntubus;
+package model.json.ntubus;
 
 import java.util.ArrayList;
 

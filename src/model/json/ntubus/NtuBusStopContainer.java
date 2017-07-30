@@ -1,8 +1,8 @@
-package model.ntubus;
+package model.json.ntubus;
 
 import java.util.ArrayList;
 
-public class NTUBusStopContainer {
+public class NtuBusStopContainer {
     public String external_id;
     public int id;
     public String name;

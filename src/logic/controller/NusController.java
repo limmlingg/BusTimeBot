@@ -8,28 +8,27 @@ import main.BusTimeBot;
 import main.Logger;
 import model.BusStop;
 import model.BusStopMapping;
-import model.BusStop.Type;
-import model.nusbus.NUSBusArrival;
-import model.nusbus.NUSBusArrivalContainer;
-import model.nusbus.NUSBusStop;
-import model.nusbus.NUSBusStopContainer;
+import model.json.nusbus.NusBusArrival;
+import model.json.nusbus.NusBusArrivalContainer;
+import model.json.nusbus.NusBusStop;
+import model.json.nusbus.NusBusStopContainer;
 
-public class NUSController {
+public class NusController {
     /**
      * Retrieve bus stop data from NUS and put it into the bot's busStops list
      */
     public static void getNUSBusStopData() {
-        NUSBusStopContainer NUSdata = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetBusStops?output=json", NUSBusStopContainer.class);
+        NusBusStopContainer NUSdata = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetBusStops?output=json", NusBusStopContainer.class);
         //Loop through and convert to SG bus stops style
-        for (NUSBusStop stop : NUSdata.BusStopsResult.busstops) {
+        for (NusBusStop stop : NUSdata.BusStopsResult.busstops) {
             if (BusStopMapping.getValue(stop.name) != null) { //Add on to public bus stop if it is the same bus stop (will be considered both NUS & Public bus stop)
                 BusStop existingStop = BusTimeBot.bot.busStops.get(BusStopMapping.getValue(stop.name));
-                existingStop.NUSStopCode = stop.name;
-                existingStop.NUSDescription = stop.caption;
-                existingStop.type = Type.PUBLIC_NUS;
+                existingStop.nusStopCode = stop.name;
+                existingStop.nusDescription = stop.caption;
+                existingStop.isNus = true;
             } else { //Otherwise it is most likely a NUS-only bus stop
                 BusStop newStop = new BusStop();
-                newStop.type = Type.NUS_ONLY;
+                newStop.isNus = true;
                 newStop.BusStopCode = stop.name;
                 newStop.Description = stop.caption;
                 newStop.Latitude = stop.latitude;
@@ -51,13 +50,13 @@ public class NUSController {
             StringBuilder busArrivals = new StringBuilder();
             //Use the appropriate code
             String code = stop.BusStopCode;
-            if (stop.type == Type.PUBLIC_NUS) {
-                code = stop.NUSStopCode;
+            if (stop.isNus && stop.isPublic) {
+                code = stop.nusStopCode;
             }
 
-            NUSBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname=" + code, NUSBusArrivalContainer.class);
+            NusBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname=" + code, NusBusArrivalContainer.class);
             Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-            for (NUSBusArrival s : data.ShuttleServiceResult.shuttles) {
+            for (NusBusArrival s : data.ShuttleServiceResult.shuttles) {
                 //Append the bus and the service name
                 busArrivals.append(emoji.getUnicode() + Util.pad(s.name, 13) + ": ");
                 //We either get "Arr", "-" or a time in minutes

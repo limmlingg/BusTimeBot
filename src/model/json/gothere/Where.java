@@ -1,4 +1,4 @@
-package model.geocoding;
+package model.json.gothere;
 
 import java.util.ArrayList;
 

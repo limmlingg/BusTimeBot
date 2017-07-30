@@ -1,8 +1,8 @@
-package model.geocoding;
+package model.json.gothere;
 
 public class Marker {
     public boolean draggable;
-    public double[] latlng; //late followed by long
+    public double[] latlng; //lat followed by long
     //ignore others
 
     public double getLatitude() {

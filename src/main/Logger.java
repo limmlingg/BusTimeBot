@@ -36,12 +36,10 @@ public class Logger {
      */
     public static void logError(Exception e) {
         try {
-            Logger.log("\nError!!!!\n");
             PrintStream ps;
             ps = new PrintStream(Logger.log);
             e.printStackTrace(ps);
             ps.close();
-            Logger.log(DEBUG_SEPARATOR);
         } catch (FileNotFoundException e1) {
         }
     }

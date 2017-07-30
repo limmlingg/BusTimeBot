@@ -12,10 +12,15 @@ import main.BusTimeBot;
 import main.Logger;
 import model.BusStop;
 import model.BusStopMapping;
-import model.BusStop.Type;
-import model.ntubus.*;
+import model.json.ntubus.Coordinate;
+import model.json.ntubus.Node;
+import model.json.ntubus.NtuBusArrival;
+import model.json.ntubus.NtuBusArrivalContainer;
+import model.json.ntubus.NtuBusList;
+import model.json.ntubus.NtuBusStopContainer;
+import model.json.ntubus.Route;
 
-public class NTUController {
+public class NtuController {
     public static HashMap<String, String> busCode;
     public static HashMap<String, ArrayList<String>> busList;
 
@@ -37,7 +42,7 @@ public class NTUController {
          * in order: red, blue, green, brown
          */
         for (int i = 44478; i <= 44481; i++) {
-            NTUBusStopContainer result = WebController.retrieveData("https://baseride.com/routes/apigeo/routevariantgeo/" + i + "/?format=json", NTUBusStopContainer.class, true);
+            NtuBusStopContainer result = WebController.retrieveData("https://baseride.com/routes/apigeo/routevariantgeo/" + i + "/?format=json", NtuBusStopContainer.class, true);
             //This boolean is explained below
             boolean isBlueRider = result.name.contains("CL-B");
             for (Coordinate coordinate : result.routevariant_geometry) {
@@ -45,17 +50,17 @@ public class NTUController {
                     if (node.id != 0) {
                         if (BusStopMapping.getValue(Integer.toString(node.id)) != null) { //Add on to public bus stop if it is the same bus stop (will be considered both NUS & Public bus stop)
                             BusStop existingStop = BusTimeBot.bot.busStops.get(BusStopMapping.getValue(Integer.toString(node.id)));
-                            existingStop.NTUStopCode = Integer.toString(node.id);
-                            existingStop.NTUDescription = fixName(isBlueRider, node);
-                            existingStop.type = Type.PUBLIC_NTU;
-                            retrieveBusList(existingStop.NTUStopCode);
+                            existingStop.ntuStopCode = Integer.toString(node.id);
+                            existingStop.ntuDescription = fixName(isBlueRider, node);
+                            existingStop.isNtu = true;
+                            retrieveBusList(existingStop.ntuStopCode);
                         } else { //Otherwise it is most likely a NTU-only bus stop
                             BusStop stop = new BusStop();
                             stop.BusStopCode = Integer.toString(node.id);
                             stop.Description = fixName(isBlueRider, node);
                             stop.Latitude = node.lat;
                             stop.Longitude = node.lon;
-                            stop.type = Type.NTU_ONLY;
+                            stop.isNtu = true;
                             BusTimeBot.bot.busStops.put(stop.BusStopCode, stop);
                             retrieveBusList(stop.BusStopCode);
                         }
@@ -63,7 +68,6 @@ public class NTUController {
                         //getNTUArrivalTimings(stop);
                     }
                 } //End node for loop
-                //System.out.println("===================");
             } //end coordinate for loop
         } //end i for loop
     }
@@ -75,7 +79,7 @@ public class NTUController {
      *            of the NTU Bus Stop
      */
     public static void retrieveBusList(String stopCode) {
-        NTUBusList retrievedbusList = WebController.retrieveData("https://baseride.com/routes/api/platformroutelist/" + stopCode + "/?format=json", NTUBusList.class);
+        NtuBusList retrievedbusList = WebController.retrieveData("https://baseride.com/routes/api/platformroutelist/" + stopCode + "/?format=json", NtuBusList.class);
         busList.put(stopCode, new ArrayList<String>());
         for (Route route : retrievedbusList.routes) {
             busList.get(stopCode).add(route.short_name);
@@ -108,7 +112,7 @@ public class NTUController {
      */
     public static void printStop(BusStop stop) {
         //System.out.println("NTUToPublic.put(\"" + stop.NTUStopCode + "\", \"\");");
-        System.out.println("(" + stop.NTUStopCode + ") " + stop.Description + " -> (" + stop.Latitude + "," + stop.Longitude + ")");
+        System.out.println("(" + stop.ntuStopCode + ") " + stop.Description + " -> (" + stop.Latitude + "," + stop.Longitude + ")");
     }
 
     /**
@@ -121,8 +125,8 @@ public class NTUController {
     public static String getNTUBusArrivalTimings(BusStop stop) {
         try {
             String code = stop.BusStopCode;
-            if (stop.type == Type.PUBLIC_NTU) {
-                code = stop.NTUStopCode;
+            if (stop.isNtu && stop.isPublic) {
+                code = stop.ntuStopCode;
             }
 
             //We save the timings to a hash map first since the bus arrival timings are all given together in a list
@@ -134,8 +138,8 @@ public class NTUController {
             }
 
             //Append the bus timings for each bus
-            NTUBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/" + code + "/?format=json", NTUBusArrivalContainer.class);
-            for (NTUBusArrival arrival : results.forecast) {
+            NtuBusArrivalContainer results = WebController.retrieveData("https://baseride.com/routes/api/platformbusarrival/" + code + "/?format=json", NtuBusArrivalContainer.class);
+            for (NtuBusArrival arrival : results.forecast) {
                 if (timings.containsKey(arrival.route.short_name) && timings.get(arrival.route.short_name).size() < 2) {
                     timings.get(arrival.route.short_name).add((int) Math.ceil(arrival.forecast_seconds / 60.0));
                 }
@@ -157,9 +161,9 @@ public class NTUController {
                 }
                 //Add N/A if no timing is available
                 if (!hasBus) {
-                    busArrivals.append("N/A  | ");
+                    busArrivals.append("N/A  " + "| ");
                 }
-                busArrivals.delete(busArrivals.length() - 5, busArrivals.length());
+                busArrivals.delete(busArrivals.length() - 2, busArrivals.length());
                 busArrivals.append("\n");
             }
             return busArrivals.toString();

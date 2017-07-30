@@ -1,4 +1,4 @@
-package model.geocoding;
+package model.json.gothere;
 
 public class GeoCodeContainer {
     public int status;

@@ -5,21 +5,22 @@ import org.telegram.telegrambots.api.objects.Location;
 import logic.Util;
 
 public class BusStop {
-    public enum Type {
-        NUS_ONLY, NTU_ONLY, PUBLIC_ONLY, PUBLIC_NUS, PUBLIC_NTU;
-    }
-
-    public Type type;
     public String BusStopCode;
     public String RoadName;
     public String Description;
     public double Latitude;
     public double Longitude;
+
+    //Flags to indicate type of bus stop
+    public boolean isPublic;
+    public boolean isNus;
+    public boolean isNtu;
+
     //If combining both stops (use public's coordinates)
-    public String NUSStopCode;
-    public String NUSDescription;
-    public String NTUStopCode;
-    public String NTUDescription;
+    public String nusStopCode;
+    public String nusDescription;
+    public String ntuStopCode;
+    public String ntuDescription;
 
     public double getDistance(Location location) {
         return getDistance(location.getLatitude(), location.getLongitude());
@@ -35,16 +36,17 @@ public class BusStop {
 
     @Override
     public String toString() {
-        return "BusStop [" + (type != null ? "type=" + type + ", " : "")
-                + (BusStopCode != null ? "BusStopCode=" + BusStopCode + ", " : "")
-                + (RoadName != null ? "RoadName=" + RoadName + ", " : "")
-                + (Description != null ? "Description=" + Description + ", " : "")
-                + "Latitude=" + Latitude
-                + ", Longitude=" + Longitude + ", "
-                + (NUSStopCode != null ? "NUSStopCode=" + NUSStopCode + ", " : "")
-                + (NUSDescription != null ? "NUSDescription=" + NUSDescription + ", " : "")
-                + (NTUStopCode != null ? "NTUStopCode=" + NTUStopCode + ", " : "")
-                + (NTUDescription != null ? "NTUDescription=" + NTUDescription : "") + "]";
+        return "BusStop [BusStopCode=" + BusStopCode
+                + ", RoadName=" + RoadName
+                + ", Description=" + Description
+                + ", Latitude=" + Latitude
+                + ", Longitude=" + Longitude
+                + ", isPublic=" + isPublic
+                + ", isNus=" + isNus
+                + ", isNtu=" + isNtu
+                + ", NUSStopCode=" + nusStopCode
+                + ", NUSDescription=" + nusDescription
+                + ", NTUStopCode=" + ntuStopCode
+                + ", NTUDescription=" + ntuDescription + "]";
     }
-
 }

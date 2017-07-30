@@ -1,10 +1,10 @@
-package model.ntubus;
+package model.json.ntubus;
 
 import java.util.ArrayList;
 
-public class NTUBusArrivalContainer {
+public class NtuBusArrivalContainer {
     public String external_id;
-    public ArrayList<NTUBusArrival> forecast;
+    public ArrayList<NtuBusArrival> forecast;
     public int id;
     public String name;
     //ignore the rest

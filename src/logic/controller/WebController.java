@@ -28,9 +28,8 @@ public class WebController {
      */
     public static <T> T retrieveData(String url, Class<T> objectClass) {
         try {
-            return jsonToObject(sendHTTPRequest(url), objectClass);
+            return jsonToObject(sendHttpRequest(url), objectClass);
         } catch (Exception e) {
-            Logger.log("Error when retriving url: " + url);
             Logger.logError(e);
             return null;
         }
@@ -50,12 +49,11 @@ public class WebController {
     public static <T> T retrieveData(String url, Class<T> objectClass, boolean https) {
         try {
             if (https) {
-                return jsonToObject(sendHTTPsRequest(url), objectClass);
+                return jsonToObject(sendHttpsRequest(url), objectClass);
             } else {
-                return jsonToObject(sendHTTPRequest(url), objectClass);
+                return jsonToObject(sendHttpRequest(url), objectClass);
             }
         } catch (Exception e) {
-            Logger.log("Error when retriving url: " + url);
             Logger.logError(e);
             return null;
         }
@@ -84,8 +82,8 @@ public class WebController {
      *            of the server to retrieve data from
      * @return response returned from the Webserver
      */
-    public static String sendHTTPRequest(String url) {
-        return sendHTTPRequest(url, true);
+    public static String sendHttpRequest(String url) {
+        return sendHttpRequest(url, true);
     }
 
     /**
@@ -95,7 +93,7 @@ public class WebController {
      *            of the server to retrieve data from
      * @return response returned from the Webserver
      */
-    public static String sendHTTPRequest(String url, boolean includeToken) {
+    public static String sendHttpRequest(String url, boolean includeToken) {
         StringBuilder result = new StringBuilder();
         try {
             URL urlSite = new URL(url);
@@ -124,7 +122,7 @@ public class WebController {
      *            of the server to retrieve data from
      * @return response returned from the Webserver
      */
-    public static String sendHTTPsRequest(String url) {
+    public static String sendHttpsRequest(String url) {
         StringBuilder result = new StringBuilder();
         try {
             URL urlSite = new URL(url);
@@ -137,7 +135,6 @@ public class WebController {
             }
             reader.close();
         } catch (Exception e) {
-            Logger.log("Error!!!!\n" + e.toString() + "\n======================================================\n");
         }
         //System.out.println(result);
         return result.toString();
@@ -170,7 +167,6 @@ public class WebController {
             sc.init(null, new TrustManager[] {trm}, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (Exception e) {
-            Logger.log("Error!!!!\n" + e.toString() + "\n======================================================\n");
         }
     }
 }
