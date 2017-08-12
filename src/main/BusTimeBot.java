@@ -17,7 +17,6 @@ import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
-import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -100,11 +99,13 @@ public class BusTimeBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         try {
+            boolean isGroupChat = true;
             Command command = null;
             if (update.hasCallbackQuery()) { //If the user presses update
                 executeUpdateCommand(update);
             } else if (update.hasMessage()) { //Standard messages
                 Message message = update.getMessage();
+                isGroupChat = (message.getChatId() < 0) ? true : false;
                 if (message.getText() != null) {
                     String text = removeMention(message.getText()); //Don't need the "@BusTimeBot" to handle commands
                     String commandText = getCommand(text);
@@ -127,10 +128,16 @@ public class BusTimeBot extends TelegramLongPollingBot {
                 }
             }
 
+            //Process extra data, usually the keyboard stuff
             if (command != null) {
                 CommandResponse reply = command.execute();
-                InlineKeyboardMarkup keyboard = null;
-                if (reply.data != null) {
+                ReplyKeyboard keyboard = null;
+
+                if (!isGroupChat) { //To single user only
+                    keyboard = KeyboardFactory.createSendLocationKeyboard();
+                }
+
+                if (reply.data != null) { //Append update button if responseCommand contains location
                     double latitude = Double.parseDouble(reply.data.get("latitude"));
                     double longitude = Double.parseDouble(reply.data.get("longitude"));
                     keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude);
