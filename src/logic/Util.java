@@ -82,4 +82,13 @@ public class Util {
         }
         return paddedInput;
     }
+
+    public static String padBusTime(String input) {
+        return pad(input, 5);
+    }
+
+    public static String padBusTitle(String input) {
+        int lengthToPad = (input.length() <= 5) ? 5 : 13;
+        return pad(input, lengthToPad);
+    }
 }

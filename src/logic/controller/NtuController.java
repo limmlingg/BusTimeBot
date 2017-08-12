@@ -27,8 +27,8 @@ public class NtuController {
     static {
         busList = new HashMap<String, ArrayList<String>>(50);
         busCode = new HashMap<String, String>();
-        busCode.put("Campus Loop - Blue (CL-B)", "CL-Blue");
-        busCode.put("Campus Loop Red (CL-R)", "CL-Red");
+        busCode.put("Campus Loop - Blue (CL-B)", "CL-B");
+        busCode.put("Campus Loop Red (CL-R)", "CL-R");
         busCode.put("Campus Rider Green", "CR");
         busCode.put("Campus WeekEnd Rider Brown", "CWR");
     }
@@ -109,7 +109,6 @@ public class NtuController {
      * @param stop
      */
     public static void printStop(BusStop stop) {
-        //System.out.println("NTUToPublic.put(\"" + stop.NTUStopCode + "\", \"\");");
         System.out.println("(" + stop.ntuStopCode + ") " + stop.Description + " -> (" + stop.Latitude + "," + stop.Longitude + ")");
     }
 
@@ -147,21 +146,21 @@ public class NtuController {
             StringBuffer busArrivals = new StringBuffer();
             //Now loop through the map and build the string
             for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
-                busArrivals.append(emoji.getUnicode() + Util.pad(busCode.get(entry.getKey()), 13) + ": ");
+                busArrivals.append(emoji.getUnicode() + Util.padBusTitle(busCode.get(entry.getKey())) + ": ");
                 boolean hasBus = false;
                 for (Integer time : entry.getValue()) {
                     hasBus = true;
                     if (time <= 0) {
-                        busArrivals.append(Util.pad("Arr", 5) + "| ");
+                        busArrivals.append(Util.padBusTime("Arr") + " | ");
                     } else {
-                        busArrivals.append(Util.pad(time + "min", 5) + "| ");
+                        busArrivals.append(Util.padBusTime(time + "min") + " | ");
                     }
                 }
                 //Add N/A if no timing is available
                 if (!hasBus) {
-                    busArrivals.append("N/A  " + "| ");
+                    busArrivals.append("N/A  " + " | ");
                 }
-                busArrivals.delete(busArrivals.length() - 2, busArrivals.length());
+                busArrivals.delete(busArrivals.length() - 3, busArrivals.length());
                 busArrivals.append("\n");
             }
             return busArrivals.toString();

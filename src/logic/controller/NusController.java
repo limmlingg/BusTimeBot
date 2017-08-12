@@ -58,15 +58,15 @@ public class NusController {
             Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
             for (NusBusArrival s : data.ShuttleServiceResult.shuttles) {
                 //Append the bus and the service name
-                busArrivals.append(emoji.getUnicode() + Util.pad(s.name, 13) + ": ");
+                busArrivals.append(emoji.getUnicode() + Util.padBusTitle(s.name) + ": ");
                 //We either get "Arr", "-" or a time in minutes
                 String firstEstimatedBusTiming;
                 if ("-".equals(s.arrivalTime)) { //No more bus service
                     firstEstimatedBusTiming = "N/A ";
                 } else if ("Arr".equalsIgnoreCase(s.arrivalTime)) { //First bus arriving
-                    firstEstimatedBusTiming = Util.pad(s.arrivalTime, 5) + " ";
+                    firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime) + " ";
                 } else {
-                    firstEstimatedBusTiming = Util.pad(s.arrivalTime + "min", 5);
+                    firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime + "min");
                 }
 
                 String secondEstimatedBusTiming;

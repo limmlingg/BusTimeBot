@@ -47,25 +47,25 @@ public class PublicController {
             PublicBusStopArrivalContainer data = WebController.retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusArrival?BusStopID=" + stop.BusStopCode + "&SST=True", PublicBusStopArrivalContainer.class);
             Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
             for (PublicBusStopArrival services : data.Services) {
-                busArrivals.append(emoji.getUnicode() + Util.pad(services.ServiceNo, 13) + ": ");
+                busArrivals.append(emoji.getUnicode() + Util.padBusTitle(services.ServiceNo) + ": ");
                 long firstEstimatedBus = Util.getTimeFromNow(services.NextBus.EstimatedArrival, Calendar.MINUTE);
                 long secondEstimatedBus = Util.getTimeFromNow(services.SubsequentBus.EstimatedArrival, Calendar.MINUTE);
 
                 //Construct string based on error and difference
                 String firstEstimatedBusTime;
                 if (firstEstimatedBus == Long.MAX_VALUE) {
-                    firstEstimatedBusTime = Util.pad("N/A ", 5);
+                    firstEstimatedBusTime = Util.padBusTime("N/A ");
                 } else if (firstEstimatedBus <= 0) {
-                    firstEstimatedBusTime = Util.pad("Arr ", 5);
+                    firstEstimatedBusTime = Util.padBusTime("Arr ");
                 } else {
-                    firstEstimatedBusTime = Util.pad(firstEstimatedBus + "min", 5);
+                    firstEstimatedBusTime = Util.padBusTime(firstEstimatedBus + "min");
                 }
 
                 String secondEstimatedBusTime;
                 if (secondEstimatedBus == Long.MAX_VALUE) {
                     secondEstimatedBusTime = "";
                 } else if (secondEstimatedBus <= 0) {
-                    secondEstimatedBusTime = " | Arr";
+                    secondEstimatedBusTime = " | " + "Arr";
                 } else {
                     secondEstimatedBusTime = " | " + secondEstimatedBus + "min";
                 }
