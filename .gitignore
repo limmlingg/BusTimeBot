@@ -47,7 +47,6 @@ Temporary Items
 .apdisk
 
 # Java project related files
-*.html
 /.gradle/
 bin/*
 
@@ -56,3 +55,4 @@ bin/*
 key.properties
 BusTimeBot.log
 main.db
+/bin/
