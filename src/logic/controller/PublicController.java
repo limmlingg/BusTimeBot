@@ -20,8 +20,8 @@ public class PublicController {
     public static void getPublicBusStopData() {
         int skip = 0;
         int stopCount = Integer.MAX_VALUE;
-        while (stopCount >= 50) { //Read until the number of stops read in is less than 50
-            //Get 50 bus stops
+        while (stopCount >= 500) { //Read until the number of stops read in is less than 500
+            //Get 500 bus stops
             PublicBusStopContainer data = WebController.retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=" + skip, PublicBusStopContainer.class);
             //Update the stop count and number of stops to skip
             stopCount = data.value.size();
