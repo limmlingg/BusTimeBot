@@ -44,12 +44,12 @@ public class PublicController {
     public static String getPublicBusArrivalTimings(BusStop stop) {
         try {
             StringBuffer busArrivals = new StringBuffer();
-            PublicBusStopArrivalContainer data = WebController.retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusArrival?BusStopID=" + stop.BusStopCode + "&SST=True", PublicBusStopArrivalContainer.class);
+            PublicBusStopArrivalContainer data = WebController.retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=" + stop.BusStopCode, PublicBusStopArrivalContainer.class);
             Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
             for (PublicBusStopArrival services : data.Services) {
                 busArrivals.append(emoji.getUnicode() + Util.padBusTitle(services.ServiceNo) + ": ");
                 long firstEstimatedBus = Util.getTimeFromNow(services.NextBus.EstimatedArrival, Calendar.MINUTE);
-                long secondEstimatedBus = Util.getTimeFromNow(services.SubsequentBus.EstimatedArrival, Calendar.MINUTE);
+                long secondEstimatedBus = Util.getTimeFromNow(services.NextBus2.EstimatedArrival, Calendar.MINUTE);
 
                 //Construct string based on error and difference
                 String firstEstimatedBusTime;

@@ -95,7 +95,7 @@ public class BusInfoController {
      */
     public static String getPublicBusInfo(String serviceNo) {
         try {
-            String response = WebController.sendHttpRequest("http://www.transitlink.com.sg/eservice/eguide/service_route.php?service=" + URLEncoder.encode(serviceNo, StandardCharsets.UTF_8.toString()), false);
+            String response = WebController.sendHttpsRequest("https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=" + URLEncoder.encode(serviceNo, StandardCharsets.UTF_8.toString()));
             //Extract the table
             String starting = "<section class=\"eguide-table\">";
             String ending = "</table>";

@@ -64,7 +64,7 @@ public class NusController {
                 if ("-".equals(s.arrivalTime)) { //No more bus service
                     firstEstimatedBusTiming = "N/A ";
                 } else if ("Arr".equalsIgnoreCase(s.arrivalTime)) { //First bus arriving
-                    firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime) + " ";
+                    firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime);
                 } else {
                     firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime + "min");
                 }
