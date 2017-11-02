@@ -23,12 +23,18 @@ import model.CommandResponse;
  */
 public class LocationCommand implements Command {
     private double maxDistanceFromPoint = 0.35; //in km
+    private int numberOfStops = 5;
     private double latitude;
     private double longitude;
 
     //Emoji alias
     private static final String EMOJI_BUSSTOP = "busstop";
     private static final String EMOJI_ONCOMING_BUS = "oncoming_bus";
+
+    public LocationCommand(double latitude, double longitude, int numberOfStopsWanted) {
+        this(latitude, longitude);
+        numberOfStops = numberOfStopsWanted;
+    }
 
     public LocationCommand(double latitude, double longitude) {
         this.latitude = latitude;
@@ -120,7 +126,7 @@ public class LocationCommand implements Command {
         try {
             ArrayList<BusStop> busstops = new ArrayList<BusStop>();
             double[] searchPoint = {latitude, longitude};
-            NearestNeighborIterator<BusStop> result = BusTimeBot.bot.busStopsSortedByCoordinates.getNearestNeighborIterator(searchPoint, 5, new LocationDistanceFunction());
+            NearestNeighborIterator<BusStop> result = BusTimeBot.bot.busStopsSortedByCoordinates.getNearestNeighborIterator(searchPoint, numberOfStops, new LocationDistanceFunction());
             Iterator<BusStop> iterator = result.iterator();
             while (iterator.hasNext()) {
                 BusStop stop = iterator.next();

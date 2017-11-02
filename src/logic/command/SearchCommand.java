@@ -3,6 +3,7 @@ package logic.command;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import logic.controller.WebController;
 import model.CommandResponse;
@@ -30,7 +31,8 @@ public class SearchCommand implements Command {
                 double lat = results.where.markers.get(0).getLatitude();
                 double lon = results.where.markers.get(0).getLongitude();
 
-                LocationCommand busTimeCommand = new LocationCommand(lat, lon);
+                int numberOfStops = getNumberOfStopsWanted(searchTerm);
+                LocationCommand busTimeCommand = new LocationCommand(lat, lon, numberOfStops);
                 result = busTimeCommand.execute();
             } else {
                 result = new CommandResponse("Unable to find location");
@@ -39,5 +41,13 @@ public class SearchCommand implements Command {
             result = new CommandResponse("Unable to find location");
         }
         return result;
+    }
+
+    private int getNumberOfStopsWanted(String input) {
+        int numberOfStops = 5;
+        if (Pattern.matches("^[0-9]{5}$", input)) { //length is 5 & all digits
+            numberOfStops = 1;
+        }
+        return numberOfStops;
     }
 }
