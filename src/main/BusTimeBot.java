@@ -25,6 +25,9 @@ import datastructures.kdtree.KdTree;
 import factory.KeyboardFactory;
 import logic.PropertiesLoader;
 import logic.Util;
+import logic.callbackhandler.AnswerCallbackQueryHandler;
+import logic.callbackhandler.EditMessageCallbackHandler;
+import logic.callbackhandler.SendMessageCallbackHandler;
 import logic.command.BusCommand;
 import logic.command.Command;
 import logic.command.LocationCommand;
@@ -162,7 +165,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
             EditMessageText editMessageText = generateEditedMessage(callbackQuery);
 
             try {
-                editMessageText(editMessageText);
+                editMessageTextAsync(editMessageText, new EditMessageCallbackHandler());
             } catch (TelegramApiException e) {
             } //Ignore if MessageNotEdited error
             lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
@@ -173,7 +176,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
         answer.setCallbackQueryId(callbackQuery.getId());
 
         try {
-            answerCallbackQuery(answer);
+            answerCallbackQueryAsync(answer, new AnswerCallbackQueryHandler());
         } catch (TelegramApiException e) {
         } //Ignore query errors, probably expired queries
     }
@@ -282,7 +285,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
         }
         boolean success = false;
         try {
-            sendMessage(sendMessageRequest); //at the end, so some magic and send the message ;)
+            sendMessageAsync(sendMessageRequest, new SendMessageCallbackHandler()); //at the end, so some magic and send the message ;)
             success = true;
         } catch (Exception e) {
             Logger.logError(e);
