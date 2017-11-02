@@ -19,7 +19,7 @@ public class SearchCommand implements Command {
     private String searchTerm;
 
     public SearchCommand(String searchTerm) {
-        this.searchTerm = searchTerm.toLowerCase().replace(KEYWORD_SEARCH, "");
+        this.searchTerm = searchTerm.toLowerCase().replaceFirst(KEYWORD_SEARCH, "");
     }
 
     public CommandResponse execute() {

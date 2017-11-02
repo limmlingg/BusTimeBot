@@ -75,14 +75,15 @@ public class LocationCommand implements Command {
                 }
             }
 
-            if (allStops.length() == 0) {
-                allStops.append("No stops nearby");
-            }
-
             //Build data to return
             HashMap<String, String> data = new HashMap<String, String>();
-            data.put("latitude", Double.toString(latitude));
-            data.put("longitude", Double.toString(longitude));
+            if (allStops.length() == 0) {
+                allStops.append("No stops nearby");
+                data = null;
+            } else {
+                data.put("latitude", Double.toString(latitude));
+                data.put("longitude", Double.toString(longitude));
+            }
 
             return new CommandResponse(allStops.toString().trim(), data);
         } catch (Exception e) {

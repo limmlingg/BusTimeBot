@@ -118,11 +118,14 @@ public class BusTimeBot extends TelegramLongPollingBot {
                     case StartHelpCommand.COMMAND_HELP:
                         command = new StartHelpCommand();
                         break;
-                    case SearchCommand.COMMAND: //Search by postal code/popular names/bus stop
-                        command = new SearchCommand(text);
-                        break;
                     case BusCommand.COMMAND: //searching for bus info
                         command = new BusCommand(text);
+                        break;
+                    default: //Default to search if there is no command
+                        //Append the "search" term at the start
+                        text = SearchCommand.COMMAND + " " + text.substring(1);
+                    case SearchCommand.COMMAND: //Search by postal code/popular names/bus stop
+                        command = new SearchCommand(text);
                         break;
                     }
                 } else if (message.getLocation() != null) {//By Location

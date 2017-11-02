@@ -17,7 +17,7 @@ public class BusCommand implements Command {
     private String searchTerm;
 
     public BusCommand(String searchTerm) {
-        this.searchTerm = searchTerm.toLowerCase().replaceAll(KEYWORD_BUS, "").toUpperCase();
+        this.searchTerm = searchTerm.toLowerCase().replaceFirst(KEYWORD_BUS, "").toUpperCase();
     }
 
     @Override
