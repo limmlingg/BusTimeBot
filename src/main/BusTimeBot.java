@@ -112,22 +112,7 @@ public class BusTimeBot extends TelegramLongPollingBot {
                 if (message.getText() != null) {
                     String text = removeMention(message.getText()); //Don't need the "@BusTimeBot" to handle commands
                     String commandText = getCommand(text);
-
-                    switch (commandText) {
-                    case StartHelpCommand.COMMAND_START: //Fall through
-                    case StartHelpCommand.COMMAND_HELP:
-                        command = new StartHelpCommand();
-                        break;
-                    case BusCommand.COMMAND: //searching for bus info
-                        command = new BusCommand(text);
-                        break;
-                    default: //Default to search if there is no command
-                        //Append the "search" term at the start
-                        text = SearchCommand.COMMAND + " " + text.substring(1);
-                    case SearchCommand.COMMAND: //Search by postal code/popular names/bus stop
-                        command = new SearchCommand(text);
-                        break;
-                    }
+                    command = parseCommand(text, commandText);
                 } else if (message.getLocation() != null) {//By Location
                     Location location = update.getMessage().getLocation();
                     command = new LocationCommand(location.getLatitude(), location.getLongitude());
@@ -153,6 +138,33 @@ public class BusTimeBot extends TelegramLongPollingBot {
         } catch (Exception e) {
             Logger.logError(e);
         }
+    }
+
+    /*
+     * Parses command from text
+     */
+    private Command parseCommand(String text, String commandText) {
+        Command command = null;
+        switch (commandText) {
+        case StartHelpCommand.COMMAND_START: //Fall through
+        case StartHelpCommand.COMMAND_HELP:
+            command = new StartHelpCommand();
+            break;
+        case BusCommand.COMMAND: //searching for bus info
+            command = new BusCommand(text);
+            break;
+        default: //Default to search if there is no command
+            //Append the "search" term at the start only if the term starts with a '/'
+            if (text.charAt(0) == '/') {
+                text = SearchCommand.COMMAND + " " + text.substring(1);
+            } else {
+                break;
+            }
+        case SearchCommand.COMMAND: //Search by postal code/popular names/bus stop
+            command = new SearchCommand(text);
+            break;
+        }
+        return command;
     }
 
     /**
