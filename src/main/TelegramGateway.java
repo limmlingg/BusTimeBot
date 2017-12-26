@@ -37,17 +37,15 @@ public class TelegramGateway extends TelegramLongPollingBot {
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
     private static final String KEYWORD_BOT_MENTION = "@" + TELEGRAM_BOT_NAME;
     public static String TELEGRAM_TOKEN;
-    public static String LTA_TOKEN;
+
 
     public HashMap<Long, Date> lastQueried; //use to limit the rate of updating bus times
-    public PropertiesLoader propertiesLoader;
 
     //Message Texts
     private static final String LAST_UPDATED_TEXT = "\n_Last updated: {0}_";
 
     public TelegramGateway(boolean isDev) {
         try {
-            propertiesLoader = new PropertiesLoader();
             loadProperties(isDev);
             lastQueried = new HashMap<Long, Date>();
         } catch (Exception e) {
@@ -55,12 +53,11 @@ public class TelegramGateway extends TelegramLongPollingBot {
         }
     }
 
-
     /**
      * Loads properties into token variables
      */
     private void loadProperties(boolean isDev) {
-        LTA_TOKEN = propertiesLoader.getLtaToken();
+        PropertiesLoader propertiesLoader = new PropertiesLoader();
         if (isDev) {
             TELEGRAM_TOKEN = propertiesLoader.getTelegramDevToken();
         } else {
