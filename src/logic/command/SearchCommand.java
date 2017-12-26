@@ -12,7 +12,7 @@ import model.json.gothere.GeoCodeContainer;
 /**
  * A command that gives the nearest bus stops when searching for a location
  */
-public class SearchCommand implements Command {
+public class SearchCommand extends Command {
     public static final String COMMAND = "/search";
     private static final String KEYWORD_SEARCH = COMMAND + " ";
 
@@ -40,6 +40,7 @@ public class SearchCommand implements Command {
         } catch (UnsupportedEncodingException e) {
             result = new CommandResponse("Unable to find location");
         }
+        commandSuccess = true;
         return result;
     }
 

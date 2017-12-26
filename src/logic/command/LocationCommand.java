@@ -21,7 +21,7 @@ import model.CommandResponse;
 /**
  * A command that returns bus times given a latitude and longitude
  */
-public class LocationCommand implements Command {
+public class LocationCommand extends Command {
     private double maxDistanceFromPoint = 0.35; //in km
     private int numberOfStops = 5;
     private double latitude;
@@ -85,6 +85,7 @@ public class LocationCommand implements Command {
                 data.put("longitude", Double.toString(longitude));
             }
 
+            commandSuccess = true;
             return new CommandResponse(allStops.toString().trim(), data);
         } catch (Exception e) {
             Logger.logError(e);
@@ -127,7 +128,7 @@ public class LocationCommand implements Command {
         try {
             ArrayList<BusStop> busstops = new ArrayList<BusStop>();
             double[] searchPoint = {latitude, longitude};
-            NearestNeighborIterator<BusStop> result = BusTimeBot.bot.busStopsSortedByCoordinates.getNearestNeighborIterator(searchPoint, numberOfStops, new LocationDistanceFunction());
+            NearestNeighborIterator<BusStop> result = BusTimeBot.getInstance().busStopsSortedByCoordinates.getNearestNeighborIterator(searchPoint, numberOfStops, new LocationDistanceFunction());
             Iterator<BusStop> iterator = result.iterator();
             while (iterator.hasNext()) {
                 BusStop stop = iterator.next();

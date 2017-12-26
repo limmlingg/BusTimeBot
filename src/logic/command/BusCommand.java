@@ -8,7 +8,7 @@ import model.CommandResponse;
 /**
  * A command to handle the `/bus` command from users
  */
-public class BusCommand implements Command {
+public class BusCommand extends Command {
     public static final String COMMAND = "/bus";
     private static final String KEYWORD_BUS = COMMAND + " ";
 
@@ -32,6 +32,7 @@ public class BusCommand implements Command {
         } else {
             busInformation = BusInfoController.getPublicBusInfo(searchTerm);
         }
+        commandSuccess = true;
         return new CommandResponse(busInformation);
     }
 

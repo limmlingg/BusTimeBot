@@ -5,10 +5,12 @@ import model.CommandResponse;
 /**
  * A command interface to execute commands given
  */
-public interface Command {
+public abstract class Command {
+
+    public boolean commandSuccess;
 
     /**
      * Executes the command given and returns the answer given
      */
-    public CommandResponse execute();
+    public abstract CommandResponse execute();
 }

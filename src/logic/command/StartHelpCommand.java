@@ -5,7 +5,7 @@ import model.CommandResponse;
 /**
  * A command to show the welcome text when the user needs and introduction to the bot
  */
-public class StartHelpCommand implements Command {
+public class StartHelpCommand extends Command {
 
     public static final String COMMAND_START = "/start";
     public static final String COMMAND_HELP = "/help";
@@ -22,6 +22,7 @@ public class StartHelpCommand implements Command {
 
     @Override
     public CommandResponse execute() {
+        commandSuccess = true;
         return new CommandResponse(WELCOME_TEXT);
     }
 

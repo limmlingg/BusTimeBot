@@ -22,7 +22,7 @@ public class NusController {
         //Loop through and convert to SG bus stops style
         for (NusBusStop stop : NUSdata.BusStopsResult.busstops) {
             if (BusStopMapping.getValue(stop.name) != null) { //Add on to public bus stop if it is the same bus stop (will be considered both NUS & Public bus stop)
-                BusStop existingStop = BusTimeBot.bot.busStops.get(BusStopMapping.getValue(stop.name));
+                BusStop existingStop = BusTimeBot.getInstance().busStops.get(BusStopMapping.getValue(stop.name));
                 existingStop.nusStopCode = stop.name;
                 existingStop.nusDescription = stop.caption;
                 existingStop.isNus = true;
@@ -33,7 +33,7 @@ public class NusController {
                 newStop.Description = stop.caption;
                 newStop.Latitude = stop.latitude;
                 newStop.Longitude = stop.longitude;
-                BusTimeBot.bot.busStops.put(newStop.BusStopCode, newStop);
+                BusTimeBot.getInstance().busStops.put(newStop.BusStopCode, newStop);
             }
         }
     }

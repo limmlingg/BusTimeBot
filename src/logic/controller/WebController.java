@@ -13,8 +13,8 @@ import javax.net.ssl.X509TrustManager;
 
 import com.google.gson.Gson;
 
-import main.BusTimeBot;
 import main.Logger;
+import main.TelegramGateway;
 
 public class WebController {
     /**
@@ -100,7 +100,7 @@ public class WebController {
             HttpURLConnection connection = (HttpURLConnection) urlSite.openConnection();
             connection.setRequestMethod("GET");
             if (includeToken) {
-                connection.setRequestProperty("AccountKey", BusTimeBot.LTA_TOKEN);
+                connection.setRequestProperty("AccountKey", TelegramGateway.LTA_TOKEN);
             }
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String line;

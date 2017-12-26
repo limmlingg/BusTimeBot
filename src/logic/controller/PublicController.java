@@ -29,7 +29,7 @@ public class PublicController {
             //Copy to the total number of stops
             for (int i = 0; i < data.value.size(); i++) {
                 data.value.get(i).isPublic = true;
-                BusTimeBot.bot.busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
+                BusTimeBot.getInstance().busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
             }
         }
     }
