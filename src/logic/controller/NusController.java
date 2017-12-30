@@ -1,10 +1,11 @@
 package logic.controller;
 
+import java.util.HashMap;
+
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
 import logic.Util;
-import main.BusTimeBot;
 import main.Logger;
 import model.BusStopMapping;
 import model.json.BusStop;
@@ -17,12 +18,12 @@ public class NusController {
     /**
      * Retrieve bus stop data from NUS and put it into the bot's busStops list
      */
-    public static void getNUSBusStopData() {
+    public static void getNUSBusStopData(HashMap<String, BusStop> busStops) {
         NusBusStopContainer NUSdata = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetBusStops?output=json", NusBusStopContainer.class);
         //Loop through and convert to SG bus stops style
         for (NusBusStop stop : NUSdata.BusStopsResult.busstops) {
             if (BusStopMapping.getValue(stop.name) != null) { //Add on to public bus stop if it is the same bus stop (will be considered both NUS & Public bus stop)
-                BusStop existingStop = BusTimeBot.getInstance().busStops.get(BusStopMapping.getValue(stop.name));
+                BusStop existingStop = busStops.get(BusStopMapping.getValue(stop.name));
                 existingStop.nusStopCode = stop.name;
                 existingStop.nusDescription = stop.caption;
                 existingStop.isNus = true;
@@ -33,7 +34,7 @@ public class NusController {
                 newStop.Description = stop.caption;
                 newStop.Latitude = stop.latitude;
                 newStop.Longitude = stop.longitude;
-                BusTimeBot.getInstance().busStops.put(newStop.BusStopCode, newStop);
+                busStops.put(newStop.BusStopCode, newStop);
             }
         }
     }

@@ -15,7 +15,6 @@ public class BusTimeBot {
 
     public static String LTA_TOKEN;
 
-    public HashMap<String, BusStop> busStops;
     public KdTree<BusStop> busStopsSortedByCoordinates;
     public double maxDistanceFromPoint = 0.35;
 
@@ -28,14 +27,13 @@ public class BusTimeBot {
     }
 
     private BusTimeBot() {
-        busStops = new HashMap<String, BusStop>(10000);
         busStopsSortedByCoordinates = new KdTree<BusStop>(2, 100);
 
         //Load LTA Token here
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         LTA_TOKEN = propertiesLoader.getLtaToken();
 
-        //Initialize bus stop data (we run it this way to prevent the api from registering the bot before it is fully initialized)
+        //Initialize bus stop data
         getBusStopData();
     }
 
@@ -43,12 +41,13 @@ public class BusTimeBot {
      * Retrieve Bus stop data from NUS & LTA
      */
     private void getBusStopData() {
+        HashMap<String, BusStop> busStops = new HashMap<String, BusStop>(10000);;
         System.out.println("Retrieving Public Bus Stop Data");
-        PublicController.getPublicBusStopData();
+        PublicController.getPublicBusStopData(busStops);
         System.out.println("Retrieving NUS Bus Stop Data");
-        NusController.getNUSBusStopData();
+        NusController.getNUSBusStopData(busStops);
         System.out.println("Retrieving NTU Bus Stop Data");
-        NtuController.getNTUBusStopData();
+        NtuController.getNTUBusStopData(busStops);
         System.out.println("Populating KD-tree");
         //Populate the KD-tree after merging bus stops
         for (BusStop stop : busStops.values()) {

@@ -267,7 +267,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
             if (!busInfo.isValidServiceNo) {
                 return "No such bus service";
             } else {
-                StringBuffer busInfoString = new StringBuffer("*" + busInfo.serviceNo + "*\n");
+                StringBuffer busInfoString = new StringBuffer("*Bus " + busInfo.serviceNo + "*\n");
 
                 for (BusInfoDirection busInfoDirection : busInfo.busInfoDirections) {
                     if (busInfoDirection.fromTerminal != null && !busInfoDirection.fromTerminal.isEmpty()) {

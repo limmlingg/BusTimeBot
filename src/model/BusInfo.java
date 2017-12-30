@@ -11,12 +11,13 @@ public class BusInfo {
 
     public BusInfo() {
         isValidServiceNo = false;
+        this.busInfoDirections = new ArrayList<BusInfoDirection>();
     }
 
     public BusInfo(String serviceNo, boolean isValidServiceNo, BusInfoDirection... busInfoDirections) {
+        super();
         this.serviceNo = serviceNo;
         this.isValidServiceNo = isValidServiceNo;
-        this.busInfoDirections = new ArrayList<BusInfoDirection>();
         addBusInfoDirection(busInfoDirections);
     }
 

@@ -1,12 +1,12 @@
 package logic.controller;
 
 import java.util.Calendar;
+import java.util.HashMap;
 
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
 import logic.Util;
-import main.BusTimeBot;
 import main.Logger;
 import model.json.BusStop;
 import model.json.publicbus.PublicBusStopArrival;
@@ -17,7 +17,7 @@ public class PublicController {
     /**
      * Retrieve bus stop data from LTA and put it into the bot's busStops list
      */
-    public static void getPublicBusStopData() {
+    public static void getPublicBusStopData(HashMap<String, BusStop> busStops) {
         int skip = 0;
         int stopCount = Integer.MAX_VALUE;
         while (stopCount >= 500) { //Read until the number of stops read in is less than 500
@@ -29,7 +29,7 @@ public class PublicController {
             //Copy to the total number of stops
             for (int i = 0; i < data.value.size(); i++) {
                 data.value.get(i).isPublic = true;
-                BusTimeBot.getInstance().busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
+                busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
             }
         }
     }

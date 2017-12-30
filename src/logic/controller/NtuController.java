@@ -8,7 +8,6 @@ import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
 
 import logic.Util;
-import main.BusTimeBot;
 import main.Logger;
 import model.BusStopMapping;
 import model.json.BusStop;
@@ -36,7 +35,7 @@ public class NtuController {
     /**
      * Retrieve bus stop data from NTU and put it into the bot's busStops list
      */
-    public static void getNTUBusStopData() {
+    public static void getNTUBusStopData(HashMap<String, BusStop> busStops) {
         /*
          * Bus data from 44478 to 44481 inclusive
          * in order: red, blue, green, brown
@@ -49,7 +48,7 @@ public class NtuController {
                 for (Node node : coordinate.nodes) {
                     if (node.id != 0) {
                         if (BusStopMapping.getValue(Integer.toString(node.id)) != null) { //Add on to public bus stop if it is the same bus stop (will be considered both NUS & Public bus stop)
-                            BusStop existingStop = BusTimeBot.getInstance().busStops.get(BusStopMapping.getValue(Integer.toString(node.id)));
+                            BusStop existingStop = busStops.get(BusStopMapping.getValue(Integer.toString(node.id)));
                             existingStop.ntuStopCode = Integer.toString(node.id);
                             existingStop.ntuDescription = fixName(isBlueRider, node);
                             existingStop.isNtu = true;
@@ -61,7 +60,7 @@ public class NtuController {
                             stop.Latitude = node.lat;
                             stop.Longitude = node.lon;
                             stop.isNtu = true;
-                            BusTimeBot.getInstance().busStops.put(stop.BusStopCode, stop);
+                            busStops.put(stop.BusStopCode, stop);
                             retrieveBusList(stop.BusStopCode);
                         }
                     }
