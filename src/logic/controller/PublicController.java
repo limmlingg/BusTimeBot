@@ -8,7 +8,7 @@ import com.vdurmont.emoji.EmojiManager;
 import logic.Util;
 import main.BusTimeBot;
 import main.Logger;
-import model.BusStop;
+import model.json.BusStop;
 import model.json.publicbus.PublicBusStopArrival;
 import model.json.publicbus.PublicBusStopArrivalContainer;
 import model.json.publicbus.PublicBusStopContainer;

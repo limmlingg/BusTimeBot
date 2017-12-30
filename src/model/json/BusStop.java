@@ -1,4 +1,4 @@
-package model;
+package model.json;
 
 import org.telegram.telegrambots.api.objects.Location;
 
@@ -6,7 +6,7 @@ import logic.Util;
 
 public class BusStop {
     public String BusStopCode;
-    public String RoadName;
+    //public String RoadName;
     public String Description;
     public double Latitude;
     public double Longitude;
@@ -37,7 +37,7 @@ public class BusStop {
     @Override
     public String toString() {
         return "BusStop [BusStopCode=" + BusStopCode
-                + ", RoadName=" + RoadName
+                //+ ", RoadName=" + RoadName
                 + ", Description=" + Description
                 + ", Latitude=" + Latitude
                 + ", Longitude=" + Longitude

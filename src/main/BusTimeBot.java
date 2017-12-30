@@ -7,7 +7,7 @@ import logic.PropertiesLoader;
 import logic.controller.NtuController;
 import logic.controller.NusController;
 import logic.controller.PublicController;
-import model.BusStop;
+import model.json.BusStop;
 
 public class BusTimeBot {
     //Instance of BusTimeBot

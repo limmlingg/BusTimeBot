@@ -3,6 +3,8 @@ package logic.command;
 import java.util.Arrays;
 
 import logic.controller.BusInfoController;
+import logic.gateway.TelegramGateway;
+import model.BusInfo;
 import model.CommandResponse;
 
 /**
@@ -22,9 +24,11 @@ public class BusCommand extends Command {
 
     @Override
     public CommandResponse execute() {
-        String busInformation;
+        BusInfo busInformation = null;
+        String busInformationString = BUS_HELP_TEXT;
+
         if (searchTerm == null || searchTerm.isEmpty()) {
-            busInformation = BUS_HELP_TEXT;
+            busInformationString = BUS_HELP_TEXT;
         } else if (Arrays.binarySearch(BusInfoController.NTUBus, searchTerm) >= 0) { //NTU bus data
             busInformation = BusInfoController.getNTUBusInfo(searchTerm);
         } else if (Arrays.binarySearch(BusInfoController.NUSBus, searchTerm) >= 0) { //NUS bus data
@@ -32,8 +36,13 @@ public class BusCommand extends Command {
         } else {
             busInformation = BusInfoController.getPublicBusInfo(searchTerm);
         }
+
+        if (busInformation != null) {
+            busInformationString = TelegramGateway.formatBusInfo(busInformation);
+        }
+
         commandSuccess = true;
-        return new CommandResponse(busInformation);
+        return new CommandResponse(busInformationString);
     }
 
 }

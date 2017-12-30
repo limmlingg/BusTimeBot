@@ -1,4 +1,4 @@
-package main;
+package logic.gateway;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -30,6 +30,9 @@ import logic.command.Command;
 import logic.command.LocationCommand;
 import logic.command.SearchCommand;
 import logic.command.StartHelpCommand;
+import main.Logger;
+import model.BusInfo;
+import model.BusInfoDirection;
 import model.CommandResponse;
 
 /** Gateway for telegram communication */
@@ -250,6 +253,45 @@ public class TelegramGateway extends TelegramLongPollingBot {
             Logger.logError(e);
         }
         return success;
+    }
+
+    /**
+     * Format information in a present-able manner
+     *
+     * @param information
+     *            List of String (Size: 7) in this order: Header, Weekday 1st bus, Weekday last bus, Sat 1st bus, Sat last bus, Sun & P.H 1st bus, Sun & P.H last bus
+     * @return Formatted string of bus information
+     */
+    public static String formatBusInfo(BusInfo busInfo) {
+        try {
+            if (!busInfo.isValidServiceNo) {
+                return "No such bus service";
+            } else {
+                StringBuffer busInfoString = new StringBuffer("*" + busInfo.serviceNo + "*\n");
+
+                for (BusInfoDirection busInfoDirection : busInfo.busInfoDirections) {
+                    if (busInfoDirection.fromTerminal != null && !busInfoDirection.fromTerminal.isEmpty()) {
+                        busInfoString.append("*From " + busInfoDirection.fromTerminal + "*\n");
+                    }
+
+                    if (busInfo.serviceNo.startsWith("NR")) {
+                        busInfoString.append("*Fri, Sat, Sun & eve of P.H*\n");
+                        busInfoString.append("1st Bus: " + busInfoDirection.friSatEvePhFirstBus + " | Last Bus: " + busInfoDirection.friSatEvePhLastBus);
+                    } else {
+                        busInfoString.append("*Weekdays*\n");
+                        busInfoString.append("1st Bus: " + busInfoDirection.weekdayFirstBus + " | Last Bus: " + busInfoDirection.weekdayFirstBus + "\n");
+                        busInfoString.append("*Saturdays*\n");
+                        busInfoString.append("1st Bus: " + busInfoDirection.satFirstBus + " | Last Bus: " + busInfoDirection.satLastBus + "\n");
+                        busInfoString.append("*Suns & P.H*\n");
+                        busInfoString.append("1st Bus: " + busInfoDirection.sunAndPhFirstBus + " | Last Bus: " + busInfoDirection.sunAndPhLastBus);
+                    }
+                }
+                return busInfoString.toString();
+            }
+        } catch (Exception e) {
+            Logger.logError(e);
+            return null;
+        }
     }
 
     /**

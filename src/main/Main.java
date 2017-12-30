@@ -4,12 +4,16 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 
 import logic.controller.WebController;
+import logic.gateway.TelegramGateway;
 
 public class Main{
     //Development and Debugging attributes
     public static boolean isDev = true;
 
-    //Gateways to run bot on
+    //Gateways to run BusTimeBot on
+    public enum Gateway {
+        TELEGRAM
+    };
     public static TelegramGateway telegramGateway;
 
     public static void main(String[] args) {
