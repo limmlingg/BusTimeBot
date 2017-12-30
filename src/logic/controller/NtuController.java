@@ -1,6 +1,7 @@
 package logic.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -9,6 +10,8 @@ import com.vdurmont.emoji.EmojiManager;
 
 import logic.Util;
 import main.Logger;
+import model.BusInfo;
+import model.BusInfoDirection;
 import model.BusStopMapping;
 import model.json.BusStop;
 import model.json.ntubus.Coordinate;
@@ -20,16 +23,51 @@ import model.json.ntubus.NtuBusStopContainer;
 import model.json.ntubus.Route;
 
 public class NtuController {
+    public static final String[] NTU_BUSES = {"CL-BLUE", "CL-RED", "CR", "CWR"};
+
+    public static final BusInfoDirection NTU_CLBLUE = new BusInfoDirection("", "0800", "2300", "0800", "2300", "0800", "2300");
+    public static final BusInfoDirection NTU_CLRED = new BusInfoDirection("", "0800", "2300", "0800", "2300", "0800", "2300");
+    public static final BusInfoDirection NTU_CR = new BusInfoDirection("", "0730", "2300", "0730", "2300", "0730", "2300");
+    public static final BusInfoDirection NTU_CWR = new BusInfoDirection("", "0730", "2300", "0730", "2300", "0730", "2300");
+
     public static HashMap<String, String> busCode;
     public static HashMap<String, ArrayList<String>> busList;
 
     static {
+        Arrays.sort(NTU_BUSES);
         busList = new HashMap<String, ArrayList<String>>(50);
         busCode = new HashMap<String, String>();
         busCode.put("Campus Loop - Blue (CL-B)", "CL-B");
         busCode.put("Campus Loop Red (CL-R)", "CL-R");
         busCode.put("Campus Rider Green", "CR");
         busCode.put("Campus WeekEnd Rider Brown", "CWR");
+    }
+
+    /**
+     * Return information regarding NTU shuttle buses
+     *
+     * @param serviceNoUpper
+     *            of NTU bus
+     * @return a nicely formatted string with the first/last bus
+     */
+    public static BusInfo getNTUBusInfo(String serviceNo) {
+        BusInfo busInfo = new BusInfo();
+
+        //CL-Blue, CL-Red, CR, CWR
+        String serviceNoUpper = serviceNo.toUpperCase();
+
+        //In order: Service Number, Weekday-Sat-Sun/P.H First and Last bus
+        if (serviceNoUpper.equalsIgnoreCase("CL-Blue")) {
+            busInfo = new BusInfo(serviceNoUpper, true, NTU_CLBLUE);
+        } else if (serviceNoUpper.equalsIgnoreCase("CL-Red")) {
+            busInfo = new BusInfo(serviceNoUpper, true, NTU_CLRED);
+        } else if (serviceNoUpper.equalsIgnoreCase("CR")) {
+            busInfo = new BusInfo(serviceNoUpper, true, NTU_CR);
+        } else if (serviceNoUpper.equalsIgnoreCase("CWR")) {
+            busInfo = new BusInfo(serviceNoUpper, true, NTU_CWR);
+        }
+
+        return busInfo;
     }
 
     /**
@@ -142,7 +180,7 @@ public class NtuController {
             }
 
             Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-            StringBuffer busArrivals = new StringBuffer();
+            StringBuilder busArrivals = new StringBuilder();
             //Now loop through the map and build the string
             for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
                 busArrivals.append(emoji.getUnicode() + Util.padBusTitle(busCode.get(entry.getKey())) + ": ");

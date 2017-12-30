@@ -2,7 +2,9 @@ package logic.command;
 
 import java.util.Arrays;
 
-import logic.controller.BusInfoController;
+import logic.controller.NtuController;
+import logic.controller.NusController;
+import logic.controller.PublicController;
 import logic.gateway.TelegramGateway;
 import model.BusInfo;
 import model.CommandResponse;
@@ -29,12 +31,12 @@ public class BusCommand extends Command {
 
         if (searchTerm == null || searchTerm.isEmpty()) {
             busInformationString = BUS_HELP_TEXT;
-        } else if (Arrays.binarySearch(BusInfoController.NTUBus, searchTerm) >= 0) { //NTU bus data
-            busInformation = BusInfoController.getNTUBusInfo(searchTerm);
-        } else if (Arrays.binarySearch(BusInfoController.NUSBus, searchTerm) >= 0) { //NUS bus data
-            busInformation = BusInfoController.getNUSBusInfo(searchTerm);
+        } else if (Arrays.binarySearch(NtuController.NTU_BUSES, searchTerm) >= 0) { //NTU bus data
+            busInformation = NtuController.getNTUBusInfo(searchTerm);
+        } else if (Arrays.binarySearch(NusController.NUS_BUSES, searchTerm) >= 0) { //NUS bus data
+            busInformation = NusController.getNUSBusInfo(searchTerm);
         } else {
-            busInformation = BusInfoController.getPublicBusInfo(searchTerm);
+            busInformation = PublicController.getPublicBusInfo(searchTerm);
         }
 
         if (busInformation != null) {
