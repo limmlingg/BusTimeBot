@@ -1,4 +1,4 @@
-package model.json;
+package model;
 
 import org.telegram.telegrambots.api.objects.Location;
 

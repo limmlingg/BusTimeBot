@@ -15,8 +15,8 @@ import logic.controller.NusController;
 import logic.controller.PublicController;
 import main.BusTimeBot;
 import main.Logger;
+import model.BusStop;
 import model.CommandResponse;
-import model.json.BusStop;
 
 /**
  * A command that returns bus times given a latitude and longitude
