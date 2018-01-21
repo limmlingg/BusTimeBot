@@ -8,7 +8,7 @@ import logic.gateway.TelegramGateway;
 
 public class Main{
     //Development and Debugging attributes
-    public static boolean isDev = true;
+    public static boolean isDev = false;
 
     //Gateways to run BusTimeBot on
     public enum Gateway {
