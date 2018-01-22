@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.telegram.telegrambots.ApiContextInitializer;
 
 import logic.command.BusCommand;
+import logic.command.StartHelpCommand;
 import logic.controller.WebController;
 import main.BusTimeBot;
 
@@ -19,6 +20,22 @@ public class SystemTesting {
 
         //Start up bot
         bot = BusTimeBot.getInstance();
+    }
+
+    @Test
+    public void testStartCommand() {
+        //"/help"
+        String result = new StartHelpCommand().execute().text;
+        Assert.assertTrue(result.contains("Send me your location"));
+        Assert.assertTrue(result.contains("Contact @SimpleLegend for bugs/suggestions!"));
+    }
+    
+    @Test
+    public void testHelpCommand() {
+        //"/help"
+        String result = new StartHelpCommand().execute().text;
+        Assert.assertTrue(result.contains("Send me your location"));
+        Assert.assertTrue(result.contains("Contact @SimpleLegend for bugs/suggestions!"));
     }
 
     @Test
