@@ -39,16 +39,15 @@ public class BusTimeBot {
         LTA_TOKEN = propertiesLoader.getLtaToken();
 
         //Initialize bus stop data
-        boolean online = false;
-        boolean saveToDatabase = false;
-        getBusStopData(online, saveToDatabase);
+        boolean useDatabase = true;
+        getBusStopData(useDatabase);
     }
 
     /**
      * Retrieve Bus stop data from NUS & LTA
      */
-    private void getBusStopData(boolean isOnline, boolean saveToDatabase) {
-        if (isOnline) {
+    private void getBusStopData(boolean useDatabase) {
+        if (!useDatabase) {
             HashMap<String, BusStop> busStops = new HashMap<String, BusStop>(10000);
             System.out.println("Retrieving Public Bus Stop Data");
             PublicController.getPublicBusStopData(busStops);
@@ -67,10 +66,8 @@ public class BusTimeBot {
                 busStopsSortedByCoordinates.addPoint(point, stop);
             }
 
-            if (saveToDatabase) {
-                System.out.println("Saving to database");
-                saveBusStops(busStops);
-            }
+            System.out.println("Saving to database");
+            saveBusStops(busStops);
         } else {
             System.out.println("Loading bus stops from database");
             loadBusStops();
