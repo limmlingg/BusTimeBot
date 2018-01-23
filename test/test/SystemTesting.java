@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.telegram.telegrambots.ApiContextInitializer;
 
 import logic.command.BusCommand;
+import logic.command.SearchCommand;
+import logic.command.StartHelpCommand;
 import logic.controller.WebController;
 import main.BusTimeBot;
 
@@ -19,6 +21,22 @@ public class SystemTesting {
 
         //Start up bot
         bot = BusTimeBot.getInstance();
+    }
+
+    @Test
+    public void testStartCommand() {
+        //"/help"
+        String result = new StartHelpCommand().execute().text;
+        Assert.assertTrue(result.contains("Send me your location"));
+        Assert.assertTrue(result.contains("Contact @SimpleLegend for bugs/suggestions!"));
+    }
+    
+    @Test
+    public void testHelpCommand() {
+        //"/help"
+        String result = new StartHelpCommand().execute().text;
+        Assert.assertTrue(result.contains("Send me your location"));
+        Assert.assertTrue(result.contains("Contact @SimpleLegend for bugs/suggestions!"));
     }
 
     @Test
@@ -81,6 +99,32 @@ public class SystemTesting {
         Assert.assertTrue(result.contains("Fri, Sat, Sun & eve of P.H"));
         Assert.assertTrue(result.contains("1st Bus"));
         Assert.assertTrue(result.contains("Last Bus"));
+    }
+    
+    @Test
+    public void testLocationSearchCommand() {
+        //"/search kovan hub"
+        String result = new SearchCommand("kovan hub").execute().text;
+        Assert.assertTrue(result.contains("63221"));
+        Assert.assertTrue(result.contains("KOVAN HUB"));
+        Assert.assertTrue(result.contains("112"));
+        Assert.assertTrue(result.contains("113"));
+        Assert.assertTrue(result.contains("119"));
+        Assert.assertTrue(result.contains("Kovan Stn")); //Areas near kovan hub should appear
+        Assert.assertTrue(result.contains("101"));        
+    }
+    
+    @Test
+    public void testBusStopSearchCommand() {
+        //"/search 63221"
+        String result = new SearchCommand("63221").execute().text;
+        Assert.assertTrue(result.contains("63221"));
+        Assert.assertTrue(result.contains("KOVAN HUB"));
+        Assert.assertTrue(result.contains("112"));
+        Assert.assertTrue(result.contains("113"));
+        Assert.assertTrue(result.contains("119"));
+        Assert.assertFalse(result.contains("Kovan Stn")); //Areas near kovan hub should NOT appear
+        Assert.assertFalse(result.contains("101"));
     }
 
 }
