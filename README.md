@@ -1,4 +1,4 @@
-# Bus Time Bot (SGBus)
+# Bus Time Bot ([@bus_time_bot](https://t.me/bus_time_bot))
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3eb9dfac269d4cadac76da4716f245db)](https://www.codacy.com/app/bernardyip/BusTimeBot?utm_source=github.com&utm_medium=referral&utm_content=bernardyip/BusTimeBot&utm_campaign=badger)
 
@@ -6,7 +6,7 @@ Bus Time Bot is a telegram bot that tells you bus timings of the nearest bus sto
 
 Currently supports bus timings for NUS, NTU, SBS Transit and SMRT Buses.
 
-Try it out at http://telegram.me/bus_time_bot
+Try it out at https://t.me/bus_time_bot
 
 ## Getting Started
 
@@ -14,17 +14,19 @@ Try it out at http://telegram.me/bus_time_bot
 2. Create a file `key.properties` in the project's root folder and go to the links below to get a token
    - LTA Token: https://www.mytransport.sg/content/mytransport/home/dataMall.html
    - Telegram Bot Token: http://telegram.me/BotFather
+     - Create a new bot and retrieve the token
 3. Fill the contents of `key.properties` like this:
 ```
 lta=<<insert lta token here>>
 telegram=<<insert telegram token here>>
-telegram_dev=<<insert alternate telegram token here, usually use this for development>>
+#either 'true' or 'false' (defaults to false)
+use_database=false
 ```
 4. Run!
 
 ## Running the tests
 
-No automated testing currently
+*Automated testing development in progress*
 
 Functions to check
 
@@ -48,13 +50,15 @@ Functions to check
 
 ## Deployment
 
-No extra steps needed.
+- Ensure that `key.properties` file is in the same directory as the `BusTimeBot.jar` file
+- Run the jar file using command: `java -jar BusTimeBot.jar`
 
 ## Built With
 
 * [Java Telegram Bot API](https://github.com/rubenlagus/TelegramBots) - The telegram bot framework
 * [GSON](https://github.com/google/gson) - Parsing of json data retrieved from the bus timing services
 * [Emoji Java](https://github.com/vdurmont/emoji-java) - Used to generate the emoji unicode for the text
+* [Jsoup](https://jsoup.org/) - Used for parsing public bus information from the *SBSTransit* website
 
 ## Contributing
 
@@ -69,6 +73,7 @@ Bus timing from various organizations are retrieved from their respective server
 ## Authors
 
 * **Bernard Yip** - *Initial work* - [bernardyip](https://github.com/bernardyip)
+* **Lim Miao Ling** - System Testing - [limmlingg](https://github.com/limmlingg)
 
 ## License
 
