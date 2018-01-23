@@ -46,7 +46,7 @@ public class PropertiesLoader {
         return telegramToken;
     }
 
-    public boolean isUseDatabase() {
+    public boolean getUseDatabase() {
         return useDatabase;
     }
 }
