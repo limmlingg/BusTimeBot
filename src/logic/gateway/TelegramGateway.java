@@ -76,7 +76,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (message.getText() != null) {
                     String text = removeMention(message.getText()); //Don't need the "@BusTimeBot" to handle commands
                     String commandText = getCommand(text);
-                    command = parseCommand(text, commandText);
+                    command = parseCommand(text, commandText, isGroupChat);
                 } else if (message.getLocation() != null) {//By Location
                     Location location = update.getMessage().getLocation();
                     command = new LocationCommand(location.getLatitude(), location.getLongitude());
@@ -107,7 +107,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
     /*
      * Parses command from text
      */
-    private Command parseCommand(String text, String commandText) {
+    private Command parseCommand(String text, String commandText, boolean isGroupChat) {
         Command command = null;
         switch (commandText) {
         case StartHelpCommand.COMMAND_START: //Fall through
@@ -118,8 +118,8 @@ public class TelegramGateway extends TelegramLongPollingBot {
             command = new BusCommand(text);
             break;
         default: //Default to search if there is no command
-            //Append the "search" term at the start only if the term starts with a '/'
-            if (text.charAt(0) == '/') {
+            //Append the "search" term at the start only if the term starts with a '/' and its not a group chat
+            if (text.charAt(0) == '/' && !isGroupChat) {
                 text = SearchCommand.COMMAND + " " + text.substring(1);
             } else {
                 break;
