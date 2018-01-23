@@ -26,10 +26,11 @@ public class SearchCommand extends Command {
         GeoCodeContainer results;
         CommandResponse result;
         try {
-            results = WebController.retrieveData("https://gothere.sg/a/search?q=" + URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString()), GeoCodeContainer.class);
+            String encodedSearchTerm = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString());
+            results = WebController.retrieveData("https://gothere.sg/a/search?q=" + encodedSearchTerm, GeoCodeContainer.class, true);
             if (results != null && results.status == 1) {
-                double lat = results.where.markers.get(0).getLatitude();
-                double lon = results.where.markers.get(0).getLongitude();
+                double lat = results.what.markers.get(0).getLatitude();
+                double lon = results.what.markers.get(0).getLongitude();
 
                 int numberOfStops = getNumberOfStopsWanted(searchTerm);
                 LocationCommand busTimeCommand = new LocationCommand(lat, lon, numberOfStops);

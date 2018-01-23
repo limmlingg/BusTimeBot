@@ -15,7 +15,7 @@ public class SystemTesting {
 
     @BeforeClass
     public static void setUp() {
-      //Enable trust for SSL
+        //Enable trust for SSL
         WebController.trustAll();
         ApiContextInitializer.init();
 
@@ -30,7 +30,7 @@ public class SystemTesting {
         Assert.assertTrue(result.contains("Send me your location"));
         Assert.assertTrue(result.contains("Contact @SimpleLegend for bugs/suggestions!"));
     }
-    
+
     @Test
     public void testHelpCommand() {
         //"/help"
@@ -100,20 +100,20 @@ public class SystemTesting {
         Assert.assertTrue(result.contains("1st Bus"));
         Assert.assertTrue(result.contains("Last Bus"));
     }
-    
+
     @Test
     public void testLocationSearchCommand() {
         //"/search kovan hub"
-        String result = new SearchCommand("kovan hub").execute().text;
+        String result = new SearchCommand("kovan mall").execute().text;
         Assert.assertTrue(result.contains("63221"));
         Assert.assertTrue(result.contains("KOVAN HUB"));
         Assert.assertTrue(result.contains("112"));
         Assert.assertTrue(result.contains("113"));
         Assert.assertTrue(result.contains("119"));
         Assert.assertTrue(result.contains("Kovan Stn")); //Areas near kovan hub should appear
-        Assert.assertTrue(result.contains("101"));        
+        Assert.assertTrue(result.contains("101"));
     }
-    
+
     @Test
     public void testBusStopSearchCommand() {
         //"/search 63221"
