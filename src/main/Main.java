@@ -7,9 +7,6 @@ import logic.controller.WebController;
 import logic.gateway.TelegramGateway;
 
 public class Main{
-    //Development and Debugging attributes
-    public static boolean isDev = false;
-
     //Gateways to run BusTimeBot on
     public enum Gateway {
         TELEGRAM
@@ -27,7 +24,7 @@ public class Main{
         //Load telegram gateway
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
-            telegramGateway = new TelegramGateway(isDev);
+            telegramGateway = new TelegramGateway();
             telegramBotsApi.registerBot(telegramGateway);
         } catch (Exception e) {
             Logger.logError(e);

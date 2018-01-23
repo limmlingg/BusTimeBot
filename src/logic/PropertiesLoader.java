@@ -13,19 +13,20 @@ public class PropertiesLoader {
 
     private static final String PROPERTIES_KEY_LTA = "lta";
     private static final String PROPERTIES_KEY_TELEGRAM = "telegram";
-    private static final String PROPERTIES_KEY_TELEGRAM_DEV = "telegram_dev";
+    private static final String PROPERTIES_USE_DATABASE = "use_database";
 
     private String ltaToken;
     private String telegramToken;
-    private String telegramDevToken;
+    private boolean useDatabase;
 
     public PropertiesLoader() {
+        useDatabase = false;
         try {
             FileInputStream propertiesStream = new FileInputStream(PROPERTIES_FILE);
             Properties properties = new Properties();
             properties.load(propertiesStream);
 
-            telegramDevToken = properties.getProperty(PROPERTIES_KEY_TELEGRAM_DEV, "");
+            useDatabase = Boolean.parseBoolean(properties.getProperty(PROPERTIES_USE_DATABASE, "false"));
             telegramToken = properties.getProperty(PROPERTIES_KEY_TELEGRAM, "");
             ltaToken = properties.getProperty(PROPERTIES_KEY_LTA, "");
 
@@ -45,7 +46,7 @@ public class PropertiesLoader {
         return telegramToken;
     }
 
-    public String getTelegramDevToken() {
-        return telegramDevToken;
+    public boolean getUseDatabase() {
+        return useDatabase;
     }
 }

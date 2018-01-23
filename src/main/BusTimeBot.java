@@ -17,11 +17,11 @@ import model.BusStop;
 public class BusTimeBot {
     //Instance of BusTimeBot
     public static BusTimeBot instance = null;
-
     public static String LTA_TOKEN;
 
     public KdTree<BusStop> busStopsSortedByCoordinates;
     public double maxDistanceFromPoint = 0.35;
+    public static int estimatedNumberOfBusStops = 5000;
 
 
     public static BusTimeBot getInstance() {
@@ -39,16 +39,15 @@ public class BusTimeBot {
         LTA_TOKEN = propertiesLoader.getLtaToken();
 
         //Initialize bus stop data
-        boolean online = false;
-        boolean saveToDatabase = false;
-        getBusStopData(online, saveToDatabase);
+        boolean useDatabase = propertiesLoader.getUseDatabase();
+        getBusStopData(useDatabase);
     }
 
     /**
      * Retrieve Bus stop data from NUS & LTA
      */
-    private void getBusStopData(boolean isOnline, boolean saveToDatabase) {
-        if (isOnline) {
+    private void getBusStopData(boolean useDatabase) {
+        if (!useDatabase) {
             HashMap<String, BusStop> busStops = new HashMap<String, BusStop>(10000);
             System.out.println("Retrieving Public Bus Stop Data");
             PublicController.getPublicBusStopData(busStops);
@@ -67,24 +66,34 @@ public class BusTimeBot {
                 busStopsSortedByCoordinates.addPoint(point, stop);
             }
 
-            if (saveToDatabase) {
-                System.out.println("Saving to database");
-                saveBusStops(busStops);
-            }
+            System.out.println("Saving to database");
+            saveBusStops(busStops);
         } else {
             System.out.println("Loading bus stops from database");
-            loadBusStops();
+            boolean success = loadBusStops();
+            //If unable to load database, use online method instead
+            if (!success) {
+                getBusStopData(false);
+                return;
+            }
         }
 
         System.out.println("All bus stop data loaded!");
     }
 
-    private void loadBusStops() {
+    private boolean loadBusStops() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        boolean isSuccess = false;
         try {
-            Connection connection = DatabaseController.getConnection();
+            connection = DatabaseController.getConnection();
             connection.setAutoCommit(false);
-            PreparedStatement statement = connection.prepareStatement("SELECT bus_stop_code, description, latitude, longitude, is_public, is_nus, is_ntu, nus_stop_code, nus_description, ntu_stop_code, ntu_description FROM bus_stop;");
-            ResultSet resultSet = statement.executeQuery();
+            statement = connection.prepareStatement("SELECT bus_stop_code, description, latitude, longitude, is_public, is_nus, is_ntu, nus_stop_code, nus_description, ntu_stop_code, ntu_description FROM bus_stop;");
+            resultSet = statement.executeQuery();
+
+            int rows = 0;
+
             while (resultSet.next()) {
                 //Build and set the parameters
                 BusStop stop = new BusStop();
@@ -105,19 +114,56 @@ public class BusTimeBot {
                 point[0] = stop.Latitude;
                 point[1] = stop.Longitude;
                 busStopsSortedByCoordinates.addPoint(point, stop);
+
+                rows++;
             }
-        } catch (SQLException e) {
+
+            if (rows <= estimatedNumberOfBusStops) {
+                //main.db file exists but no tables/rows exists
+                busStopsSortedByCoordinates = new KdTree<BusStop>(2, 100);
+                throw new Exception("Bus stop data incomplete");
+            }
+
+            isSuccess = true;
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            //Attempt to close resultSet, statement and connection
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
+
+        return isSuccess;
     }
 
     private void saveBusStops(HashMap<String, BusStop> busStops) {
+        Connection connection = null;
+        PreparedStatement statement = null;
         try {
-            Connection connection = DatabaseController.getConnection();
+            connection = DatabaseController.getConnection();
             connection.setAutoCommit(false);
 
             //Delete old bus stops (since we want to save a new copy)
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM bus_stop;");
+            statement = connection.prepareStatement("DELETE FROM bus_stop;");
             statement.executeUpdate();
             statement.close();
 
@@ -136,11 +182,26 @@ public class BusTimeBot {
                 statement.setString(11, stop.ntuDescription);
                 statement.executeUpdate();
             }
-            statement.close();
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
             e.printStackTrace();
+        }  finally {
+            //Attempt to close statement and connection
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
