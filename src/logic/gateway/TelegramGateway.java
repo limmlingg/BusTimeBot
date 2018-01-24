@@ -106,7 +106,8 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (reply.data != null) { //Append update button if responseCommand contains location
                     double latitude = Double.parseDouble(reply.data.get("latitude"));
                     double longitude = Double.parseDouble(reply.data.get("longitude"));
-                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude);
+                    int numberOfStopsWanted = Integer.parseInt(reply.data.get("numberOfStopsWanted"));
+                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted);
                 }
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
             }
@@ -205,17 +206,18 @@ public class TelegramGateway extends TelegramLongPollingBot {
         String[] data = callbackQuery.getData().split(":");
         double latitude = Double.parseDouble(data[0]);
         double longitude = Double.parseDouble(data[1]);
+        int numberOfStopsWanted = Integer.parseInt(data[2]);
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         String lastUpdated = MessageFormat.format(LAST_UPDATED_TEXT, timeFormat.format(new Date()));
 
-        Command busTimeCommand = new LocationCommand(latitude, longitude);
+        Command busTimeCommand = new LocationCommand(latitude, longitude, numberOfStopsWanted);
         CommandResponse answer = busTimeCommand.execute();
 
         editMessageText.setText(answer.text + lastUpdated);
 
         //Re-add the inline keyboard
-        editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude));
+        editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted));
         return editMessageText;
     }
 
@@ -304,9 +306,11 @@ public class TelegramGateway extends TelegramLongPollingBot {
      * Formats a BusStopArrivalContainer into the telegram format with markdown
      * @return user-friendly string to display on telegram
      */
-    public static String formatBusArrival(BusStopArrivalContainer busStopArrivalContainer) {
+    public static String formatBusArrival(BusStopArrivalContainer busStopArrivalContainer, int numberOfStopsWanted) {
+        int count = 0;
         StringBuilder formattedString = new StringBuilder();
         for (BusStopArrival busStopArrival : busStopArrivalContainer.busStopArrivals) {
+            count++;
             formattedString.append(buildBusStopHeader(busStopArrival.busStop));
 
             formattedString.append("\n```\n"); //For fixed-width formatting
@@ -339,6 +343,11 @@ public class TelegramGateway extends TelegramLongPollingBot {
             }
             formattedString.append("```"); //End fixed-width formatting
             formattedString.append("\n");
+
+            //Exit if hit the number of stops
+            if (count >= numberOfStopsWanted) {
+                break;
+            }
         }
         return formattedString.toString();
     }
