@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import com.vdurmont.emoji.Emoji;
-import com.vdurmont.emoji.EmojiManager;
-
 import datastructures.kdtree.NearestNeighborIterator;
 import logic.LocationDistanceFunction;
 import logic.Util;
 import logic.controller.NtuController;
 import logic.controller.NusController;
 import logic.controller.PublicController;
+import logic.gateway.TelegramGateway;
 import main.BusTimeBot;
 import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
+import model.busarrival.BusStopArrival;
+import model.busarrival.BusStopArrivalContainer;
 
 /**
  * A command that returns bus times given a latitude and longitude
@@ -26,10 +26,6 @@ public class LocationCommand extends Command {
     private int numberOfStops = 5;
     private double latitude;
     private double longitude;
-
-    //Emoji alias
-    private static final String EMOJI_BUSSTOP = "busstop";
-    private static final String EMOJI_ONCOMING_BUS = "oncoming_bus";
 
     public LocationCommand(double latitude, double longitude, int numberOfStopsWanted) {
         this(latitude, longitude);
@@ -44,76 +40,54 @@ public class LocationCommand extends Command {
     @Override
     public CommandResponse execute() {
         try {
-            Iterator<BusStop> busstops = getNearbyBusStops(latitude, longitude);
-            StringBuilder allStops = new StringBuilder();
+            Iterator<BusStop> busstops = getNearbyBusStops(latitude, longitude, numberOfStops);
+            BusStopArrivalContainer allStops = new BusStopArrivalContainer();
+
             while (busstops.hasNext()) {
                 BusStop stop = busstops.next();
-
-                StringBuilder stops = new StringBuilder();
-
-                //Build the header for the bus stop
-                stops.append(buildBusStopHeader(stop));
-
+                BusStopArrival busStopArrival = null;
                 //Append the bus times accordingly
-                stops.append("\n```\n"); //For fixed-width formatting
                 if (stop.isPublic) {
-                    stops.append(PublicController.getPublicBusArrivalTimings(stop));
+                    busStopArrival = PublicController.getPublicBusArrivalTimings(stop);
                 }
                 if (stop.isNus) {
-                    stops.append(NusController.getNUSArrivalTimings(stop));
+                    busStopArrival = NusController.getNUSArrivalTimings(stop);
                 }
                 if (stop.isNtu) {
-                    stops.append(NtuController.getNTUBusArrivalTimings(stop));
+                    busStopArrival = NtuController.getNTUBusArrivalTimings(stop);
                 }
-                stops.append("```"); //End fixed-width formatting
 
-                //If there exist an oncoming_bus emoji, then we append, otherwise that bus stop has no buses (so we ignore)
-                Emoji emoji = EmojiManager.getForAlias(EMOJI_ONCOMING_BUS);
-                if (stops.toString().contains(emoji.getUnicode())) {
-                    allStops.append(stops.toString());
-                    allStops.append("\n");
+                //If there exist a bus for the bus stop, then we append, otherwise that bus stop has no buses (so we ignore)
+                if (busStopArrival != null && busStopArrival.busArrivals.size() != 0) {
+                    allStops.busStopArrivals.add(busStopArrival);
                 }
             }
 
+            String busArrivalString = "";
+            if (allStops != null) {
+                busArrivalString = TelegramGateway.formatBusArrival(allStops).trim();
+            }
+
             //Build data to return
-            HashMap<String, String> data = new HashMap<String, String>();
-            if (allStops.length() == 0) {
-                allStops.append("No stops nearby");
-                data = null;
-            } else {
+            HashMap<String, String> data = null;
+            if (allStops.busStopArrivals.size() != 0) {
+                data = new HashMap<String, String>();
                 data.put("latitude", Double.toString(latitude));
                 data.put("longitude", Double.toString(longitude));
             }
 
+            //Save the requested time (for caching)
+            allStops.requestedTime = System.currentTimeMillis();
+
             commandSuccess = true;
-            return new CommandResponse(allStops.toString().trim(), data);
+            return new CommandResponse(busArrivalString, data);
         } catch (Exception e) {
             Logger.logError(e);
             return null;
         }
     }
 
-    /**
-     * Builds the bus stop header accordingly
-     */
-    private StringBuilder buildBusStopHeader(BusStop stop) {
-        Emoji emoji = EmojiManager.getForAlias(EMOJI_BUSSTOP);
-        StringBuilder stopHeader = new StringBuilder();
-        stopHeader.append(emoji.getUnicode());
-        stopHeader.append("*");
-        stopHeader.append("" + stop.BusStopCode + " - ");
-        stopHeader.append(stop.Description);
-        if (stop.isPublic && stop.isNtu) {
-            stopHeader.append("/");
-            stopHeader.append(stop.ntuDescription);
-        }
-        if (stop.isPublic && stop.isNus) {
-            stopHeader.append("/");
-            stopHeader.append(stop.nusDescription);
-        }
-        stopHeader.append("*");
-        return stopHeader;
-    }
+
 
     /**
      * Get near by bus stops of a given location
@@ -124,7 +98,7 @@ public class LocationCommand extends Command {
      *            of the user
      * @return a list of bus stops near that location sorted by distance
      */
-    public Iterator<BusStop> getNearbyBusStops(double latitude, double longitude) {
+    public Iterator<BusStop> getNearbyBusStops(double latitude, double longitude, int numberOfStops) {
         try {
             ArrayList<BusStop> busstops = new ArrayList<BusStop>();
             double[] searchPoint = {latitude, longitude};

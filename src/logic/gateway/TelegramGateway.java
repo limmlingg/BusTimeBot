@@ -19,6 +19,9 @@ import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
+
 import factory.KeyboardFactory;
 import logic.PropertiesLoader;
 import logic.Util;
@@ -31,7 +34,11 @@ import logic.command.LocationCommand;
 import logic.command.SearchCommand;
 import logic.command.StartHelpCommand;
 import main.Logger;
+import model.BusStop;
 import model.CommandResponse;
+import model.busarrival.BusArrival;
+import model.busarrival.BusStopArrival;
+import model.busarrival.BusStopArrivalContainer;
 import model.businfo.BusInfo;
 import model.businfo.BusInfoDirection;
 
@@ -39,6 +46,10 @@ import model.businfo.BusInfoDirection;
 public class TelegramGateway extends TelegramLongPollingBot {
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
     private static final String KEYWORD_BOT_MENTION = "@" + TELEGRAM_BOT_NAME;
+
+    private static final String EMOJI_BUSSTOP = "busstop";
+    private static final String EMOJI_ONCOMING_BUS = "oncoming_bus";
+
     public static String TELEGRAM_TOKEN;
 
     public HashMap<Long, Date> lastQueried; //use to limit the rate of updating bus times
@@ -287,6 +298,71 @@ public class TelegramGateway extends TelegramLongPollingBot {
             Logger.logError(e);
             return null;
         }
+    }
+
+    /**
+     * Formats a BusStopArrivalContainer into the telegram format with markdown
+     * @return user-friendly string to display on telegram
+     */
+    public static String formatBusArrival(BusStopArrivalContainer busStopArrivalContainer) {
+        StringBuilder formattedString = new StringBuilder();
+        for (BusStopArrival busStopArrival : busStopArrivalContainer.busStopArrivals) {
+            formattedString.append(buildBusStopHeader(busStopArrival.busStop));
+
+            formattedString.append("\n```\n"); //For fixed-width formatting
+            for (BusArrival busArrival : busStopArrival.busArrivals) {
+                Emoji emoji = EmojiManager.getForAlias(EMOJI_ONCOMING_BUS);
+                formattedString.append(emoji.getUnicode() + Util.padBusTitle(busArrival.serviceNo) + ": ");
+
+                //Build string for each of the arrival time
+                String firstEstimatedBusTime;
+                if (busArrival.arrivalTime1 == BusArrival.TIME_NA) {
+                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA);
+                } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
+                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_ARRIVING);
+                } else {
+                    firstEstimatedBusTime = Util.padBusTime(busArrival.arrivalTime1 + "min");
+                }
+
+                String secondEstimatedBusTime;
+                if (busArrival.arrivalTime2 == BusArrival.TIME_NA) {
+                    secondEstimatedBusTime = BusArrival.LABEL_NA_BLANK;
+                } else if (busArrival.arrivalTime2 <= BusArrival.TIME_ARRIVING) {
+                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING;
+                } else {
+                    secondEstimatedBusTime = " | " + busArrival.arrivalTime2 + "min";
+                }
+
+                //Append the string to the formatted string
+                formattedString.append(firstEstimatedBusTime + secondEstimatedBusTime);
+                formattedString.append("\n");
+            }
+            formattedString.append("```"); //End fixed-width formatting
+            formattedString.append("\n");
+        }
+        return formattedString.toString();
+    }
+
+    /**
+     * Builds the bus stop header accordingly
+     */
+    private static StringBuilder buildBusStopHeader(BusStop stop) {
+        Emoji emoji = EmojiManager.getForAlias(EMOJI_BUSSTOP);
+        StringBuilder stopHeader = new StringBuilder();
+        stopHeader.append(emoji.getUnicode());
+        stopHeader.append("*");
+        stopHeader.append("" + stop.BusStopCode + " - ");
+        stopHeader.append(stop.Description);
+        if (stop.isPublic && stop.isNtu) {
+            stopHeader.append("/");
+            stopHeader.append(stop.ntuDescription);
+        }
+        if (stop.isPublic && stop.isNus) {
+            stopHeader.append("/");
+            stopHeader.append(stop.nusDescription);
+        }
+        stopHeader.append("*");
+        return stopHeader;
     }
 
     /**

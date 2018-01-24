@@ -5,13 +5,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import com.vdurmont.emoji.Emoji;
-import com.vdurmont.emoji.EmojiManager;
-
-import logic.Util;
 import main.Logger;
 import model.BusStop;
 import model.BusStopMapping;
+import model.busarrival.BusArrival;
+import model.busarrival.BusStopArrival;
 import model.businfo.BusInfo;
 import model.businfo.BusInfoDirection;
 import model.json.ntubus.Coordinate;
@@ -156,7 +154,10 @@ public class NtuController {
      *            code for the Bus Stop
      * @return A string of bus timings formatted properly
      */
-    public static String getNTUBusArrivalTimings(BusStop stop) {
+    public static BusStopArrival getNTUBusArrivalTimings(BusStop stop) {
+        BusStopArrival busStopArrival = new BusStopArrival();
+        busStopArrival.busStop = stop;
+
         try {
             String code = stop.BusStopCode;
             if (stop.isNtu && stop.isPublic) {
@@ -179,28 +180,26 @@ public class NtuController {
                 }
             }
 
-            Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
-            StringBuilder busArrivals = new StringBuilder();
             //Now loop through the map and build the string
             for (Entry<String, ArrayList<Integer>> entry : timings.entrySet()) {
-                busArrivals.append(emoji.getUnicode() + Util.padBusTitle(busCode.get(entry.getKey())) + ": ");
-                boolean hasBus = false;
-                for (Integer time : entry.getValue()) {
-                    hasBus = true;
-                    if (time <= 0) {
-                        busArrivals.append(Util.padBusTime("Arr") + " | ");
-                    } else {
-                        busArrivals.append(Util.padBusTime(time + "min") + " | ");
-                    }
+                BusArrival busArrival = new BusArrival();
+                busArrival.serviceNo = busCode.get(entry.getKey());
+
+                //Append the timings into the model
+                if (entry.getValue().size() == 1) {
+                    busArrival.arrivalTime1 = entry.getValue().get(0);
+                    busArrival.arrivalTime2 = BusArrival.TIME_NA;
+                } else if (entry.getValue().size() >= 2) {
+                    busArrival.arrivalTime1 = entry.getValue().get(0);
+                    busArrival.arrivalTime2 = entry.getValue().get(1);
+                } else { //Add N/A if no timing is available
+                    busArrival.arrivalTime1 = BusArrival.TIME_NA;
+                    busArrival.arrivalTime2 = BusArrival.TIME_NA;
                 }
-                //Add N/A if no timing is available
-                if (!hasBus) {
-                    busArrivals.append("N/A  " + " | ");
-                }
-                busArrivals.delete(busArrivals.length() - 3, busArrivals.length());
-                busArrivals.append("\n");
+
+                busStopArrival.busArrivals.add(busArrival);
             }
-            return busArrivals.toString();
+            return busStopArrival;
         } catch (Exception e) {
             Logger.logError(e);
             return null;

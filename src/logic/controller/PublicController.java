@@ -6,12 +6,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
-import com.vdurmont.emoji.Emoji;
-import com.vdurmont.emoji.EmojiManager;
-
 import logic.Util;
 import main.Logger;
 import model.BusStop;
+import model.busarrival.BusArrival;
+import model.busarrival.BusStopArrival;
 import model.businfo.BusInfo;
 import model.businfo.BusInfoDirection;
 import model.json.publicbus.PublicBusStopArrival;
@@ -46,39 +45,19 @@ public class PublicController {
      *            code for the Bus Stop
      * @return A string of bus timings formatted properly
      */
-    public static String getPublicBusArrivalTimings(BusStop stop) {
+    public static BusStopArrival getPublicBusArrivalTimings(BusStop stop) {
+        BusStopArrival busStopArrival = new BusStopArrival();
+        busStopArrival.busStop = stop;
         try {
-            StringBuilder busArrivals = new StringBuilder();
             PublicBusStopArrivalContainer data = WebController.retrieveData("http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=" + stop.BusStopCode, PublicBusStopArrivalContainer.class);
-            Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
             for (PublicBusStopArrival services : data.Services) {
-                busArrivals.append(emoji.getUnicode() + Util.padBusTitle(services.ServiceNo) + ": ");
-                long firstEstimatedBus = Util.getTimeFromNow(services.NextBus.EstimatedArrival, Calendar.MINUTE);
-                long secondEstimatedBus = Util.getTimeFromNow(services.NextBus2.EstimatedArrival, Calendar.MINUTE);
-
-                //Construct string based on error and difference
-                String firstEstimatedBusTime;
-                if (firstEstimatedBus == Long.MAX_VALUE) {
-                    firstEstimatedBusTime = Util.padBusTime("N/A ");
-                } else if (firstEstimatedBus <= 0) {
-                    firstEstimatedBusTime = Util.padBusTime("Arr ");
-                } else {
-                    firstEstimatedBusTime = Util.padBusTime(firstEstimatedBus + "min");
-                }
-
-                String secondEstimatedBusTime;
-                if (secondEstimatedBus == Long.MAX_VALUE) {
-                    secondEstimatedBusTime = "";
-                } else if (secondEstimatedBus <= 0) {
-                    secondEstimatedBusTime = " | " + "Arr";
-                } else {
-                    secondEstimatedBusTime = " | " + secondEstimatedBus + "min";
-                }
-
-                busArrivals.append(firstEstimatedBusTime + secondEstimatedBusTime);
-                busArrivals.append("\n");
+                BusArrival busArrival = new BusArrival();
+                busArrival.serviceNo = services.ServiceNo;
+                busArrival.arrivalTime1 = Util.getTimeFromNow(services.NextBus.EstimatedArrival, Calendar.MINUTE);
+                busArrival.arrivalTime2 = Util.getTimeFromNow(services.NextBus2.EstimatedArrival, Calendar.MINUTE);
+                busStopArrival.busArrivals.add(busArrival);
             }
-            return busArrivals.toString();
+            return busStopArrival;
         } catch (Exception e) {
             Logger.logError(e);
             return null;

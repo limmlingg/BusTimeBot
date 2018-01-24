@@ -3,13 +3,11 @@ package logic.controller;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import com.vdurmont.emoji.Emoji;
-import com.vdurmont.emoji.EmojiManager;
-
-import logic.Util;
 import main.Logger;
 import model.BusStop;
 import model.BusStopMapping;
+import model.busarrival.BusArrival;
+import model.busarrival.BusStopArrival;
 import model.businfo.BusInfo;
 import model.businfo.BusInfoDirection;
 import model.json.nusbus.NusBusArrival;
@@ -94,9 +92,10 @@ public class NusController {
      *            code for the Bus Stop
      * @return A string of bus timings formatted properly
      */
-    public static String getNUSArrivalTimings(BusStop stop) {
+    public static BusStopArrival getNUSArrivalTimings(BusStop stop) {
+        BusStopArrival busStopArrival = new BusStopArrival();
+        busStopArrival.busStop = stop;
         try {
-            StringBuilder busArrivals = new StringBuilder();
             //Use the appropriate code
             String code = stop.BusStopCode;
             if (stop.isNus && stop.isPublic) {
@@ -104,33 +103,30 @@ public class NusController {
             }
 
             NusBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname=" + code, NusBusArrivalContainer.class);
-            Emoji emoji = EmojiManager.getForAlias("oncoming_bus");
             for (NusBusArrival s : data.ShuttleServiceResult.shuttles) {
-                //Append the bus and the service name
-                busArrivals.append(emoji.getUnicode() + Util.padBusTitle(s.name) + ": ");
+                BusArrival busArrival = new BusArrival();
+                busArrival.serviceNo = s.name;
+
                 //We either get "Arr", "-" or a time in minutes
-                String firstEstimatedBusTiming;
                 if ("-".equals(s.arrivalTime)) { //No more bus service
-                    firstEstimatedBusTiming = "N/A ";
+                    busArrival.arrivalTime1 = BusArrival.TIME_NA;
                 } else if ("Arr".equalsIgnoreCase(s.arrivalTime)) { //First bus arriving
-                    firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime);
+                    busArrival.arrivalTime1 = BusArrival.TIME_ARRIVING;
                 } else {
-                    firstEstimatedBusTiming = Util.padBusTime(s.arrivalTime + "min");
+                    busArrival.arrivalTime1 = Long.parseLong(s.arrivalTime);
                 }
 
-                String secondEstimatedBusTiming;
                 if ("-".equals(s.nextArrivalTime)) { //No more bus service, no need to append anything
-                    secondEstimatedBusTiming = "";
+                    busArrival.arrivalTime2 = BusArrival.TIME_NA;
                 } else if ("Arr".equalsIgnoreCase(s.nextArrivalTime)) { //First bus arriving
-                    secondEstimatedBusTiming = " | " + s.nextArrivalTime;
+                    busArrival.arrivalTime2 = BusArrival.TIME_ARRIVING;
                 } else {
-                    secondEstimatedBusTiming = " | " + s.nextArrivalTime + "min";
+                    busArrival.arrivalTime2 = Long.parseLong(s.nextArrivalTime);
                 }
 
-                busArrivals.append(firstEstimatedBusTiming + secondEstimatedBusTiming);
-                busArrivals.append("\n");
+                busStopArrival.busArrivals.add(busArrival);
             }
-            return busArrivals.toString();
+            return busStopArrival;
         } catch (Exception e) {
             Logger.logError(e);
             return null;
