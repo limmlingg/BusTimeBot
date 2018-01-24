@@ -31,9 +31,9 @@ import logic.command.LocationCommand;
 import logic.command.SearchCommand;
 import logic.command.StartHelpCommand;
 import main.Logger;
-import model.BusInfo;
-import model.BusInfoDirection;
 import model.CommandResponse;
+import model.businfo.BusInfo;
+import model.businfo.BusInfoDirection;
 
 /** Gateway for telegram communication */
 public class TelegramGateway extends TelegramLongPollingBot {

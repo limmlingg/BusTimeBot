@@ -8,10 +8,10 @@ import com.vdurmont.emoji.EmojiManager;
 
 import logic.Util;
 import main.Logger;
-import model.BusInfo;
-import model.BusInfoDirection;
 import model.BusStop;
 import model.BusStopMapping;
+import model.businfo.BusInfo;
+import model.businfo.BusInfoDirection;
 import model.json.nusbus.NusBusArrival;
 import model.json.nusbus.NusBusArrivalContainer;
 import model.json.nusbus.NusBusStop;

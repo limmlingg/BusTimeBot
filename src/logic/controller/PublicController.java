@@ -11,9 +11,9 @@ import com.vdurmont.emoji.EmojiManager;
 
 import logic.Util;
 import main.Logger;
-import model.BusInfo;
-import model.BusInfoDirection;
 import model.BusStop;
+import model.businfo.BusInfo;
+import model.businfo.BusInfoDirection;
 import model.json.publicbus.PublicBusStopArrival;
 import model.json.publicbus.PublicBusStopArrivalContainer;
 import model.json.publicbus.PublicBusStopContainer;

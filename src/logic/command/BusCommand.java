@@ -6,8 +6,8 @@ import logic.controller.NtuController;
 import logic.controller.NusController;
 import logic.controller.PublicController;
 import logic.gateway.TelegramGateway;
-import model.BusInfo;
 import model.CommandResponse;
+import model.businfo.BusInfo;
 
 /**
  * A command to handle the `/bus` command from users
