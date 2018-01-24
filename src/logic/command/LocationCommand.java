@@ -64,16 +64,17 @@ public class LocationCommand extends Command {
 
                 while (busstops.hasNext()) {
                     BusStop stop = busstops.next();
-                    BusStopArrival busStopArrival = null;
+                    BusStopArrival busStopArrival = new BusStopArrival();
+                    busStopArrival.busStop = stop;
                     //Append the bus times accordingly
                     if (stop.isPublic) {
-                        busStopArrival = PublicController.getPublicBusArrivalTimings(stop);
+                        busStopArrival.merge(PublicController.getPublicBusArrivalTimings(stop));
                     }
                     if (stop.isNus) {
-                        busStopArrival = NusController.getNUSArrivalTimings(stop);
+                        busStopArrival.merge(NusController.getNUSArrivalTimings(stop));
                     }
                     if (stop.isNtu) {
-                        busStopArrival = NtuController.getNTUBusArrivalTimings(stop);
+                        busStopArrival.merge(NtuController.getNTUBusArrivalTimings(stop));
                     }
 
                     //If there exist a bus for the bus stop, then we append, otherwise that bus stop has no buses (so we ignore)
