@@ -293,6 +293,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                         busInfoString.append("*Suns & P.H*\n");
                         busInfoString.append("1st Bus: " + busInfoDirection.sunAndPhFirstBus + " | Last Bus: " + busInfoDirection.sunAndPhLastBus);
                     }
+                    busInfoString.append("\n\n");
                 }
                 return busInfoString.toString();
             }
