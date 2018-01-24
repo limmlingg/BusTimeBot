@@ -13,8 +13,10 @@ Try it out at https://t.me/bus_time_bot
 1. Clone the project
 2. Create a file `key.properties` in the project's root folder and go to the links below to get a token
    - LTA Token: https://www.mytransport.sg/content/mytransport/home/dataMall.html
+	 - Under "Real-Time/Dynamic Data", select "Request for API access"
    - Telegram Bot Token: http://telegram.me/BotFather
-     - Create a new bot and retrieve the token
+     - Create a new bot using the command '/newbot' (if you do not currently have a Telegram bot)
+	 - Retrieve a token for your bot using the command '/token'
 3. Fill the contents of `key.properties` like this:
 ```
 lta=<<insert lta token here>>
