@@ -19,6 +19,9 @@ import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
+
 import factory.KeyboardFactory;
 import logic.PropertiesLoader;
 import logic.Util;
@@ -31,14 +34,22 @@ import logic.command.LocationCommand;
 import logic.command.SearchCommand;
 import logic.command.StartHelpCommand;
 import main.Logger;
-import model.BusInfo;
-import model.BusInfoDirection;
+import model.BusStop;
 import model.CommandResponse;
+import model.busarrival.BusArrival;
+import model.busarrival.BusStopArrival;
+import model.busarrival.BusStopArrivalContainer;
+import model.businfo.BusInfo;
+import model.businfo.BusInfoDirection;
 
 /** Gateway for telegram communication */
 public class TelegramGateway extends TelegramLongPollingBot {
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
     private static final String KEYWORD_BOT_MENTION = "@" + TELEGRAM_BOT_NAME;
+
+    private static final String EMOJI_BUSSTOP = "busstop";
+    private static final String EMOJI_ONCOMING_BUS = "oncoming_bus";
+
     public static String TELEGRAM_TOKEN;
 
     public HashMap<Long, Date> lastQueried; //use to limit the rate of updating bus times
@@ -76,7 +87,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (message.getText() != null) {
                     String text = removeMention(message.getText()); //Don't need the "@BusTimeBot" to handle commands
                     String commandText = getCommand(text);
-                    command = parseCommand(text, commandText);
+                    command = parseCommand(text, commandText, isGroupChat);
                 } else if (message.getLocation() != null) {//By Location
                     Location location = update.getMessage().getLocation();
                     command = new LocationCommand(location.getLatitude(), location.getLongitude());
@@ -95,7 +106,8 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (reply.data != null) { //Append update button if responseCommand contains location
                     double latitude = Double.parseDouble(reply.data.get("latitude"));
                     double longitude = Double.parseDouble(reply.data.get("longitude"));
-                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude);
+                    int numberOfStopsWanted = Integer.parseInt(reply.data.get("numberOfStopsWanted"));
+                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted);
                 }
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
             }
@@ -107,7 +119,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
     /*
      * Parses command from text
      */
-    private Command parseCommand(String text, String commandText) {
+    private Command parseCommand(String text, String commandText, boolean isGroupChat) {
         Command command = null;
         switch (commandText) {
         case StartHelpCommand.COMMAND_START: //Fall through
@@ -118,8 +130,8 @@ public class TelegramGateway extends TelegramLongPollingBot {
             command = new BusCommand(text);
             break;
         default: //Default to search if there is no command
-            //Append the "search" term at the start only if the term starts with a '/'
-            if (text.charAt(0) == '/') {
+            //Append the "search" term at the start only if the term starts with a '/' and its not a group chat
+            if (text.charAt(0) == '/' && !isGroupChat) {
                 text = SearchCommand.COMMAND + " " + text.substring(1);
             } else {
                 break;
@@ -194,17 +206,18 @@ public class TelegramGateway extends TelegramLongPollingBot {
         String[] data = callbackQuery.getData().split(":");
         double latitude = Double.parseDouble(data[0]);
         double longitude = Double.parseDouble(data[1]);
+        int numberOfStopsWanted = Integer.parseInt(data[2]);
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         String lastUpdated = MessageFormat.format(LAST_UPDATED_TEXT, timeFormat.format(new Date()));
 
-        Command busTimeCommand = new LocationCommand(latitude, longitude);
+        Command busTimeCommand = new LocationCommand(latitude, longitude, numberOfStopsWanted);
         CommandResponse answer = busTimeCommand.execute();
 
         editMessageText.setText(answer.text + lastUpdated);
 
         //Re-add the inline keyboard
-        editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude));
+        editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted));
         return editMessageText;
     }
 
@@ -280,6 +293,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                         busInfoString.append("*Suns & P.H*\n");
                         busInfoString.append("1st Bus: " + busInfoDirection.sunAndPhFirstBus + " | Last Bus: " + busInfoDirection.sunAndPhLastBus);
                     }
+                    busInfoString.append("\n\n");
                 }
                 return busInfoString.toString();
             }
@@ -287,6 +301,78 @@ public class TelegramGateway extends TelegramLongPollingBot {
             Logger.logError(e);
             return null;
         }
+    }
+
+    /**
+     * Formats a BusStopArrivalContainer into the telegram format with markdown
+     * @return user-friendly string to display on telegram
+     */
+    public static String formatBusArrival(BusStopArrivalContainer busStopArrivalContainer, int numberOfStopsWanted) {
+        int count = 0;
+        StringBuilder formattedString = new StringBuilder();
+        for (BusStopArrival busStopArrival : busStopArrivalContainer.busStopArrivals) {
+            count++;
+            formattedString.append(buildBusStopHeader(busStopArrival.busStop));
+
+            formattedString.append("\n```\n"); //For fixed-width formatting
+            for (BusArrival busArrival : busStopArrival.busArrivals) {
+                Emoji emoji = EmojiManager.getForAlias(EMOJI_ONCOMING_BUS);
+                formattedString.append(emoji.getUnicode() + Util.padBusTitle(busArrival.serviceNo) + ": ");
+
+                //Build string for each of the arrival time
+                String firstEstimatedBusTime;
+                if (busArrival.arrivalTime1 == BusArrival.TIME_NA) {
+                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA);
+                } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
+                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_ARRIVING);
+                } else {
+                    firstEstimatedBusTime = Util.padBusTime(busArrival.arrivalTime1 + "min");
+                }
+
+                String secondEstimatedBusTime;
+                if (busArrival.arrivalTime2 == BusArrival.TIME_NA) {
+                    secondEstimatedBusTime = BusArrival.LABEL_NA_BLANK;
+                } else if (busArrival.arrivalTime2 <= BusArrival.TIME_ARRIVING) {
+                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING;
+                } else {
+                    secondEstimatedBusTime = " | " + busArrival.arrivalTime2 + "min";
+                }
+
+                //Append the string to the formatted string
+                formattedString.append(firstEstimatedBusTime + secondEstimatedBusTime);
+                formattedString.append("\n");
+            }
+            formattedString.append("```"); //End fixed-width formatting
+            formattedString.append("\n");
+
+            //Exit if hit the number of stops
+            if (count >= numberOfStopsWanted) {
+                break;
+            }
+        }
+        return formattedString.toString();
+    }
+
+    /**
+     * Builds the bus stop header accordingly
+     */
+    private static StringBuilder buildBusStopHeader(BusStop stop) {
+        Emoji emoji = EmojiManager.getForAlias(EMOJI_BUSSTOP);
+        StringBuilder stopHeader = new StringBuilder();
+        stopHeader.append(emoji.getUnicode());
+        stopHeader.append("*");
+        stopHeader.append("" + stop.BusStopCode + " - ");
+        stopHeader.append(stop.Description);
+        if (stop.isPublic && stop.isNtu) {
+            stopHeader.append("/");
+            stopHeader.append(stop.ntuDescription);
+        }
+        if (stop.isPublic && stop.isNus) {
+            stopHeader.append("/");
+            stopHeader.append(stop.nusDescription);
+        }
+        stopHeader.append("*");
+        return stopHeader;
     }
 
     /**

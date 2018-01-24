@@ -1,4 +1,4 @@
-package model;
+package model.businfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;

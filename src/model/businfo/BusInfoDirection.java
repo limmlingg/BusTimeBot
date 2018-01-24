@@ -1,4 +1,4 @@
-package model;
+package model.businfo;
 
 /** Responsible for holding information of the information station from a specific terminal */
 public class BusInfoDirection {

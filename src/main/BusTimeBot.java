@@ -32,7 +32,7 @@ public class BusTimeBot {
     }
 
     private BusTimeBot() {
-        busStopsSortedByCoordinates = new KdTree<BusStop>(2, 100);
+        busStopsSortedByCoordinates = new KdTree<BusStop>(2, (int)(estimatedNumberOfBusStops * 1.5));
 
         //Load LTA Token here
         PropertiesLoader propertiesLoader = new PropertiesLoader();
