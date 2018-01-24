@@ -11,4 +11,8 @@ public class BusStopArrival {
     public BusStopArrival() {
         busArrivals = new ArrayList<BusArrival>();
     }
+
+    public void merge(BusStopArrival other) {
+        busArrivals.addAll(other.busArrivals);
+    }
 }
