@@ -8,6 +8,7 @@ import logic.controller.NusController;
 import logic.controller.PublicController;
 import logic.gateway.TelegramGateway;
 import model.CommandResponse;
+import model.CommandResponseType;
 import model.businfo.BusInfo;
 
 /**
@@ -29,6 +30,8 @@ public class BusCommand extends Command {
     public CommandResponse execute() {
         BusInfo busInformation = cache.get(searchTerm); //Attempt to retrieve from cache
         String busInformationString = BUS_HELP_TEXT;
+        HashMap<String, String> data = null;
+        CommandResponseType type = CommandResponseType.NONE;
 
         if (busInformation == null) {
             if (searchTerm == null || searchTerm.isEmpty()) {
@@ -37,6 +40,11 @@ public class BusCommand extends Command {
                 busInformation = NtuController.getNTUBusInfo(searchTerm);
             } else if (Arrays.binarySearch(NusController.NUS_BUSES, searchTerm) >= 0) { //NUS bus data
                 busInformation = NusController.getNUSBusInfo(searchTerm);
+                //Add images for the routes
+                type = CommandResponseType.IMAGE;
+                data = new HashMap<String, String>();
+                String busService = searchTerm.startsWith("BTC")? "BTC" : searchTerm; //To truncate "btc1" and "btc2" to btc
+                data.put("image", "/" + busService + ".png");
             } else {
                 busInformation = PublicController.getPublicBusInfo(searchTerm);
             }
@@ -50,7 +58,7 @@ public class BusCommand extends Command {
         }
 
         commandSuccess = true;
-        return new CommandResponse(busInformationString);
+        return new CommandResponse(busInformationString, data, type);
     }
 
 }

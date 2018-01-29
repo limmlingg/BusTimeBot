@@ -16,6 +16,7 @@ import main.BusTimeBot;
 import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
+import model.CommandResponseType;
 import model.busarrival.BusStopArrival;
 import model.busarrival.BusStopArrivalContainer;
 
@@ -104,7 +105,7 @@ public class LocationCommand extends Command {
             }
 
             commandSuccess = true;
-            return new CommandResponse(busArrivalString, data);
+            return new CommandResponse(busArrivalString, data, CommandResponseType.LOCATION);
         } catch (Exception e) {
             Logger.logError(e);
             return null;
