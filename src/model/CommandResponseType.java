@@ -1,5 +1,5 @@
 package model;
 
 public enum CommandResponseType {
-    NONE, LOCATION, IMAGE
+    NONE, LOCATION, IMAGE, LINK
 }

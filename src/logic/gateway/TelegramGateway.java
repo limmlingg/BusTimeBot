@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
@@ -17,7 +19,9 @@ import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
+import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
@@ -116,6 +120,19 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (reply.type == CommandResponseType.IMAGE && reply.data != null) { //if the data contains an image path for an image to be sent
                     InputStream imageStream = getClass().getResourceAsStream(reply.data.get("image"));
                     sendPhotoMessage("", update.getMessage().getChatId(), imageStream, null);
+                }
+
+                if (reply.type == CommandResponseType.LINK && reply.data != null) {
+                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+                    List<List<InlineKeyboardButton>> btns = new LinkedList<List<InlineKeyboardButton>>();
+                    List<InlineKeyboardButton> firstRow = new LinkedList<InlineKeyboardButton>();
+                    InlineKeyboardButton btn = new InlineKeyboardButton();
+                    btn.setText("More information");
+                    btn.setUrl(reply.data.get("link"));
+                    firstRow.add(btn);
+                    btns.add(firstRow);
+                    inlineKeyboard.setKeyboard(btns);
+                    keyboard = inlineKeyboard;
                 }
 
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
@@ -258,6 +275,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         sendMessageRequest.setChatId(Long.toString(id)); //who should get from the message the sender that sent it.
         sendMessageRequest.setText(message);
         sendMessageRequest.enableMarkdown(true);
+        sendMessageRequest.disableWebPagePreview(); //Hide previews if it exists
         sendMessageRequest.setParseMode(ParseMode.MARKDOWN); //Allow styling of text
         if (keyboard != null) {
             sendMessageRequest.setReplyMarkup(keyboard);
@@ -280,7 +298,9 @@ public class TelegramGateway extends TelegramLongPollingBot {
         photoMessage.setCaption(message);
         photoMessage.setNewPhoto("Nil", image);
         photoMessage.setChatId(id);
-        photoMessage.setReplyMarkup(keyboard);
+        if (keyboard != null) {
+            photoMessage.setReplyMarkup(keyboard);
+        }
 
         try {
             sendPhoto(photoMessage);
@@ -323,6 +343,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                     }
                     busInfoString.append("\n\n");
                 }
+
                 return busInfoString.toString();
             }
         } catch (Exception e) {

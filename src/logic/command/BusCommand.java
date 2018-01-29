@@ -47,6 +47,10 @@ public class BusCommand extends Command {
                 data.put("image", "/" + busService + ".png");
             } else {
                 busInformation = PublicController.getPublicBusInfo(searchTerm);
+                //Add links for the routes
+                type = CommandResponseType.LINK;
+                data = new HashMap<String, String>();
+                data.put("link", "https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=" + searchTerm);
             }
 
             //Add to cache
