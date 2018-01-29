@@ -6,8 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.TimeZone;
 
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
@@ -19,9 +17,7 @@ import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
-import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
@@ -123,16 +119,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 }
 
                 if (reply.type == CommandResponseType.LINK && reply.data != null) {
-                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-                    List<List<InlineKeyboardButton>> btns = new LinkedList<List<InlineKeyboardButton>>();
-                    List<InlineKeyboardButton> firstRow = new LinkedList<InlineKeyboardButton>();
-                    InlineKeyboardButton btn = new InlineKeyboardButton();
-                    btn.setText("More information");
-                    btn.setUrl(reply.data.get("link"));
-                    firstRow.add(btn);
-                    btns.add(firstRow);
-                    inlineKeyboard.setKeyboard(btns);
-                    keyboard = inlineKeyboard;
+                    keyboard = KeyboardFactory.createMoreInformationInlineKeyboard(reply.data.get("link"));
                 }
 
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);

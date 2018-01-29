@@ -15,10 +15,6 @@ public class KeyboardFactory {
 
     /**
      * Creates an inline keyboard with the update button for users to update the bus timings
-     *
-     * @param location
-     *            of the user
-     * @return an InlineKeyboardMarkup with the button update
      */
     public static InlineKeyboardMarkup createUpdateInlineKeyboard(Location location, int numberOfStopsWanted) {
         return createUpdateInlineKeyboard(location.getLatitude(), location.getLongitude(), numberOfStopsWanted);
@@ -26,12 +22,6 @@ public class KeyboardFactory {
 
     /**
      * Creates an inline keyboard with the update button for users to update the bus timings
-     *
-     * @param latitude
-     *            of the user
-     * @param longitude
-     *            of the user
-     * @return an InlineKeyboardMarkup with the button update
      */
     public static InlineKeyboardMarkup createUpdateInlineKeyboard(double latitude, double longitude, int numberOfStopsWanted) {
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
@@ -40,6 +30,22 @@ public class KeyboardFactory {
         InlineKeyboardButton btn = new InlineKeyboardButton();
         btn.setText("Update");
         btn.setCallbackData(latitude + ":" + longitude + ":" + numberOfStopsWanted);
+        firstRow.add(btn);
+        btns.add(firstRow);
+        inlineKeyboard.setKeyboard(btns);
+        return inlineKeyboard;
+    }
+
+    /**
+     * Creates an inline keyboard with the "More information" button for users view bus stop routes
+     */
+    public static InlineKeyboardMarkup createMoreInformationInlineKeyboard(String link) {
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> btns = new LinkedList<List<InlineKeyboardButton>>();
+        List<InlineKeyboardButton> firstRow = new LinkedList<InlineKeyboardButton>();
+        InlineKeyboardButton btn = new InlineKeyboardButton();
+        btn.setText("More information");
+        btn.setUrl(link);
         firstRow.add(btn);
         btns.add(firstRow);
         inlineKeyboard.setKeyboard(btns);
