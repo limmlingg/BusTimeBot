@@ -13,12 +13,12 @@ Try it out at https://t.me/bus_time_bot
 1. Clone the project
 2. Create a file `key.properties` in the project's root folder and go to the links below to get a token
    - LTA Token: https://www.mytransport.sg/content/mytransport/home/dataMall.html
-	 - Under "Real-Time/Dynamic Data", select "Request for API access"
+      - Under "Real-Time/Dynamic Data", select "Request for API access"
    - Telegram Bot Token: http://telegram.me/BotFather
      - Create a new bot using the command '/newbot' (if you do not currently have a Telegram bot)
-	 - Retrieve a token for your bot using the command '/token'
+      - Retrieve a token for your bot using the command '/token'
 3. Fill the contents of `key.properties` like this:
-```
+```properties
 lta=<<insert lta token here>>
 telegram=<<insert telegram token here>>
 #either 'true' or 'false' (defaults to false)
@@ -28,7 +28,7 @@ use_database=false
 
 ## Running the tests
 
-*Automated testing development in progress*
+*Automated JUnit 4 testing development in progress*
 
 Functions to check
 
@@ -61,6 +61,7 @@ Functions to check
 * [GSON](https://github.com/google/gson) - Parsing of json data retrieved from the bus timing services
 * [Emoji Java](https://github.com/vdurmont/emoji-java) - Used to generate the emoji unicode for the text
 * [Jsoup](https://jsoup.org/) - Used for parsing public bus information from the *SBSTransit* website
+* [LTA Datamall](https://www.mytransport.sg/content/mytransport/home/dataMall.html), [SBSTransit](https://www.sbstransit.com.sg/) and NUS/NTU Bus Services for arrival time information
 
 ## Contributing
 
@@ -76,6 +77,7 @@ Bus timing from various organizations are retrieved from their respective server
 
 * **Bernard Yip** - *Initial work* - [bernardyip](https://github.com/bernardyip)
 * **Lim Miao Ling** - System Testing - [limmlingg](https://github.com/limmlingg)
+* **Angus Ng** - *Landing Page* - [angusngjj](https://github.com/angusngjj)
 
 ## License
 
