@@ -32,12 +32,14 @@ public class BusCommand extends Command {
         String busInformationString = BUS_HELP_TEXT;
         HashMap<String, String> data = null;
         CommandResponseType type = CommandResponseType.NONE;
+        String ntuRouteInformation = "";
 
         if (busInformation == null) {
             if (searchTerm == null || searchTerm.isEmpty()) {
                 busInformationString = BUS_HELP_TEXT;
             } else if (Arrays.binarySearch(NtuController.NTU_BUSES, searchTerm) >= 0) { //NTU bus data
                 busInformation = NtuController.getNTUBusInfo(searchTerm);
+                ntuRouteInformation = "*Bus Route: *\n" + NtuController.busRoutes.get(searchTerm).toString();
             } else if (Arrays.binarySearch(NusController.NUS_BUSES, searchTerm) >= 0) { //NUS bus data
                 busInformation = NusController.getNUSBusInfo(searchTerm);
                 //Add images for the routes
@@ -58,7 +60,8 @@ public class BusCommand extends Command {
         }
 
         if (busInformation != null) {
-            busInformationString = TelegramGateway.formatBusInfo(busInformation);
+            //ntuRouteInformation should be empty if not ntu bus
+            busInformationString = TelegramGateway.formatBusInfo(busInformation) + ntuRouteInformation;
         }
 
         commandSuccess = true;

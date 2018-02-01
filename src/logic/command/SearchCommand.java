@@ -14,12 +14,11 @@ import model.json.gothere.GeoCodeContainer;
  */
 public class SearchCommand extends Command {
     public static final String COMMAND = "/search";
-    private static final String KEYWORD_SEARCH = COMMAND + " ";
 
     private String searchTerm;
 
     public SearchCommand(String searchTerm) {
-        this.searchTerm = searchTerm.toLowerCase().replaceFirst(KEYWORD_SEARCH, "");
+        this.searchTerm = searchTerm.toLowerCase().replaceFirst(COMMAND, "").trim();
     }
 
     public CommandResponse execute() {

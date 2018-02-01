@@ -30,15 +30,20 @@ public class NtuController {
 
     public static HashMap<String, String> busCode;
     public static HashMap<String, ArrayList<String>> busList;
+    public static HashMap<String, StringBuilder> busRoutes;
 
     static {
         Arrays.sort(NTU_BUSES);
         busList = new HashMap<String, ArrayList<String>>(50);
         busCode = new HashMap<String, String>();
+        busRoutes = new HashMap<String, StringBuilder>();
         busCode.put("Campus Loop - Blue (CL-B)", "CL-B");
         busCode.put("Campus Loop Red (CL-R)", "CL-R");
         busCode.put("Campus Rider Green", "CR");
         busCode.put("Campus WeekEnd Rider Brown", "CWR");
+        for (String bus : NTU_BUSES) {
+            busRoutes.put(bus, new StringBuilder());
+        }
     }
 
     /**
@@ -99,10 +104,25 @@ public class NtuController {
                             busStops.put(stop.BusStopCode, stop);
                             retrieveBusList(stop.BusStopCode);
                         }
+
+                        //Add name to bus route
+                        addBusRoute(i, fixName(isBlueRider, node));
                     }
                 } //End node for loop
             } //end coordinate for loop
         } //end i for loop
+    }
+
+    private static void addBusRoute(int index, String stopName) {
+        if (index == 44478) { //red
+            busRoutes.get(NTU_BUSES[1]).append(stopName + "\n");
+        } else if (index == 44479) { //blue
+            busRoutes.get(NTU_BUSES[0]).append(stopName + "\n");
+        } else if (index == 44480) { //green
+            busRoutes.get(NTU_BUSES[2]).append(stopName + "\n");
+        } else if (index == 44481) { //brown
+            busRoutes.get(NTU_BUSES[3]).append(stopName + "\n");
+        }
     }
 
     /**
