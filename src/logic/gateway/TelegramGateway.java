@@ -1,5 +1,6 @@
 package logic.gateway;
 
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -10,6 +11,7 @@ import java.util.TimeZone;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Location;
@@ -36,6 +38,7 @@ import logic.command.StartHelpCommand;
 import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
+import model.CommandResponseType;
 import model.busarrival.BusArrival;
 import model.busarrival.BusStopArrival;
 import model.busarrival.BusStopArrivalContainer;
@@ -103,12 +106,22 @@ public class TelegramGateway extends TelegramLongPollingBot {
                     keyboard = KeyboardFactory.createSendLocationKeyboard();
                 }
 
-                if (reply.data != null) { //Append update button if responseCommand contains location
+                if (reply.type == CommandResponseType.LOCATION && reply.data != null) { //Append update button if responseCommand contains location
                     double latitude = Double.parseDouble(reply.data.get("latitude"));
                     double longitude = Double.parseDouble(reply.data.get("longitude"));
                     int numberOfStopsWanted = Integer.parseInt(reply.data.get("numberOfStopsWanted"));
                     keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted);
                 }
+
+                if (reply.type == CommandResponseType.IMAGE && reply.data != null) { //if the data contains an image path for an image to be sent
+                    InputStream imageStream = getClass().getResourceAsStream(reply.data.get("image"));
+                    sendPhotoMessage("", update.getMessage().getChatId(), imageStream, null);
+                }
+
+                if (reply.type == CommandResponseType.LINK && reply.data != null) {
+                    keyboard = KeyboardFactory.createMoreInformationInlineKeyboard(reply.data.get("link"));
+                }
+
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
             }
         } catch (Exception e) {
@@ -249,6 +262,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         sendMessageRequest.setChatId(Long.toString(id)); //who should get from the message the sender that sent it.
         sendMessageRequest.setText(message);
         sendMessageRequest.enableMarkdown(true);
+        sendMessageRequest.disableWebPagePreview(); //Hide previews if it exists
         sendMessageRequest.setParseMode(ParseMode.MARKDOWN); //Allow styling of text
         if (keyboard != null) {
             sendMessageRequest.setReplyMarkup(keyboard);
@@ -261,6 +275,27 @@ public class TelegramGateway extends TelegramLongPollingBot {
             Logger.logError(e);
         }
         return success;
+    }
+
+    /**
+     * Sends an image to the id given
+     */
+    public boolean sendPhotoMessage(String message, long id, InputStream image, ReplyKeyboard keyboard) {
+        SendPhoto photoMessage = new SendPhoto();
+        photoMessage.setCaption(message);
+        photoMessage.setNewPhoto("Nil", image);
+        photoMessage.setChatId(id);
+        if (keyboard != null) {
+            photoMessage.setReplyMarkup(keyboard);
+        }
+
+        try {
+            sendPhoto(photoMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -295,6 +330,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                     }
                     busInfoString.append("\n\n");
                 }
+
                 return busInfoString.toString();
             }
         } catch (Exception e) {
