@@ -64,7 +64,6 @@ public class LocationCommand extends Command {
 
             if (differenceInSeconds < refreshCacheSeconds) {
                 allStops = cachedContainer;
-                System.out.println("Used cache!");
             } else {
                 for (BusStop stop : busstops) {
                     BusStopArrival busStopArrival = new BusStopArrival();
