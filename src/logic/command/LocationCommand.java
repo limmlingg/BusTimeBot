@@ -1,6 +1,5 @@
 package logic.command;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,7 +26,7 @@ public class LocationCommand extends Command {
     private static final int defaultNumberOfStops = 5;
     private static final int refreshCacheSeconds = 30; //Time before refreshing cache
 
-    private static HashMap<Point2D.Double, BusStopArrivalContainer> cache = new HashMap<Point2D.Double, BusStopArrivalContainer>();
+    private static HashMap<String, BusStopArrivalContainer> cache = new HashMap<String, BusStopArrivalContainer>();
 
     private double maxDistanceFromPoint = 0.35; //in km
     private int numberOfStopsWanted = defaultNumberOfStops;
@@ -48,11 +47,16 @@ public class LocationCommand extends Command {
     public CommandResponse execute() {
         try {
             BusStopArrivalContainer allStops = new BusStopArrivalContainer();
+            ArrayList<BusStop> busstops = getNearbyBusStops(latitude, longitude, numberOfStopsWanted);
 
             //Build cache key
-            Point2D.Double point = new Point2D.Double(latitude, longitude);
+            String key = "";
+            for (BusStop busStop : busstops) {
+                key += busStop.BusStopCode + " : ";
+            }
+
             //Check cache if within 1 minute
-            BusStopArrivalContainer cachedContainer = cache.get(point);
+            BusStopArrivalContainer cachedContainer = cache.get(key);
             long differenceInSeconds = Long.MAX_VALUE;
             if (cachedContainer != null) {
                 differenceInSeconds = (System.currentTimeMillis() - cachedContainer.requestedTime) / 1000;
@@ -60,11 +64,9 @@ public class LocationCommand extends Command {
 
             if (differenceInSeconds < refreshCacheSeconds) {
                 allStops = cachedContainer;
+                System.out.println("Used cache!");
             } else {
-                Iterator<BusStop> busstops = getNearbyBusStops(latitude, longitude, numberOfStopsWanted);
-
-                while (busstops.hasNext()) {
-                    BusStop stop = busstops.next();
+                for (BusStop stop : busstops) {
                     BusStopArrival busStopArrival = new BusStopArrival();
                     busStopArrival.busStop = stop;
                     //Append the bus times accordingly
@@ -87,7 +89,7 @@ public class LocationCommand extends Command {
                 //Save the requested time (for caching)
                 allStops.requestedTime = System.currentTimeMillis();
                 //Save object to cache
-                cache.put(point, allStops);
+                cache.put(key, allStops);
             }
 
             String busArrivalString = "";
@@ -123,7 +125,7 @@ public class LocationCommand extends Command {
      *            of the user
      * @return a list of bus stops near that location sorted by distance
      */
-    public Iterator<BusStop> getNearbyBusStops(double latitude, double longitude, int numberOfStops) {
+    public ArrayList<BusStop> getNearbyBusStops(double latitude, double longitude, int numberOfStops) {
         try {
             ArrayList<BusStop> busstops = new ArrayList<BusStop>();
             double[] searchPoint = {latitude, longitude};
@@ -136,7 +138,7 @@ public class LocationCommand extends Command {
                     busstops.add(stop);
                 }
             }
-            return busstops.iterator();
+            return busstops;
         } catch (Exception e) {
             Logger.logError(e);
             return null;
