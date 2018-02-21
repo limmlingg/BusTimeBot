@@ -110,7 +110,8 @@ public class TelegramGateway extends TelegramLongPollingBot {
                     double latitude = Double.parseDouble(reply.data.get("latitude"));
                     double longitude = Double.parseDouble(reply.data.get("longitude"));
                     int numberOfStopsWanted = Integer.parseInt(reply.data.get("numberOfStopsWanted"));
-                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted);
+                    String searchTerm = reply.data.get("searchTerm");
+                    keyboard = KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted, searchTerm);
                 }
 
                 if (reply.type == CommandResponseType.IMAGE && reply.data != null) { //if the data contains an image path for an image to be sent
@@ -219,18 +220,34 @@ public class TelegramGateway extends TelegramLongPollingBot {
         String[] data = callbackQuery.getData().split(":");
         double latitude = Double.parseDouble(data[0]);
         double longitude = Double.parseDouble(data[1]);
-        int numberOfStopsWanted = Integer.parseInt(data[2]);
+        int numberOfStopsWanted = 5;
+        String searchTerm = null;
+
+        //For backwards compatible by checking length
+        int dataSize = data.length;
+        switch (dataSize) {
+            case 4:
+                searchTerm = data[3];
+            case 3:
+                numberOfStopsWanted = Integer.parseInt(data[2]);
+        }
+
+        Command busTimeCommand;
+        if (searchTerm != null) {
+            busTimeCommand = new LocationCommand(searchTerm);
+        } else {
+            busTimeCommand = new LocationCommand(latitude, longitude, numberOfStopsWanted);
+        }
+        CommandResponse answer = busTimeCommand.execute();
+
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
         timeFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         String lastUpdated = MessageFormat.format(LAST_UPDATED_TEXT, timeFormat.format(new Date()));
 
-        Command busTimeCommand = new LocationCommand(latitude, longitude, numberOfStopsWanted);
-        CommandResponse answer = busTimeCommand.execute();
-
         editMessageText.setText(answer.text + lastUpdated);
 
         //Re-add the inline keyboard
-        editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted));
+        editMessageText.setReplyMarkup(KeyboardFactory.createUpdateInlineKeyboard(latitude, longitude, numberOfStopsWanted, searchTerm));
         return editMessageText;
     }
 
