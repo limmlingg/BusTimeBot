@@ -220,7 +220,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         String[] data = callbackQuery.getData().split(":");
         double latitude = Double.parseDouble(data[0]);
         double longitude = Double.parseDouble(data[1]);
-        int numberOfStopsWanted = 5;
+        int numberOfStopsWanted = LocationCommand.defaultNumberOfStops;
         String searchTerm = null;
 
         //For backwards compatible by checking length
@@ -229,7 +229,9 @@ public class TelegramGateway extends TelegramLongPollingBot {
             case 4:
                 searchTerm = data[3];
             case 3:
-                numberOfStopsWanted = Integer.parseInt(data[2]);
+                try {
+                    numberOfStopsWanted = Integer.parseInt(data[2]);
+                } catch (Exception e) { } //Ignore parsing error and use default number of stops
         }
 
         Command busTimeCommand;

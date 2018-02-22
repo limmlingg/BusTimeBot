@@ -23,7 +23,7 @@ import model.busarrival.BusStopArrivalContainer;
  * A command that returns bus times given a latitude and longitude
  */
 public class LocationCommand extends Command {
-    private static final int defaultNumberOfStops = 5;
+    public static final int defaultNumberOfStops = 5;
     private static final int refreshCacheSeconds = 30; //Time before refreshing cache
 
     private static HashMap<String, BusStopArrivalContainer> cache = new HashMap<String, BusStopArrivalContainer>();

@@ -21,7 +21,14 @@ public class KeyboardFactory {
         List<InlineKeyboardButton> firstRow = new LinkedList<InlineKeyboardButton>();
         InlineKeyboardButton btn = new InlineKeyboardButton();
         btn.setText("Update");
-        btn.setCallbackData(latitude + ":" + longitude + ":" + numberOfStopsWanted + ":" + searchTerm);
+        String data = latitude + ":" + longitude + ":" + numberOfStopsWanted;
+
+        //Append search term only if not null
+        if (searchTerm != null) {
+            data += ":" + searchTerm;
+        }
+
+        btn.setCallbackData(data);
         firstRow.add(btn);
         btns.add(firstRow);
         inlineKeyboard.setKeyboard(btns);
