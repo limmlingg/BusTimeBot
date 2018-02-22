@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.telegram.telegrambots.api.objects.Location;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -16,20 +15,13 @@ public class KeyboardFactory {
     /**
      * Creates an inline keyboard with the update button for users to update the bus timings
      */
-    public static InlineKeyboardMarkup createUpdateInlineKeyboard(Location location, int numberOfStopsWanted) {
-        return createUpdateInlineKeyboard(location.getLatitude(), location.getLongitude(), numberOfStopsWanted);
-    }
-
-    /**
-     * Creates an inline keyboard with the update button for users to update the bus timings
-     */
-    public static InlineKeyboardMarkup createUpdateInlineKeyboard(double latitude, double longitude, int numberOfStopsWanted) {
+    public static InlineKeyboardMarkup createUpdateInlineKeyboard(double latitude, double longitude, int numberOfStopsWanted, String searchTerm) {
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> btns = new LinkedList<List<InlineKeyboardButton>>();
         List<InlineKeyboardButton> firstRow = new LinkedList<InlineKeyboardButton>();
         InlineKeyboardButton btn = new InlineKeyboardButton();
         btn.setText("Update");
-        btn.setCallbackData(latitude + ":" + longitude + ":" + numberOfStopsWanted);
+        btn.setCallbackData(latitude + ":" + longitude + ":" + numberOfStopsWanted + ":" + searchTerm);
         firstRow.add(btn);
         btns.add(firstRow);
         inlineKeyboard.setKeyboard(btns);

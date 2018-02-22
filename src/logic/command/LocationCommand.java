@@ -32,10 +32,15 @@ public class LocationCommand extends Command {
     private int numberOfStopsWanted = defaultNumberOfStops;
     private double latitude;
     private double longitude;
+    private String specificBusStopCode;
 
     public LocationCommand(double latitude, double longitude, int numberOfStopsWanted) {
         this(latitude, longitude);
         this.numberOfStopsWanted = numberOfStopsWanted;
+    }
+
+    public LocationCommand(String busStopCode) {
+        specificBusStopCode = busStopCode;
     }
 
     public LocationCommand(double latitude, double longitude) {
@@ -47,7 +52,14 @@ public class LocationCommand extends Command {
     public CommandResponse execute() {
         try {
             BusStopArrivalContainer allStops = new BusStopArrivalContainer();
-            ArrayList<BusStop> busstops = getNearbyBusStops(latitude, longitude, numberOfStopsWanted);
+            ArrayList<BusStop> busstops;
+            if (specificBusStopCode != null) {
+                BusStop specificBusStop = BusTimeBot.getInstance().data.getSpecificBusStop(specificBusStopCode);
+                busstops = new ArrayList<BusStop>();
+                busstops.add(specificBusStop);
+            } else {
+                busstops = getNearbyBusStops(latitude, longitude, numberOfStopsWanted);
+            }
 
             //Build cache key
             String key = "";
@@ -103,6 +115,7 @@ public class LocationCommand extends Command {
                 data.put("latitude", Double.toString(latitude));
                 data.put("longitude", Double.toString(longitude));
                 data.put("numberOfStopsWanted", Integer.toString(numberOfStopsWanted));
+                data.put("searchTerm", specificBusStopCode);
             }
 
             commandSuccess = true;
@@ -112,8 +125,6 @@ public class LocationCommand extends Command {
             return null;
         }
     }
-
-
 
     /**
      * Get near by bus stops of a given location
@@ -127,8 +138,7 @@ public class LocationCommand extends Command {
     public ArrayList<BusStop> getNearbyBusStops(double latitude, double longitude, int numberOfStops) {
         try {
             ArrayList<BusStop> busstops = new ArrayList<BusStop>();
-            double[] searchPoint = {latitude, longitude};
-            NearestNeighborIterator<BusStop> result = BusTimeBot.getInstance().busStopsSortedByCoordinates.getNearestNeighborIterator(searchPoint, defaultNumberOfStops, new LocationDistanceFunction());
+            NearestNeighborIterator<BusStop> result = BusTimeBot.getInstance().data.getNearestNeighbours(latitude, longitude, defaultNumberOfStops, new LocationDistanceFunction());
             Iterator<BusStop> iterator = result.iterator();
             while (iterator.hasNext()) {
                 BusStop stop = iterator.next();

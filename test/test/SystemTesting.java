@@ -127,4 +127,13 @@ public class SystemTesting {
         Assert.assertFalse(result.contains("101"));
     }
 
+    @Test
+    public void testWrongBusStopSearchCommand() {
+        //"/search 63229"
+        String result = new SearchCommand("63229").execute().text;
+        Assert.assertTrue(result.contains("63229"));
+        result = new SearchCommand("46009").execute().text;
+        Assert.assertTrue(result.contains("46009"));
+    }
+
 }

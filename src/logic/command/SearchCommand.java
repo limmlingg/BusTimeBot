@@ -32,7 +32,12 @@ public class SearchCommand extends Command {
                 double lon = results.getLongitude();
 
                 int numberOfStops = getNumberOfStopsWanted(searchTerm);
-                LocationCommand busTimeCommand = new LocationCommand(lat, lon, numberOfStops);
+                LocationCommand busTimeCommand;
+                if (numberOfStops == 1) {
+                    busTimeCommand = new LocationCommand(searchTerm);
+                } else {
+                    busTimeCommand = new LocationCommand(lat, lon, numberOfStops);
+                }
                 result = busTimeCommand.execute();
             } else {
                 result = new CommandResponse("Unable to find location");
