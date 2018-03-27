@@ -220,7 +220,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         String[] data = callbackQuery.getData().split(":");
         double latitude = Double.parseDouble(data[0]);
         double longitude = Double.parseDouble(data[1]);
-        int numberOfStopsWanted = LocationCommand.defaultNumberOfStops;
+        int numberOfStopsWanted = LocationCommand.DEFAULT_NUMBER_OF_STOPS;
         String searchTerm = null;
 
         //For backwards compatible by checking length
