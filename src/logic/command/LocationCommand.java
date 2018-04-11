@@ -102,7 +102,7 @@ public class LocationCommand extends Command {
                     }
                 }
 
-                if (allStops.busStopArrivals != null && allStops.busStopArrivals.size() != 0) {
+                if (allStops.busStopArrivals != null && allStops.busStopArrivals.size() > 0) {
                     //Save the requested time (for caching)
                     allStops.requestedTime = System.currentTimeMillis();
                     //Save object to cache
