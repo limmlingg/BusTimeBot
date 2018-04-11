@@ -102,10 +102,12 @@ public class LocationCommand extends Command {
                     }
                 }
 
-                //Save the requested time (for caching)
-                allStops.requestedTime = System.currentTimeMillis();
-                //Save object to cache
-                cache.put(key, allStops);
+                if (allStops.busStopArrivals != null && allStops.busStopArrivals.size() != 0) {
+                    //Save the requested time (for caching)
+                    allStops.requestedTime = System.currentTimeMillis();
+                    //Save object to cache
+                    cache.put(key, allStops);
+                }
             }
 
             String busArrivalString = "";
