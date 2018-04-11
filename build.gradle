@@ -14,7 +14,8 @@ repositories {
     mavenLocal()
 }
 
-dependencies {   
+dependencies {
+    testCompile 'junit:junit:4.12'
     compile group: 'org.telegram', name: 'telegrambots', version: '3.6'
     compile "org.telegram:telegrambotsextensions:3.6"
     compile group: 'com.vdurmont', name: 'emoji-java', version: '4.0.0'
