@@ -170,7 +170,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
             EditMessageText editMessageText = generateEditedMessage(callbackQuery);
 
             try {
-                editMessageTextAsync(editMessageText, new EditMessageCallbackHandler());
+                executeAsync(editMessageText, new EditMessageCallbackHandler());
             } catch (TelegramApiException e) {
             } //Ignore if MessageNotEdited error
             lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
@@ -181,7 +181,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         answer.setCallbackQueryId(callbackQuery.getId());
 
         try {
-            answerCallbackQueryAsync(answer, new AnswerCallbackQueryHandler());
+            executeAsync(answer, new AnswerCallbackQueryHandler());
         } catch (TelegramApiException e) {
         } //Ignore query errors, probably expired queries
     }
@@ -288,7 +288,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         }
         boolean success = false;
         try {
-            sendMessageAsync(sendMessageRequest, new SendMessageCallbackHandler()); //at the end, so some magic and send the message ;)
+            executeAsync(sendMessageRequest, new SendMessageCallbackHandler()); //at the end, so some magic and send the message ;)
             success = true;
         } catch (Exception e) {
             Logger.logError(e);
