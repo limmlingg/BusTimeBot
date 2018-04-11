@@ -381,7 +381,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
                     firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_ARRIVING);
                 } else {
-                    firstEstimatedBusTime = Util.padBusTime(busArrival.arrivalTime1 + "min");
+                    firstEstimatedBusTime = Util.padBusTime(Util.padFront(Long.toString(busArrival.arrivalTime1), 2) + "m");
                 }
 
                 String secondEstimatedBusTime;
@@ -390,7 +390,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 } else if (busArrival.arrivalTime2 <= BusArrival.TIME_ARRIVING) {
                     secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING;
                 } else {
-                    secondEstimatedBusTime = " | " + busArrival.arrivalTime2 + "min";
+                    secondEstimatedBusTime = " | " + Util.padFront(Long.toString(busArrival.arrivalTime2), 2) + "m";
                 }
 
                 //Append the string to the formatted string

@@ -99,9 +99,9 @@ public class Util {
     }
 
     /**
-     * Pads the string with spaces until a certain length
+     * Pads the string with spaces at the end until a certain length
      */
-    public static String pad(String input, int length) {
+    public static String padEnd(String input, int length) {
         String paddedInput = input;
         while (paddedInput.length() < length) {
             paddedInput = paddedInput + " ";
@@ -109,12 +109,24 @@ public class Util {
         return paddedInput;
     }
 
+    /**
+     * Pads the string with spaces at the front until a certain length
+     */
+    public static String padFront(String input, int length) {
+        String paddedInput = input;
+        while (paddedInput.length() < length) {
+            paddedInput = " " + paddedInput;
+        }
+        return paddedInput;
+    }
+
+
     public static String padBusTime(String input) {
-        return pad(input, 5);
+        return padEnd(input, 3);
     }
 
     public static String padBusTitle(String input) {
         int lengthToPad = (input.length() <= 5) ? 5 : 13;
-        return pad(input, lengthToPad);
+        return padEnd(input, lengthToPad);
     }
 }
