@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+
 import datastructures.kdtree.DistanceFunction;
 import datastructures.kdtree.KdTree;
 import datastructures.kdtree.NearestNeighborIterator;
@@ -15,6 +17,8 @@ import logic.controller.NusController;
 import logic.controller.PublicController;
 
 public class BusStopData {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(BusStopData.class);
+
     public static final int estimatedNumberOfBusStops = 5000;
 
     public KdTree<BusStop> busStopsSortedByCoordinates;
@@ -39,16 +43,16 @@ public class BusStopData {
      */
     public void getBusStopData(boolean useDatabase) {
         if (!useDatabase) {
-            System.out.println("Retrieving Public Bus Stop Data");
+            logger.info("Retrieving Public Bus Stop Data");
             PublicController.getPublicBusStopData(busStops);
 
-            System.out.println("Retrieving NUS Bus Stop Data");
+            logger.info("Retrieving NUS Bus Stop Data");
             NusController.getNUSBusStopData(busStops);
 
-            System.out.println("Retrieving NTU Bus Stop Data");
+            logger.info("Retrieving NTU Bus Stop Data");
             NtuController.getNTUBusStopData(busStops);
 
-            System.out.println("Populating KD-tree");
+            logger.info("Populating KD-tree");
             for (BusStop stop : busStops.values()) {
                 double[] point = new double[2];
                 point[0] = stop.Latitude;
@@ -56,10 +60,10 @@ public class BusStopData {
                 busStopsSortedByCoordinates.addPoint(point, stop);
             }
 
-            System.out.println("Saving to database");
+            logger.info("Saving to database");
             saveBusStops(busStops);
         } else {
-            System.out.println("Loading bus stops from database");
+            logger.info("Loading bus stops from database");
             boolean success = loadBusStops();
             //If unable to load database, use online method instead
             if (!success) {
@@ -68,7 +72,7 @@ public class BusStopData {
             }
         }
 
-        System.out.println("All bus stop data loaded!");
+        logger.info("All bus stop data loaded!");
     }
 
     /**
@@ -122,7 +126,7 @@ public class BusStopData {
 
             isSuccess = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn("Exception occurred at loadBusStops()", e);
         } finally {
             //Attempt to close resultSet, statement and connection
             try {
@@ -130,21 +134,21 @@ public class BusStopData {
                     resultSet.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.warn("resultSet is null!", e);
             }
             try {
                 if (statement != null) {
                     statement.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.warn("statement is null!", e);
             }
             try {
                 if (connection != null) {
                     connection.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.warn("connection is null!", e);
             }
         }
 
@@ -184,7 +188,7 @@ public class BusStopData {
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.warn("Exception occurred at saveBusStops with busStops={}", busStops, e);
         }  finally {
             //Attempt to close statement and connection
             try {
@@ -192,14 +196,14 @@ public class BusStopData {
                     statement.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.warn("statement is null!", e);
             }
             try {
                 if (connection != null) {
                     connection.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.warn("connection is null!", e);
             }
         }
     }
