@@ -124,6 +124,13 @@ public class BusStopData {
                 throw new Exception("Bus stop data incomplete");
             }
 
+            //TODO: Save these information rather than retrieve from online
+            logger.info("Retrieving NUS Bus Stop Data");
+            NusController.getNUSBusStopData(busStops);
+
+            logger.info("Retrieving NTU Bus Stop Data");
+            NtuController.getNTUBusStopData(busStops);
+
             isSuccess = true;
         } catch (Exception e) {
             logger.warn("Exception occurred at loadBusStops()", e);

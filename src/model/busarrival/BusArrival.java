@@ -10,5 +10,12 @@ public class BusArrival {
 
     public String serviceNo;
     public long arrivalTime1;
+    public boolean isWab1;
     public long arrivalTime2;
+    public boolean isWab2;
+
+    public BusArrival() {
+        isWab1 = false;
+        isWab2 = false;
+    }
 }

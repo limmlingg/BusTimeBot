@@ -381,18 +381,21 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (busArrival.arrivalTime1 == BusArrival.TIME_NA) {
                     firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA);
                 } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
-                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_ARRIVING);
+                    String busInfo = BusArrival.LABEL_ARRIVING + (busArrival.isWab1? "*" : "");
+                    firstEstimatedBusTime = Util.padBusTime(busInfo);
                 } else {
-                    firstEstimatedBusTime = Util.padBusTime(Util.padFront(Long.toString(busArrival.arrivalTime1), 2) + "m");
+                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime1), 2) + "m" + (busArrival.isWab1? "*" : "");
+                    firstEstimatedBusTime = Util.padBusTime(busInfo);
                 }
 
                 String secondEstimatedBusTime;
                 if (busArrival.arrivalTime2 == BusArrival.TIME_NA) {
                     secondEstimatedBusTime = BusArrival.LABEL_NA_BLANK;
                 } else if (busArrival.arrivalTime2 <= BusArrival.TIME_ARRIVING) {
-                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING;
+                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING + (busArrival.isWab2? "*" : "");
                 } else {
-                    secondEstimatedBusTime = " | " + Util.padFront(Long.toString(busArrival.arrivalTime2), 2) + "m";
+                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime2), 2) + "m" + (busArrival.isWab2? "*" : "");
+                    secondEstimatedBusTime = " | " + busInfo;
                 }
 
                 //Append the string to the formatted string

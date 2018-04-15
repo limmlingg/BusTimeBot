@@ -57,7 +57,9 @@ public class PublicController {
                 BusArrival busArrival = new BusArrival();
                 busArrival.serviceNo = services.ServiceNo;
                 busArrival.arrivalTime1 = Util.getTimeFromNow(services.NextBus.EstimatedArrival, Calendar.MINUTE);
+                busArrival.isWab1 = services.NextBus.Feature.trim().equalsIgnoreCase("WAB");
                 busArrival.arrivalTime2 = Util.getTimeFromNow(services.NextBus2.EstimatedArrival, Calendar.MINUTE);
+                busArrival.isWab2 = services.NextBus2.Feature.trim().equalsIgnoreCase("WAB");
                 busStopArrival.busArrivals.add(busArrival);
             }
             return busStopArrival;
