@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
 
+import org.apache.logging.log4j.LogManager;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -35,7 +36,6 @@ import logic.command.Command;
 import logic.command.LocationCommand;
 import logic.command.SearchCommand;
 import logic.command.StartHelpCommand;
-import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
@@ -47,6 +47,8 @@ import model.businfo.BusInfoDirection;
 
 /** Gateway for telegram communication */
 public class TelegramGateway extends TelegramLongPollingBot {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(TelegramGateway.class);
+
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
     private static final String KEYWORD_BOT_MENTION = "@" + TELEGRAM_BOT_NAME;
 
@@ -65,7 +67,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
             loadProperties();
             lastQueried = new HashMap<Long, Date>();
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.fatal("Unable to start up Telegram Gateway!", e);
         }
     }
 
@@ -126,7 +128,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
             }
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at onUpdateReceived with update={}", update, e);
         }
     }
 
@@ -291,7 +293,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
             executeAsync(sendMessageRequest, new SendMessageCallbackHandler()); //at the end, so some magic and send the message ;)
             success = true;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at sendMessage with message={}, id={}, keyboard={}", message, id, keyboard, e);
         }
         return success;
     }
@@ -311,7 +313,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         try {
             sendPhoto(photoMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.warn("Exception occurred at sendPhotoMessage with message={}, id={}, image={}, keyboard={}", message, id, image, keyboard, e);
             return false;
         }
         return true;
@@ -353,7 +355,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 return busInfoString.toString();
             }
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at formatBusInfo with BusInfo={}", busInfo, e);
             return null;
         }
     }

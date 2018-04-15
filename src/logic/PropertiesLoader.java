@@ -3,14 +3,15 @@ package logic;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import main.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Controls the keys for various sources utilizes for the bot
  */
 public class PropertiesLoader {
-    private static final String PROPERTIES_FILE = "key.properties";
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(PropertiesLoader.class);
 
+    private static final String PROPERTIES_FILE = "key.properties";
     private static final String PROPERTIES_KEY_LTA = "lta";
     private static final String PROPERTIES_KEY_TELEGRAM = "telegram";
     private static final String PROPERTIES_USE_DATABASE = "use_database";
@@ -34,7 +35,7 @@ public class PropertiesLoader {
             properties.clear();
             propertiesStream.close();
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.fatal("Exception occurred at Constructor of PropertiesLoader", e);
         }
     }
 

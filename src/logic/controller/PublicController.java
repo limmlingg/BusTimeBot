@@ -6,8 +6,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+
 import logic.Util;
-import main.Logger;
 import model.BusStop;
 import model.busarrival.BusArrival;
 import model.busarrival.BusStopArrival;
@@ -18,6 +19,8 @@ import model.json.publicbus.PublicBusStopArrivalContainer;
 import model.json.publicbus.PublicBusStopContainer;
 
 public class PublicController {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(PublicController.class);
+
     /**
      * Retrieve bus stop data from LTA and put it into the bot's busStops list
      */
@@ -59,7 +62,7 @@ public class PublicController {
             }
             return busStopArrival;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at getPublicBusArrivalTimings with BusStop={}", stop, e);
             return null;
         }
     }
@@ -111,7 +114,7 @@ public class PublicController {
                 }
             }
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at getPublicBusInfo with serviceNo={}", serviceNo, e);
         }
 
         return busInfo;
@@ -143,7 +146,7 @@ public class PublicController {
                                                                      information.get(6));
             return busInfoDirection;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at extractPublicInformation with data={}", data, e);
             return null;
         }
     }

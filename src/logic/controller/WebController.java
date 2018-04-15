@@ -12,12 +12,15 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.logging.log4j.LogManager;
+
 import com.google.gson.Gson;
 
 import main.BusTimeBot;
-import main.Logger;
 
 public class WebController {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(PublicController.class);
+
     /**
      * Retrieve data from the URL and cast it to the class provided
      *
@@ -31,7 +34,7 @@ public class WebController {
         try {
             return jsonToObject(sendHttpRequest(url), objectClass);
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at retrieveData with url={}", url, e);
             return null;
         }
     }
@@ -55,7 +58,7 @@ public class WebController {
                 return jsonToObject(sendHttpRequest(url), objectClass);
             }
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at retrieveData with url={}, https={}", url, https, e);
             return null;
         }
     }
@@ -110,7 +113,7 @@ public class WebController {
             }
             reader.close();
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at sendHttpRequest with url={}, includeToken={}", url, includeToken, e);
         }
         //System.out.println(result);
         return result.toString();

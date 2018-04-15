@@ -1,5 +1,6 @@
 package main;
 
+import org.apache.logging.log4j.LogManager;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 
@@ -7,6 +8,8 @@ import logic.controller.WebController;
 import logic.gateway.TelegramGateway;
 
 public class Main{
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(Main.class);
+
     //Gateways to run BusTimeBot on
     public enum Gateway {
         TELEGRAM
@@ -14,20 +17,21 @@ public class Main{
     public static TelegramGateway telegramGateway;
 
     public static void main(String[] args) {
-        //Enable trust for SSL
+        logger.info("Enable trust for SSL");
         WebController.trustAll();
+        logger.info("Initializing ApiContextInitializer (required for Telegram bot API)");
         ApiContextInitializer.init();
 
-        //Start up bot
+        logger.info("Starting up BusTimeBot instance");
         BusTimeBot.getInstance();
 
-        //Load telegram gateway
+        logger.info("Loading up Telegram Gateway and registering bot");
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
             telegramGateway = new TelegramGateway();
             telegramBotsApi.registerBot(telegramGateway);
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.fatal("There is a problem registering the Telegram Gateway!", e);
         }
     }
 }

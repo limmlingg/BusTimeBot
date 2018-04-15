@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.LogManager;
+
 import datastructures.kdtree.NearestNeighborIterator;
 import logic.LocationDistanceFunction;
 import logic.Util;
@@ -12,7 +14,6 @@ import logic.controller.NusController;
 import logic.controller.PublicController;
 import logic.gateway.TelegramGateway;
 import main.BusTimeBot;
-import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
@@ -23,6 +24,8 @@ import model.busarrival.BusStopArrivalContainer;
  * A command that returns bus times given a latitude and longitude
  */
 public class LocationCommand extends Command {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(LocationCommand.class);
+
     public static final int DEFAULT_NUMBER_OF_STOPS = 5;
 
     //Caching stuff
@@ -128,7 +131,7 @@ public class LocationCommand extends Command {
             commandSuccess = true;
             return new CommandResponse(busArrivalString, data, CommandResponseType.LOCATION);
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at execute()", e);
             return null;
         }
     }
@@ -167,7 +170,7 @@ public class LocationCommand extends Command {
             }
             return busstops;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at getNearbyBusStops with latitude={}, longitude={}, numberOfStops={}", latitude, longitude, numberOfStops, e);
             return null;
         }
     }

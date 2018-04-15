@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import main.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import model.BusStop;
 import model.BusStopMapping;
 import model.busarrival.BusArrival;
@@ -21,6 +22,7 @@ import model.json.ntubus.NtuBusStopContainer;
 import model.json.ntubus.Route;
 
 public class NtuController {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(NtuController.class);
     public static final String[] NTU_BUSES = {"CL-BLUE", "CL-RED", "CR", "CWR"};
 
     public static final BusInfoDirection NTU_CLBLUE = new BusInfoDirection("", "0800", "2300", "0800", "2300", "0800", "2300");
@@ -221,7 +223,7 @@ public class NtuController {
             }
             return busStopArrival;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at getNTUBusArrivalTimings with BusStop={}", stop, e);
             return null;
         }
     }
