@@ -16,13 +16,14 @@ import model.businfo.BusInfo;
  */
 public class BusCommand extends Command {
     public static final String COMMAND = "/bus";
-    private static final String KEYWORD_BUS = COMMAND + " ";
-    private static final String BUS_HELP_TEXT = "Type /bus <Service Number> to look up first and last bus timings!\n" + "Example: /bus 969";
+    private static final String BUS_HELP_TEXT = "Type /bus <Service Number> to look up first and last bus timings!\n" +
+                                                "Example: /bus 969\n" +
+                                                "Bus timing shown is the time which the bus leaves the interchange\n";
 
     private String searchTerm;
 
     public BusCommand(String searchTerm) {
-        this.searchTerm = searchTerm.toLowerCase().replaceFirst(KEYWORD_BUS, "").toUpperCase();
+        this.searchTerm = searchTerm.toLowerCase().replaceFirst(COMMAND, "").toUpperCase().trim();
     }
 
     @Override

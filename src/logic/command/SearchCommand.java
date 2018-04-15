@@ -14,6 +14,13 @@ import model.json.gothere.GeoCodeContainer;
  */
 public class SearchCommand extends Command {
     public static final String COMMAND = "/search";
+    public static final String SEARCH_HELP_TEXT = "You can type /search <Popular names/postal/address/bus stop number> (the \"search\" term is now optional, NOT FOR GROUP CHATS)\n" +
+                                                  "Some examples:\n" +
+                                                  "/amk hub (defaults to search for AMK HUB, also works for other examples below)\n" +
+                                                  "/search amk hub\n" +
+                                                  "/search 118426\n" +
+                                                  "/search Blk 1 Hougang Ave 1\n" +
+                                                  "/search 63151 (Bus Stop Code)\n\n";
 
     private String searchTerm;
 
@@ -24,6 +31,11 @@ public class SearchCommand extends Command {
     public CommandResponse execute() {
         GeoCodeContainer results;
         CommandResponse result;
+
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            return new CommandResponse(SEARCH_HELP_TEXT);
+        }
+
         try {
             String encodedSearchTerm = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString());
             results = WebController.retrieveData("https://gothere.sg/a/search?q=" + encodedSearchTerm, GeoCodeContainer.class, true);
