@@ -73,10 +73,15 @@ public class WebController {
      * @return An object of the class provided
      */
     public static <T> T jsonToObject(String json, Class<T> objectClass) throws Exception {
-        Gson gson = new Gson();
-        //To make sure json is json, we extract only from the first { to the last }
-        String jsonTrimmed = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
-        return gson.fromJson(jsonTrimmed, objectClass);
+        try {
+            Gson gson = new Gson();
+            //To make sure json is json, we extract only from the first { to the last }
+            String jsonTrimmed = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
+            return gson.fromJson(jsonTrimmed, objectClass);
+        } catch (Exception e) {
+            logger.warn("Exception at jsonToObject json={}", json, e);
+            return null;
+        }
     }
 
     /**
