@@ -50,8 +50,10 @@ public class BusCommand extends Command {
             busInformation = PublicController.getPublicBusInfo(searchTerm);
             //Add links for the routes
             type = CommandResponseType.LINK;
-            data = new HashMap<String, String>();
-            data.put("link", "https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=" + searchTerm);
+            if (busInformation.isValidServiceNo) {
+                data = new HashMap<String, String>();
+                data.put("link", "https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=" + searchTerm);
+            }
         }
 
         if (busInformation != null) {

@@ -30,6 +30,7 @@ public class Main{
         try {
             telegramGateway = new TelegramGateway();
             telegramBotsApi.registerBot(telegramGateway);
+            logger.info("BusTimeBot for telegram ready to rock and roll!");
         } catch (Exception e) {
             logger.fatal("There is a problem registering the Telegram Gateway!", e);
         }
