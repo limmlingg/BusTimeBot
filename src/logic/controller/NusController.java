@@ -106,7 +106,7 @@ public class NusController {
 
             NusBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname=" + code, NusBusArrivalContainer.class);
             for (NusBusArrival s : data.ShuttleServiceResult.shuttles) {
-                BusArrival busArrival = new BusArrival();
+                BusArrival busArrival = new BusArrival(true);
                 busArrival.serviceNo = s.name;
 
                 //We either get "Arr", "-" or a time in minutes

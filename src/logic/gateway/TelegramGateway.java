@@ -381,10 +381,10 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (busArrival.arrivalTime1 == BusArrival.TIME_NA) {
                     firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA);
                 } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
-                    String busInfo = BusArrival.LABEL_ARRIVING + (busArrival.isWab1? "*" : "");
+                    String busInfo = BusArrival.LABEL_ARRIVING + appendWab(busArrival.isWab1);
                     firstEstimatedBusTime = Util.padBusTime(busInfo);
                 } else {
-                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime1), 2) + "m" + (busArrival.isWab1? "*" : "");
+                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime1), 2) + "m" + appendWab(busArrival.isWab1);
                     firstEstimatedBusTime = Util.padBusTime(busInfo);
                 }
 
@@ -392,9 +392,9 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 if (busArrival.arrivalTime2 == BusArrival.TIME_NA) {
                     secondEstimatedBusTime = BusArrival.LABEL_NA_BLANK;
                 } else if (busArrival.arrivalTime2 <= BusArrival.TIME_ARRIVING) {
-                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING + (busArrival.isWab2? "*" : "");
+                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING + appendWab(busArrival.isWab2);
                 } else {
-                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime2), 2) + "m" + (busArrival.isWab2? "*" : "");
+                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime2), 2) + "m" + appendWab(busArrival.isWab2);
                     secondEstimatedBusTime = " | " + busInfo;
                 }
 
@@ -411,6 +411,13 @@ public class TelegramGateway extends TelegramLongPollingBot {
             }
         }
         return formattedString.toString();
+    }
+
+    /**
+     * Appends the sign for wheelchair accessible buses
+     */
+    private static String appendWab(boolean isWab) {
+        return isWab? "*" : " ";
     }
 
     /**

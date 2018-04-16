@@ -15,7 +15,11 @@ public class BusArrival {
     public boolean isWab2;
 
     public BusArrival() {
-        isWab1 = false;
-        isWab2 = false;
+        this(false);
+    }
+
+    public BusArrival(boolean defaultWab) {
+        isWab1 = defaultWab;
+        isWab2 = defaultWab;
     }
 }

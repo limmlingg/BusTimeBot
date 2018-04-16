@@ -31,6 +31,8 @@ public class LocationCommand extends Command {
     //Caching stuff
     private static final long CACHE_CLEAR_INTERVAL = 1000 * 60 * 60 * 1; //in milliseconds
     private static final int CACHE_REFRESH_INTERVAL = 1000 * 30; //Milliseconds before refreshing cache
+    private static final String WAB_TOOLTIP = "\\* _Wheelchair Accessible_";
+
     private static long CACHE_LAST_CLEARED = 0;
     private static HashMap<String, BusStopArrivalContainer> cache = new HashMap<String, BusStopArrivalContainer>();
 
@@ -115,7 +117,7 @@ public class LocationCommand extends Command {
 
             String busArrivalString = "";
             if (allStops != null) {
-                busArrivalString = TelegramGateway.formatBusArrival(allStops, numberOfStopsWanted).trim();
+                busArrivalString = TelegramGateway.formatBusArrival(allStops, numberOfStopsWanted).trim() + "\n" + WAB_TOOLTIP;
             }
 
             //Build data to return
