@@ -1,8 +1,11 @@
 package logic.command;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.apache.logging.log4j.LogManager;
 
 import datastructures.kdtree.NearestNeighborIterator;
 import logic.LocationDistanceFunction;
@@ -12,7 +15,6 @@ import logic.controller.NusController;
 import logic.controller.PublicController;
 import logic.gateway.TelegramGateway;
 import main.BusTimeBot;
-import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
@@ -23,13 +25,20 @@ import model.busarrival.BusStopArrivalContainer;
  * A command that returns bus times given a latitude and longitude
  */
 public class LocationCommand extends Command {
-    public static final int defaultNumberOfStops = 5;
-    private static final int refreshCacheSeconds = 30; //Time before refreshing cache
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(LocationCommand.class);
 
+    public static final int DEFAULT_NUMBER_OF_STOPS = 5;
+
+    //Caching stuff
+    private static final long CACHE_CLEAR_INTERVAL = 1000 * 60 * 60 * 1; //in milliseconds
+    private static final int CACHE_REFRESH_INTERVAL = 1000 * 30; //Milliseconds before refreshing cache
+    private static final String WAB_TOOLTIP = "\\* _Wheelchair Accessible_";
+
+    private static long CACHE_LAST_CLEARED = 0;
     private static HashMap<String, BusStopArrivalContainer> cache = new HashMap<String, BusStopArrivalContainer>();
 
     private double maxDistanceFromPoint = 0.35; //in km
-    private int numberOfStopsWanted = defaultNumberOfStops;
+    private int numberOfStopsWanted = DEFAULT_NUMBER_OF_STOPS;
     private double latitude;
     private double longitude;
     private String specificBusStopCode;
@@ -50,6 +59,8 @@ public class LocationCommand extends Command {
 
     @Override
     public CommandResponse execute() {
+        clearCache();
+
         try {
             BusStopArrivalContainer allStops = new BusStopArrivalContainer();
             ArrayList<BusStop> busstops;
@@ -69,12 +80,12 @@ public class LocationCommand extends Command {
 
             //Check cache if within 1 minute
             BusStopArrivalContainer cachedContainer = cache.get(key);
-            long differenceInSeconds = Long.MAX_VALUE;
+            long differenceInMilliseconds = Long.MAX_VALUE;
             if (cachedContainer != null) {
-                differenceInSeconds = (System.currentTimeMillis() - cachedContainer.requestedTime) / 1000;
+                differenceInMilliseconds = (System.currentTimeMillis() - cachedContainer.requestedTime);
             }
 
-            if (differenceInSeconds < refreshCacheSeconds) {
+            if (differenceInMilliseconds < CACHE_REFRESH_INTERVAL) {
                 allStops = cachedContainer;
             } else {
                 for (BusStop stop : busstops) {
@@ -97,15 +108,17 @@ public class LocationCommand extends Command {
                     }
                 }
 
-                //Save the requested time (for caching)
-                allStops.requestedTime = System.currentTimeMillis();
-                //Save object to cache
-                cache.put(key, allStops);
+                if (allStops.busStopArrivals != null && allStops.busStopArrivals.size() > 0) {
+                    //Save the requested time (for caching)
+                    allStops.requestedTime = System.currentTimeMillis();
+                    //Save object to cache
+                    cache.put(key, allStops);
+                }
             }
 
             String busArrivalString = "";
             if (allStops != null) {
-                busArrivalString = TelegramGateway.formatBusArrival(allStops, numberOfStopsWanted).trim();
+                busArrivalString = TelegramGateway.formatBusArrival(allStops, numberOfStopsWanted).trim() + "\n" + WAB_TOOLTIP;
             }
 
             //Build data to return
@@ -121,24 +134,36 @@ public class LocationCommand extends Command {
             commandSuccess = true;
             return new CommandResponse(busArrivalString, data, CommandResponseType.LOCATION);
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at execute()", e);
             return null;
+        }
+    }
+
+    /** Returns true if the current time has exceeded the cache clear interval */
+    private boolean isClearCacheTime() {
+        return (System.currentTimeMillis() - CACHE_LAST_CLEARED) >= CACHE_CLEAR_INTERVAL;
+    }
+
+    /** Clears the cache to save memory space */
+    private void clearCache() {
+        if (isClearCacheTime()) {
+            logger.info("Time to clear cache at " + new Date());
+            cache.clear();
+            CACHE_LAST_CLEARED = System.currentTimeMillis();
         }
     }
 
     /**
      * Get near by bus stops of a given location
      *
-     * @param latitude
-     *            of the user
-     * @param longitude
-     *            of the user
+     * @param latitude of the user
+     * @param longitude of the user
      * @return a list of bus stops near that location sorted by distance
      */
     public ArrayList<BusStop> getNearbyBusStops(double latitude, double longitude, int numberOfStops) {
         try {
             ArrayList<BusStop> busstops = new ArrayList<BusStop>();
-            NearestNeighborIterator<BusStop> result = BusTimeBot.getInstance().data.getNearestNeighbours(latitude, longitude, defaultNumberOfStops, new LocationDistanceFunction());
+            NearestNeighborIterator<BusStop> result = BusTimeBot.getInstance().data.getNearestNeighbours(latitude, longitude, DEFAULT_NUMBER_OF_STOPS, new LocationDistanceFunction());
             Iterator<BusStop> iterator = result.iterator();
             while (iterator.hasNext()) {
                 BusStop stop = iterator.next();
@@ -149,7 +174,7 @@ public class LocationCommand extends Command {
             }
             return busstops;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at getNearbyBusStops with latitude={}, longitude={}, numberOfStops={}", latitude, longitude, numberOfStops, e);
             return null;
         }
     }

@@ -3,7 +3,8 @@ package logic.controller;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import main.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import model.BusStop;
 import model.BusStopMapping;
 import model.busarrival.BusArrival;
@@ -17,6 +18,7 @@ import model.json.nusbus.NusBusStopContainer;
 
 /** Responsible for retrieving information regarding NUS */
 public class NusController {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(NusController.class);
     public static final String[] NUS_BUSES = {"A1", "A2", "B1", "B2", "C", "D1", "D2", "BTC", "BTC1", "BTC2"};
 
     public static final BusInfoDirection NUS_A1_A2 = new BusInfoDirection("", "0715", "2300", "0715", "2300", "0900", "2300");
@@ -104,7 +106,7 @@ public class NusController {
 
             NusBusArrivalContainer data = WebController.retrieveData("http://nextbus.comfortdelgro.com.sg/testMethod.asmx/GetShuttleService?busstopname=" + code, NusBusArrivalContainer.class);
             for (NusBusArrival s : data.ShuttleServiceResult.shuttles) {
-                BusArrival busArrival = new BusArrival();
+                BusArrival busArrival = new BusArrival(true);
                 busArrival.serviceNo = s.name;
 
                 //We either get "Arr", "-" or a time in minutes
@@ -128,7 +130,7 @@ public class NusController {
             }
             return busStopArrival;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at getNUSArrivalTimings with BusStop={}", stop, e);
             return null;
         }
     }

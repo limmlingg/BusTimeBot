@@ -58,3 +58,4 @@ key.properties
 BusTimeBot.log
 main.db
 /bin/
+/build/

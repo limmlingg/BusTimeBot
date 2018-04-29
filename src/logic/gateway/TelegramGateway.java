@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
 
+import org.apache.logging.log4j.LogManager;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -35,7 +36,6 @@ import logic.command.Command;
 import logic.command.LocationCommand;
 import logic.command.SearchCommand;
 import logic.command.StartHelpCommand;
-import main.Logger;
 import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
@@ -47,6 +47,8 @@ import model.businfo.BusInfoDirection;
 
 /** Gateway for telegram communication */
 public class TelegramGateway extends TelegramLongPollingBot {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(TelegramGateway.class);
+
     public static final String TELEGRAM_BOT_NAME = "bus_time_bot";
     private static final String KEYWORD_BOT_MENTION = "@" + TELEGRAM_BOT_NAME;
 
@@ -65,7 +67,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
             loadProperties();
             lastQueried = new HashMap<Long, Date>();
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.fatal("Unable to start up Telegram Gateway!", e);
         }
     }
 
@@ -126,7 +128,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 sendMessage(reply.text, update.getMessage().getChatId(), keyboard);
             }
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at onUpdateReceived with update={}", update, e);
         }
     }
 
@@ -170,7 +172,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
             EditMessageText editMessageText = generateEditedMessage(callbackQuery);
 
             try {
-                editMessageTextAsync(editMessageText, new EditMessageCallbackHandler());
+                executeAsync(editMessageText, new EditMessageCallbackHandler());
             } catch (TelegramApiException e) {
             } //Ignore if MessageNotEdited error
             lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
@@ -181,7 +183,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         answer.setCallbackQueryId(callbackQuery.getId());
 
         try {
-            answerCallbackQueryAsync(answer, new AnswerCallbackQueryHandler());
+            executeAsync(answer, new AnswerCallbackQueryHandler());
         } catch (TelegramApiException e) {
         } //Ignore query errors, probably expired queries
     }
@@ -220,7 +222,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         String[] data = callbackQuery.getData().split(":");
         double latitude = Double.parseDouble(data[0]);
         double longitude = Double.parseDouble(data[1]);
-        int numberOfStopsWanted = LocationCommand.defaultNumberOfStops;
+        int numberOfStopsWanted = LocationCommand.DEFAULT_NUMBER_OF_STOPS;
         String searchTerm = null;
 
         //For backwards compatible by checking length
@@ -288,10 +290,10 @@ public class TelegramGateway extends TelegramLongPollingBot {
         }
         boolean success = false;
         try {
-            sendMessageAsync(sendMessageRequest, new SendMessageCallbackHandler()); //at the end, so some magic and send the message ;)
+            executeAsync(sendMessageRequest, new SendMessageCallbackHandler()); //at the end, so some magic and send the message ;)
             success = true;
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at sendMessage with message={}, id={}, keyboard={}", message, id, keyboard, e);
         }
         return success;
     }
@@ -311,7 +313,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
         try {
             sendPhoto(photoMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.warn("Exception occurred at sendPhotoMessage with message={}, id={}, image={}, keyboard={}", message, id, image, keyboard, e);
             return false;
         }
         return true;
@@ -353,7 +355,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 return busInfoString.toString();
             }
         } catch (Exception e) {
-            Logger.logError(e);
+            logger.warn("Exception occurred at formatBusInfo with BusInfo={}", busInfo, e);
             return null;
         }
     }
@@ -377,20 +379,23 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 //Build string for each of the arrival time
                 String firstEstimatedBusTime;
                 if (busArrival.arrivalTime1 == BusArrival.TIME_NA) {
-                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA);
+                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA) + " | ";
                 } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
-                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_ARRIVING);
+                    String busInfo = BusArrival.LABEL_ARRIVING + appendWab(busArrival.isWab1);
+                    firstEstimatedBusTime = Util.padBusTime(busInfo) + " | ";
                 } else {
-                    firstEstimatedBusTime = Util.padBusTime(busArrival.arrivalTime1 + "min");
+                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime1), 2) + "m" + appendWab(busArrival.isWab1);
+                    firstEstimatedBusTime = Util.padBusTime(busInfo) + " | ";
                 }
 
                 String secondEstimatedBusTime;
                 if (busArrival.arrivalTime2 == BusArrival.TIME_NA) {
                     secondEstimatedBusTime = BusArrival.LABEL_NA_BLANK;
                 } else if (busArrival.arrivalTime2 <= BusArrival.TIME_ARRIVING) {
-                    secondEstimatedBusTime = " | " + BusArrival.LABEL_ARRIVING;
+                    secondEstimatedBusTime = BusArrival.LABEL_ARRIVING + appendWab(busArrival.isWab2);
                 } else {
-                    secondEstimatedBusTime = " | " + busArrival.arrivalTime2 + "min";
+                    String busInfo = Util.padFront(Long.toString(busArrival.arrivalTime2), 2) + "m" + appendWab(busArrival.isWab2);
+                    secondEstimatedBusTime = busInfo;
                 }
 
                 //Append the string to the formatted string
@@ -406,6 +411,13 @@ public class TelegramGateway extends TelegramLongPollingBot {
             }
         }
         return formattedString.toString();
+    }
+
+    /**
+     * Appends the sign for wheelchair accessible buses
+     */
+    private static String appendWab(boolean isWab) {
+        return isWab? "*" : " ";
     }
 
     /**

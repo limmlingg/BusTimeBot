@@ -76,7 +76,7 @@ Bus timing from various organizations are retrieved from their respective server
 ## Authors
 
 * **Bernard Yip** - *Initial work* - [bernardyip](https://github.com/bernardyip)
-* **Lim Miao Ling** - System Testing - [limmlingg](https://github.com/limmlingg)
+* **Lim Miao Ling** - *System Testing* - [limmlingg](https://github.com/limmlingg)
 * **Angus Ng** - *Landing Page* - [angusngjj](https://github.com/angusngjj)
 
 ## License
