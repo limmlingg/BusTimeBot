@@ -1,6 +1,7 @@
 package logic.command;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -146,6 +147,7 @@ public class LocationCommand extends Command {
     /** Clears the cache to save memory space */
     private void clearCache() {
         if (isClearCacheTime()) {
+            logger.info("Time to clear cache at " + new Date());
             cache.clear();
             CACHE_LAST_CLEARED = System.currentTimeMillis();
         }

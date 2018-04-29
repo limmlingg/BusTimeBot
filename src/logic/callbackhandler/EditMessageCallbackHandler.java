@@ -2,11 +2,13 @@ package logic.callbackhandler;
 
 import java.io.Serializable;
 
+import org.apache.logging.log4j.LogManager;
 import org.telegram.telegrambots.api.methods.BotApiMethod;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.updateshandlers.SentCallback;
 
 public class EditMessageCallbackHandler implements SentCallback<Serializable> {
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(EditMessageCallbackHandler.class);
 
     @Override
     public void onResult(BotApiMethod<Serializable> method, Serializable response) {
@@ -16,14 +18,12 @@ public class EditMessageCallbackHandler implements SentCallback<Serializable> {
 
     @Override
     public void onError(BotApiMethod<Serializable> method, TelegramApiRequestException apiException) {
-        // TODO Auto-generated method stub
-
+        logger.error("Exception occurred at EditMessage.onError with method={}", method, apiException);
     }
 
     @Override
     public void onException(BotApiMethod<Serializable> method, Exception exception) {
-        // TODO Auto-generated method stub
-
+        logger.error("Exception occurred at EditMessage.onException with method={}", method, exception);
     }
 
 }
