@@ -9,18 +9,18 @@ import java.util.HashMap;
 import java.util.TimeZone;
 
 import org.apache.logging.log4j.LogManager;
-import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.api.methods.ParseMode;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
-import org.telegram.telegrambots.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.api.objects.CallbackQuery;
-import org.telegram.telegrambots.api.objects.Location;
-import org.telegram.telegrambots.api.objects.Message;
-import org.telegram.telegrambots.api.objects.Update;
-import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Location;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
@@ -304,14 +304,14 @@ public class TelegramGateway extends TelegramLongPollingBot {
     public boolean sendPhotoMessage(String message, long id, InputStream image, ReplyKeyboard keyboard) {
         SendPhoto photoMessage = new SendPhoto();
         photoMessage.setCaption(message);
-        photoMessage.setNewPhoto("Nil", image);
+        photoMessage.setPhoto("Nil", image);
         photoMessage.setChatId(id);
         if (keyboard != null) {
             photoMessage.setReplyMarkup(keyboard);
         }
 
         try {
-            sendPhoto(photoMessage);
+            execute(photoMessage);
         } catch (TelegramApiException e) {
             logger.warn("Exception occurred at sendPhotoMessage with message={}, id={}, image={}, keyboard={}", message, id, image, keyboard, e);
             return false;
