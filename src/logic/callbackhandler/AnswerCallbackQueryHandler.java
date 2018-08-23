@@ -1,9 +1,9 @@
 package logic.callbackhandler;
 
 import org.apache.logging.log4j.LogManager;
-import org.telegram.telegrambots.api.methods.BotApiMethod;
-import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
-import org.telegram.telegrambots.updateshandlers.SentCallback;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.updateshandlers.SentCallback;
 
 public class AnswerCallbackQueryHandler implements SentCallback<Boolean> {
     public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(AnswerCallbackQueryHandler.class);

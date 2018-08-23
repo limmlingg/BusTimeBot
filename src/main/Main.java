@@ -2,7 +2,7 @@ package main;
 
 import org.apache.logging.log4j.LogManager;
 import org.telegram.telegrambots.ApiContextInitializer;
-import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 
 import logic.controller.WebController;
 import logic.gateway.TelegramGateway;

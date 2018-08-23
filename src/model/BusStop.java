@@ -1,6 +1,6 @@
 package model;
 
-import org.telegram.telegrambots.api.objects.Location;
+import org.telegram.telegrambots.meta.api.objects.Location;
 
 import logic.Util;
 
