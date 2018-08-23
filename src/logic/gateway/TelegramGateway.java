@@ -379,7 +379,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 //Build string for each of the arrival time
                 String firstEstimatedBusTime;
                 if (busArrival.arrivalTime1 == BusArrival.TIME_NA) {
-                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA) + " | ";
+                    firstEstimatedBusTime = Util.padBusTime(BusArrival.LABEL_NA) + appendWab(false) + " | "; //N/A does not have WAB
                 } else if (busArrival.arrivalTime1 <= BusArrival.TIME_ARRIVING) {
                     String busInfo = BusArrival.LABEL_ARRIVING + appendWab(busArrival.isWab1);
                     firstEstimatedBusTime = Util.padBusTime(busInfo) + " | ";
