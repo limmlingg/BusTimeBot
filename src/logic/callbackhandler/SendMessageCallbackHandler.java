@@ -12,13 +12,11 @@ public class SendMessageCallbackHandler implements SentCallback<Message> {
     @Override
     public void onResult(BotApiMethod<Message> method, Message response) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onError(BotApiMethod<Message> method, TelegramApiRequestException apiException) {
         logger.error("Exception occurred at SendMessage.onError with method={}", method, apiException);
-
     }
 
     @Override

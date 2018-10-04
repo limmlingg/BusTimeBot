@@ -13,7 +13,6 @@ public class EditMessageCallbackHandler implements SentCallback<Serializable> {
     @Override
     public void onResult(BotApiMethod<Serializable> method, Serializable response) {
         // TODO Auto-generated method stub
-
     }
 
     @Override

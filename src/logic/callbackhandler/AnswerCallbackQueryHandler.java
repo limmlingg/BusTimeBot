@@ -8,17 +8,14 @@ import org.telegram.telegrambots.meta.updateshandlers.SentCallback;
 public class AnswerCallbackQueryHandler implements SentCallback<Boolean> {
     public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(AnswerCallbackQueryHandler.class);
 
-
     @Override
     public void onResult(BotApiMethod<Boolean> method, Boolean response) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onError(BotApiMethod<Boolean> method, TelegramApiRequestException apiException) {
         logger.error("Exception occurred at AnswerCallbackQuery.onError with method={}", method, apiException);
-
     }
 
     @Override
