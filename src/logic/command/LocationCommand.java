@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -30,12 +31,29 @@ public class LocationCommand extends Command {
     public static final int DEFAULT_NUMBER_OF_STOPS = 5;
 
     //Caching stuff
-    private static final long CACHE_CLEAR_INTERVAL = 1000 * 60 * 60 * 1; //in milliseconds
-    private static final int CACHE_REFRESH_INTERVAL = 1000 * 30; //Milliseconds before refreshing cache
+    private static final long CACHE_CLEAR_INTERVAL = 1000 * 60 * 60 * 1; //1 hour in milliseconds before clearing the cache
+    private static final int CACHE_REFRESH_INTERVAL = 1000 * 30; //30 seconds in milliseconds before refreshing cache with new data
     private static final String WAB_TOOLTIP = "\\* _Wheelchair Accessible_";
 
-    private static long CACHE_LAST_CLEARED = 0;
-    private static HashMap<String, BusStopArrivalContainer> cache = new HashMap<String, BusStopArrivalContainer>();
+    private static ConcurrentHashMap<String, BusStopArrivalContainer> cache = new ConcurrentHashMap<String, BusStopArrivalContainer>();
+    //Background thread to clear cache
+    static {
+        Runnable r = new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        logger.info("Time to clear cache at " + new Date());
+                        cache.clear();
+                        Thread.sleep(CACHE_CLEAR_INTERVAL);
+                        logger.info(cache.toString());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        new Thread(r).start();
+    }
 
     private double maxDistanceFromPoint = 0.35; //in km
     private int numberOfStopsWanted = DEFAULT_NUMBER_OF_STOPS;
@@ -59,8 +77,6 @@ public class LocationCommand extends Command {
 
     @Override
     public CommandResponse execute() {
-        clearCache();
-
         try {
             BusStopArrivalContainer allStops = new BusStopArrivalContainer();
             ArrayList<BusStop> busstops;
@@ -136,20 +152,6 @@ public class LocationCommand extends Command {
         } catch (Exception e) {
             logger.warn("Exception occurred at execute()", e);
             return null;
-        }
-    }
-
-    /** Returns true if the current time has exceeded the cache clear interval */
-    private boolean isClearCacheTime() {
-        return (System.currentTimeMillis() - CACHE_LAST_CLEARED) >= CACHE_CLEAR_INTERVAL;
-    }
-
-    /** Clears the cache to save memory space */
-    private void clearCache() {
-        if (isClearCacheTime()) {
-            logger.info("Time to clear cache at " + new Date());
-            cache.clear();
-            CACHE_LAST_CLEARED = System.currentTimeMillis();
         }
     }
 
