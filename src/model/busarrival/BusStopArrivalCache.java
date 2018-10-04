@@ -7,7 +7,6 @@ import org.apache.logging.log4j.LogManager;
 
 public class BusStopArrivalCache {
     public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(BusStopArrivalCache.class);
-    public static final int CACHE_REFRESH_INTERVAL = 1000 * 30; //30 seconds in milliseconds before refreshing cache with new data
     public static ConcurrentHashMap<String, BusStopArrival> cache;
 
     public static void initialize() {
@@ -15,10 +14,6 @@ public class BusStopArrivalCache {
        //Background thread to clear cache
        Runnable r = new PeriodicCacheClearer(cache);
        new Thread(r).start();
-    }
-
-    public static boolean isOutdated(BusStopArrival busStopArrival) {
-        return (System.currentTimeMillis() - busStopArrival.requestedTime) > BusStopArrivalCache.CACHE_REFRESH_INTERVAL;
     }
 }
 

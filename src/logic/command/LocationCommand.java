@@ -68,7 +68,9 @@ public class LocationCommand extends Command {
 
                 //Check if current bus stop is in cache
                 busStopArrival = BusStopArrivalCache.cache.getOrDefault(stop.BusStopCode, new BusStopArrival());
-                if (BusStopArrivalCache.isOutdated(busStopArrival)) { //cache miss or outdated
+                if (busStopArrival.isOutdated()) { //cache miss or outdated
+                    logger.info("Cache Miss! " + stop.BusStopCode);
+                    busStopArrival = new BusStopArrival();
                     busStopArrival.busStop = stop;
                     busStopArrival.requestedTime = System.currentTimeMillis();
                     //Append the bus times accordingly
@@ -81,6 +83,8 @@ public class LocationCommand extends Command {
                     if (stop.isNtu) {
                         busStopArrival.merge(NtuController.getNTUBusArrivalTimings(stop));
                     }
+                } else {
+                    logger.info("Cache Hit! " + stop.BusStopCode);
                 }
 
                 //If there exist a bus for the bus stop, then we append, otherwise that bus stop has no buses (so we ignore)
