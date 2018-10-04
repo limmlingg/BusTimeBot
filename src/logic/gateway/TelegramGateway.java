@@ -88,7 +88,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 executeUpdateCommand(update);
             } else if (update.hasMessage()) { //Standard messages
                 Message message = update.getMessage();
-                isGroupChat = (message.getChatId() < 0) ? true : false;
+                isGroupChat = (message.getChatId() < 0);
                 if (message.getText() != null) {
                     String text = removeMention(message.getText()); //Don't need the "@BusTimeBot" to handle commands
                     String commandText = getCommand(text);
