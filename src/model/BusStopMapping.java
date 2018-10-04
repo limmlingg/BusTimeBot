@@ -31,7 +31,7 @@ public class BusStopMapping {
         NusToPublic.put("RAFFLES", "16169");
         NusToPublic.put("YIH-OPP", "16179");
         NusToPublic.put("KR-MRT-OPP", "18339");
-        NusToPublic.put("LT29", "18301");
+        NusToPublic.put("LT27", "18301");
         NusToPublic.put("KV", "16151");
         NusToPublic.put("BLK-EA-OPP", "16159");
 
