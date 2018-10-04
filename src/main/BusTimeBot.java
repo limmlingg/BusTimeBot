@@ -2,6 +2,7 @@ package main;
 
 import logic.PropertiesLoader;
 import model.BusStopData;
+import model.busarrival.BusStopArrivalCache;
 
 public class BusTimeBot {
     //Instance of BusTimeBot
@@ -24,6 +25,9 @@ public class BusTimeBot {
         //Load LTA Token here
         PropertiesLoader propertiesLoader = new PropertiesLoader();
         LTA_TOKEN = propertiesLoader.getLtaToken();
+
+        //Initialize cache
+        BusStopArrivalCache.initialize();
 
         //Initialize bus stop data
         boolean useDatabase = propertiesLoader.getUseDatabase();

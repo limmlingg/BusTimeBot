@@ -7,9 +7,11 @@ import model.BusStop;
 public class BusStopArrival {
     public BusStop busStop;
     public ArrayList<BusArrival> busArrivals;
+    public long requestedTime;
 
     public BusStopArrival() {
         busArrivals = new ArrayList<BusArrival>();
+        this.requestedTime = System.currentTimeMillis();
     }
 
     public void merge(BusStopArrival other) {

@@ -1,11 +1,8 @@
 package logic.command;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.logging.log4j.LogManager;
 
 import datastructures.kdtree.NearestNeighborIterator;
@@ -20,6 +17,7 @@ import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
 import model.busarrival.BusStopArrival;
+import model.busarrival.BusStopArrivalCache;
 import model.busarrival.BusStopArrivalContainer;
 
 /**
@@ -29,30 +27,7 @@ public class LocationCommand extends Command {
     public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(LocationCommand.class);
 
     public static final int DEFAULT_NUMBER_OF_STOPS = 5;
-
-    //Caching stuff
-    private static final long CACHE_CLEAR_INTERVAL = 1000 * 60 * 60 * 1; //1 hour in milliseconds before clearing the cache
-    private static final int CACHE_REFRESH_INTERVAL = 1000 * 30; //30 seconds in milliseconds before refreshing cache with new data
     private static final String WAB_TOOLTIP = "\\* _Wheelchair Accessible_";
-
-    private static ConcurrentHashMap<String, BusStopArrivalContainer> cache = new ConcurrentHashMap<String, BusStopArrivalContainer>();
-    //Background thread to clear cache
-    static {
-        Runnable r = new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        logger.info("Time to clear cache at " + new Date());
-                        cache.clear();
-                        Thread.sleep(CACHE_CLEAR_INTERVAL);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        new Thread(r).start();
-    }
 
     private double maxDistanceFromPoint = 0.35; //in km
     private int numberOfStopsWanted = DEFAULT_NUMBER_OF_STOPS;
@@ -94,13 +69,13 @@ public class LocationCommand extends Command {
             }
 
             //Check cache if within 1 minute
-            BusStopArrivalContainer cachedContainer = cache.get(key);
+            BusStopArrivalContainer cachedContainer = BusStopArrivalCache.cache.get(key);
             long differenceInMilliseconds = Long.MAX_VALUE;
             if (cachedContainer != null) {
                 differenceInMilliseconds = (System.currentTimeMillis() - cachedContainer.requestedTime);
             }
 
-            if (differenceInMilliseconds < CACHE_REFRESH_INTERVAL) {
+            if (differenceInMilliseconds < BusStopArrivalCache.CACHE_REFRESH_INTERVAL) {
                 allStops = cachedContainer;
             } else {
                 for (BusStop stop : busstops) {
@@ -127,7 +102,7 @@ public class LocationCommand extends Command {
                     //Save the requested time (for caching)
                     allStops.requestedTime = System.currentTimeMillis();
                     //Save object to cache
-                    cache.put(key, allStops);
+                    BusStopArrivalCache.cache.put(key, allStops);
                 }
             }
 
