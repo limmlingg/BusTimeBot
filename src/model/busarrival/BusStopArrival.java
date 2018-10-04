@@ -13,6 +13,8 @@ public class BusStopArrival {
     }
 
     public void merge(BusStopArrival other) {
-        busArrivals.addAll(other.busArrivals);
+        if (other != null){
+            busArrivals.addAll(other.busArrivals);
+        }
     }
 }
