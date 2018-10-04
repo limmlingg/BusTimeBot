@@ -62,25 +62,15 @@ public class LocationCommand extends Command {
                 busstops = getNearbyBusStops(latitude, longitude, numberOfStopsWanted);
             }
 
-            //Build cache key
-            String key = "";
-            for (BusStop busStop : busstops) {
-                key += busStop.BusStopCode + " : ";
-            }
 
-            //Check cache if within 1 minute
-            BusStopArrivalContainer cachedContainer = BusStopArrivalCache.cache.get(key);
-            long differenceInMilliseconds = Long.MAX_VALUE;
-            if (cachedContainer != null) {
-                differenceInMilliseconds = (System.currentTimeMillis() - cachedContainer.requestedTime);
-            }
+            for (BusStop stop : busstops) {
+                BusStopArrival busStopArrival;
 
-            if (differenceInMilliseconds < BusStopArrivalCache.CACHE_REFRESH_INTERVAL) {
-                allStops = cachedContainer;
-            } else {
-                for (BusStop stop : busstops) {
-                    BusStopArrival busStopArrival = new BusStopArrival();
+                //Check if current bus stop is in cache
+                busStopArrival = BusStopArrivalCache.cache.getOrDefault(stop.BusStopCode, new BusStopArrival());
+                if (BusStopArrivalCache.isOutdated(busStopArrival)) { //cache miss or outdated
                     busStopArrival.busStop = stop;
+                    busStopArrival.requestedTime = System.currentTimeMillis();
                     //Append the bus times accordingly
                     if (stop.isPublic) {
                         busStopArrival.merge(PublicController.getPublicBusArrivalTimings(stop));
@@ -91,18 +81,13 @@ public class LocationCommand extends Command {
                     if (stop.isNtu) {
                         busStopArrival.merge(NtuController.getNTUBusArrivalTimings(stop));
                     }
-
-                    //If there exist a bus for the bus stop, then we append, otherwise that bus stop has no buses (so we ignore)
-                    if (busStopArrival != null && busStopArrival.busArrivals.size() != 0) {
-                        allStops.busStopArrivals.add(busStopArrival);
-                    }
                 }
 
-                if (allStops.busStopArrivals != null && allStops.busStopArrivals.size() > 0) {
-                    //Save the requested time (for caching)
-                    allStops.requestedTime = System.currentTimeMillis();
-                    //Save object to cache
-                    BusStopArrivalCache.cache.put(key, allStops);
+                //If there exist a bus for the bus stop, then we append, otherwise that bus stop has no buses (so we ignore)
+                if (busStopArrival != null && busStopArrival.busArrivals.size() != 0) {
+                    allStops.busStopArrivals.add(busStopArrival);
+                    //Populate cache for this bus stop
+                    BusStopArrivalCache.cache.put(busStopArrival.busStop.BusStopCode, busStopArrival);
                 }
             }
 

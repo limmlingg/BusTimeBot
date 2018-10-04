@@ -11,7 +11,6 @@ public class BusStopArrival {
 
     public BusStopArrival() {
         busArrivals = new ArrayList<BusArrival>();
-        this.requestedTime = System.currentTimeMillis();
     }
 
     public void merge(BusStopArrival other) {
