@@ -45,7 +45,6 @@ public class LocationCommand extends Command {
                         logger.info("Time to clear cache at " + new Date());
                         cache.clear();
                         Thread.sleep(CACHE_CLEAR_INTERVAL);
-                        logger.info(cache.toString());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
