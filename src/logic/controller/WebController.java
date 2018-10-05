@@ -24,10 +24,8 @@ public class WebController {
     /**
      * Retrieve data from the URL and cast it to the class provided
      *
-     * @param url
-     *            of the server to retrieve data from
-     * @param objectClass
-     *            class to cast the data into
+     * @param url of the server to retrieve data from
+     * @param objectClass class to cast the data into
      * @return An object of the class provided
      */
     public static <T> T retrieveData(String url, Class<T> objectClass) {
@@ -42,12 +40,9 @@ public class WebController {
     /**
      * Retrieve data from the URL and cast it to the class provided
      *
-     * @param url
-     *            of the server to retrieve data from
-     * @param objectClass
-     *            class to cast the data into
-     * @param https
-     *            true or false
+     * @param url of the server to retrieve data from
+     * @param objectClass class to cast the data into
+     * @param https true or false
      * @return An object of the class provided
      */
     public static <T> T retrieveData(String url, Class<T> objectClass, boolean https) {
@@ -66,14 +61,13 @@ public class WebController {
     /**
      * Converts JSON data to the appropiate class given (Case-Sensitive for variables)
      *
-     * @param json
-     *            data
-     * @param objectClass
-     *            class of the Object to cast to
+     * @param json data
+     * @param objectClass class of the Object to cast to
      * @return An object of the class provided
      */
     public static <T> T jsonToObject(String json, Class<T> objectClass) throws Exception {
         try {
+            System.out.println(json);
             Gson gson = new Gson();
             //To make sure json is json, we extract only from the first { to the last }
             String jsonTrimmed = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
@@ -87,8 +81,7 @@ public class WebController {
     /**
      * Send a GET HTTP request to the url indicated and returns the response
      *
-     * @param url
-     *            of the server to retrieve data from
+     * @param url of the server to retrieve data from
      * @return response returned from the Webserver
      */
     public static String sendHttpRequest(String url) {
@@ -98,8 +91,7 @@ public class WebController {
     /**
      * Send a GET HTTP request to the url indicated and returns the response
      *
-     * @param url
-     *            of the server to retrieve data from
+     * @param url of the server to retrieve data from
      * @return response returned from the Webserver
      */
     public static String sendHttpRequest(String url, boolean includeToken) {
@@ -127,8 +119,7 @@ public class WebController {
     /**
      * Send a GET HTTPS request to the url indicated and returns the response
      *
-     * @param url
-     *            of the server to retrieve data from
+     * @param url of the server to retrieve data from
      * @return response returned from the Webserver
      */
     public static String sendHttpsRequest(String url) {

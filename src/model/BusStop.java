@@ -12,15 +12,17 @@ public class BusStop {
     public double Longitude;
 
     //Flags to indicate type of bus stop
-    public boolean isPublic;
-    public boolean isNus;
-    public boolean isNtu;
+    public BusType busType;
 
     //If combining both stops (use public's coordinates)
     public String nusStopCode;
     public String nusDescription;
     public String ntuStopCode;
     public String ntuDescription;
+
+    public BusStop() {
+        busType = new BusType();
+    }
 
     public double getDistance(Location location) {
         return getDistance(location.getLatitude(), location.getLongitude());
@@ -41,9 +43,7 @@ public class BusStop {
                 + ", Description=" + Description
                 + ", Latitude=" + Latitude
                 + ", Longitude=" + Longitude
-                + ", isPublic=" + isPublic
-                + ", isNus=" + isNus
-                + ", isNtu=" + isNtu
+                + ", busType=" + busType.toString()
                 + ", NUSStopCode=" + nusStopCode
                 + ", NUSDescription=" + nusDescription
                 + ", NTUStopCode=" + ntuStopCode

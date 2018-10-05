@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 
 import logic.Util;
 import model.BusStop;
+import model.BusType.Type;
 import model.busarrival.BusArrival;
 import model.busarrival.BusStopArrival;
 import model.businfo.BusInfo;
@@ -35,7 +36,7 @@ public class PublicController {
             skip += stopCount;
             //Copy to the total number of stops
             for (int i = 0; i < data.value.size(); i++) {
-                data.value.get(i).isPublic = true;
+                data.value.get(i).busType.setTrue(Type.PUBLIC);
                 busStops.put(data.value.get(i).BusStopCode, data.value.get(i));
             }
         }

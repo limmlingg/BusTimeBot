@@ -39,6 +39,7 @@ import logic.command.StartHelpCommand;
 import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
+import model.BusType.Type;
 import model.busarrival.BusArrival;
 import model.busarrival.BusStopArrival;
 import model.busarrival.BusStopArrivalContainer;
@@ -167,14 +168,15 @@ public class TelegramGateway extends TelegramLongPollingBot {
 
         //Update the timings if the query has been longer than 1 second
         Date lastQuery = lastQueried.get(callbackQuery.getMessage().getChatId());
-        long timeSince = lastQuery == null ? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND) * -1;
+        long timeSince = (lastQuery == null) ? Long.MAX_VALUE : Util.getTimeFromNow(Util.format.format(lastQuery), Calendar.SECOND) * -1;
         if (timeSince > 1) { //Only update if more than 1 second has passed
             EditMessageText editMessageText = generateEditedMessage(callbackQuery);
 
             try {
                 executeAsync(editMessageText, new EditMessageCallbackHandler());
             } catch (TelegramApiException e) {
-            } //Ignore if MessageNotEdited error
+              //Ignore if MessageNotEdited error
+            }
             lastQueried.put(callbackQuery.getMessage().getChatId(), new Date());
         }
 
@@ -185,7 +187,8 @@ public class TelegramGateway extends TelegramLongPollingBot {
         try {
             executeAsync(answer, new AnswerCallbackQueryHandler());
         } catch (TelegramApiException e) {
-        } //Ignore query errors, probably expired queries
+          //Ignore query errors, probably expired queries
+        }
     }
 
     /**
@@ -430,11 +433,11 @@ public class TelegramGateway extends TelegramLongPollingBot {
         stopHeader.append("*");
         stopHeader.append("" + stop.BusStopCode + " - ");
         stopHeader.append(stop.Description);
-        if (stop.isPublic && stop.isNtu) {
+        if (stop.busType.isType(Type.PUBLIC) && stop.busType.isType(Type.NTU)) {
             stopHeader.append("/");
             stopHeader.append(stop.ntuDescription);
         }
-        if (stop.isPublic && stop.isNus) {
+        if (stop.busType.isType(Type.PUBLIC) && stop.busType.isType(Type.NUS)) {
             stopHeader.append("/");
             stopHeader.append(stop.nusDescription);
         }

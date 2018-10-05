@@ -16,6 +16,7 @@ import main.BusTimeBot;
 import model.BusStop;
 import model.CommandResponse;
 import model.CommandResponseType;
+import model.BusType.Type;
 import model.busarrival.BusStopArrival;
 import model.busarrival.BusStopArrivalCache;
 import model.busarrival.BusStopArrivalContainer;
@@ -73,13 +74,13 @@ public class LocationCommand extends Command {
                     busStopArrival.busStop = stop;
                     busStopArrival.requestedTime = System.currentTimeMillis();
                     //Append the bus times accordingly
-                    if (stop.isPublic) {
+                    if (stop.busType.isType(Type.PUBLIC)) {
                         busStopArrival.merge(PublicController.getPublicBusArrivalTimings(stop));
                     }
-                    if (stop.isNus) {
+                    if (stop.busType.isType(Type.NUS)) {
                         busStopArrival.merge(NusController.getNUSArrivalTimings(stop));
                     }
-                    if (stop.isNtu) {
+                    if (stop.busType.isType(Type.NTU)) {
                         busStopArrival.merge(NtuController.getNTUBusArrivalTimings(stop));
                     }
                 }

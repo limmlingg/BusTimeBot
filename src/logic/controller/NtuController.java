@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 
 import model.BusStop;
 import model.BusStopMapping;
+import model.BusType.Type;
 import model.busarrival.BusArrival;
 import model.busarrival.BusStopArrival;
 import model.businfo.BusInfo;
@@ -94,7 +95,7 @@ public class NtuController {
                             BusStop existingStop = busStops.get(BusStopMapping.getValue(Integer.toString(node.id)));
                             existingStop.ntuStopCode = Integer.toString(node.id);
                             existingStop.ntuDescription = fixName(isBlueRider, node);
-                            existingStop.isNtu = true;
+                            existingStop.busType.setTrue(Type.NTU);
                             retrieveBusList(existingStop.ntuStopCode);
                         } else { //Otherwise it is most likely a NTU-only bus stop
                             BusStop stop = new BusStop();
@@ -102,7 +103,7 @@ public class NtuController {
                             stop.Description = fixName(isBlueRider, node);
                             stop.Latitude = node.lat;
                             stop.Longitude = node.lon;
-                            stop.isNtu = true;
+                            stop.busType.setTrue(Type.NTU);
                             busStops.put(stop.BusStopCode, stop);
                             retrieveBusList(stop.BusStopCode);
                         }
@@ -182,7 +183,7 @@ public class NtuController {
 
         try {
             String code = stop.BusStopCode;
-            if (stop.isNtu && stop.isPublic) {
+            if (stop.busType.isType(Type.NTU) && stop.busType.isType(Type.PUBLIC)) {
                 code = stop.ntuStopCode;
             }
 

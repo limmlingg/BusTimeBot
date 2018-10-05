@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 
 import model.BusStop;
 import model.BusStopMapping;
+import model.BusType.Type;
 import model.busarrival.BusArrival;
 import model.busarrival.BusStopArrival;
 import model.businfo.BusInfo;
@@ -74,10 +75,10 @@ public class NusController {
                 BusStop existingStop = busStops.get(BusStopMapping.getValue(stop.name));
                 existingStop.nusStopCode = stop.name;
                 existingStop.nusDescription = stop.caption;
-                existingStop.isNus = true;
+                existingStop.busType.setTrue(Type.NUS);
             } else { //Otherwise it is most likely a NUS-only bus stop
                 BusStop newStop = new BusStop();
-                newStop.isNus = true;
+                newStop.busType.setTrue(Type.NUS);
                 newStop.BusStopCode = stop.name;
                 newStop.Description = stop.caption;
                 newStop.Latitude = stop.latitude;
@@ -100,7 +101,7 @@ public class NusController {
         try {
             //Use the appropriate code
             String code = stop.BusStopCode;
-            if (stop.isNus && stop.isPublic) {
+            if (stop.busType.isType(Type.NUS) && stop.busType.isType(Type.PUBLIC)) {
                 code = stop.nusStopCode;
             }
 
