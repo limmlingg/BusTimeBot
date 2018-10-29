@@ -67,7 +67,6 @@ public class WebController {
      */
     public static <T> T jsonToObject(String json, Class<T> objectClass) throws Exception {
         try {
-            System.out.println(json);
             Gson gson = new Gson();
             //To make sure json is json, we extract only from the first { to the last }
             String jsonTrimmed = json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1);
