@@ -99,6 +99,8 @@ public class WebController {
             URL urlSite = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) urlSite.openConnection();
             connection.setRequestMethod("GET");
+            connection.setConnectTimeout(2500);
+            connection.setReadTimeout(2500);
             if (includeToken) {
                 connection.setRequestProperty("AccountKey", BusTimeBot.LTA_TOKEN);
             }
@@ -127,6 +129,8 @@ public class WebController {
             URL urlSite = new URL(url);
             HttpsURLConnection connection = (HttpsURLConnection) urlSite.openConnection();
             connection.setRequestMethod("GET");
+            connection.setConnectTimeout(2500);
+            connection.setReadTimeout(2500);
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = reader.readLine()) != null) {
