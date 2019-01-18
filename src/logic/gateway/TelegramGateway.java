@@ -61,6 +61,7 @@ public class TelegramGateway extends TelegramLongPollingBot {
 
     //Message Texts
     private static final String LAST_UPDATED_TEXT = "\n_Last updated: {0}_";
+    private static final String NO_BUS_STOPS_FOUND_TEXT = "I couldn't find any bus stops near you. Check your location accuracy or contact @SimpleLegend if you think this is a mistake.";
 
     public TelegramGateway() {
         try {
@@ -410,6 +411,12 @@ public class TelegramGateway extends TelegramLongPollingBot {
                 break;
             }
         }
+
+        //Report if no bus stops are found
+        if (count == 0) {
+            formattedString.append(NO_BUS_STOPS_FOUND_TEXT);
+        }
+
         return formattedString.toString();
     }
 
